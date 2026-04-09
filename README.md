@@ -46,4 +46,4 @@ Puede ocurrir que el cliente en una estadía (de cualquier tipo menos la “x ho
 |CU "Complejo"(nivel resumen)|Gestión de Reserva|
 |Listado complejo|Listado mensual del histórico de salidas de las reservas cuyo tipo de estadía es “Mensual” en un período de tiempo determinado. <br> Listado de suscripciones impagas por usuario|
 |Nivel de acceso|user <br> adminCochera <br> superAdmin|
-|requerimiento extra obligatorio|Envio de emails|
+|Requerimiento extra obligatorio|Envío de emails|
