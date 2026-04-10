@@ -13,6 +13,8 @@ Del vehículo se registra nro de patente, tipo de vehículo (moto, auto, utilita
 Puede ocurrir que el cliente en una estadía (de cualquier tipo menos la “x hora”) retire el vehículo y luego vuelva. El sistema debe contemplar esos casos con una fecha y hora de salida parcial y regreso dentro del transcurso de la estadía para no asignar más vehículos de lo que permite la capacidad física.
 
 ## **Entidades**
+<img width="1372" height="1120" alt="image" src="https://github.com/user-attachments/assets/52551d39-3767-4a9d-ad49-515169292c60" />
+
 - **Usuario**: idUsuario, nombre, apellido, numeroTelefono, direccion, mail, nombreUsuario, contraseña, fechaBaja.
 - **Vehiculo**: patente, descripcion.
 - **TipoVehiculo**: idTipo, nombre.
