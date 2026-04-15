@@ -3,9 +3,9 @@
 ## **Grupo:**
 
 ### **Integrantes:**
-- 51937 - Ferraris Manuel **.**
+- 51937 - Ferraris Manuel
 - 48952 - Franco Natalia
-- 50430 - Munné María Lucía
+- 50430 - Munné María Lucía **.**
 
 ## **Descripción**
  El estacionamiento cuenta con la posibilidad de brindar el servicio a clientes de forma mensual, diaria, o por hora. Dependiendo de este tiempo de estacionamiento sera la forma de administrar el estacionamiento, ya que si es por hora, el cliente es asignado a un estacionamiento para su vehículo y el mismo se va con la llave, a diferencia de si es media estadía o  estadía completa ya que el cliente debe dejar la llave porque el vehículo puede ser trasladado de estacionamiento.
@@ -36,8 +36,8 @@ Puede ocurrir que el cliente en una estadía (de cualquier tipo menos la “x ho
 ### _Regularidad:_
 |Requerimiento|Detalle/Listado de casos incluidos|
 |---|---|
-|ABMC Simple|Vehiculo. <br> Usuario. <br> TipoPlan.|
-|ABMC dependiente|PrecioHistoricoTP. <br> PrecioHistoricoTV.|
+|ABMC Simple|TipoVehiculo. <br> Usuario. <br> TipoPlan.|
+|ABMC dependiente|Vehiculo. <br> PrecioHistoricoTV.|
 |CU NO-ABMC|Realizar Reserva. <br> Realizar Suscripcion.|
 |Listado simple|Cantidad de usuarios morosos <br> Listado de reservas el último mes. <br> Listado de tipos de vehículos que más concurren a los estacionamientos.|
 
@@ -45,7 +45,7 @@ Puede ocurrir que el cliente en una estadía (de cualquier tipo menos la “x ho
 |Requerimiento|Detalle/Listado de casos incluidos|
 |---|---|
 |ABMC|Todas las entidades mencionadas anteriormente|
-|CU "Complejo"(nivel resumen)|Gestión de Reserva|
+|CU "Complejo"(nivel resumen)|Gestión de Reserva (Pago, Lugar, Suscripcion)|
 |Listado complejo|Listado mensual del histórico de salidas de las reservas cuyo tipo de estadía es “Mensual” en un período de tiempo determinado. <br> Listado de suscripciones impagas por usuario.|
 |Nivel de acceso|user. <br> adminCochera. <br> superAdmin.|
-|Requerimiento extra obligatorio|Envío de emails.|
+|Requerimiento extra obligatorio|Envío de emails e Historico de Salidas.|
