@@ -1,6 +1,6 @@
 package ar.gov.rosario.estacionamiento.domain;
 
-//Usamos los enums para mantener la estructura de estados validos
+//Usamos los enums para mantener la consistencia de estados
 public enum EstadoPago {
 	PENDIENTE,  // Cuando se emitió (fechaHoraEmision) pero aún no se abonó
     PAGADO,     // Cuando ya se registró el pago (fechaHoraPago)
