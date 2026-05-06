@@ -1,4 +1,4 @@
-package ar.gov.rosario.estacionamiento.domain;
+package estacionamiento.domain;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 

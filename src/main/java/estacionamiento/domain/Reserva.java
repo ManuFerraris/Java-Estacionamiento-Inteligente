@@ -1,4 +1,4 @@
-package ar.gov.rosario.estacionamiento.domain;
+package estacionamiento.domain;
 import java.time.LocalDateTime; // Clase moderna para fechas y horas
 import java.math.BigDecimal; // Clase estandar para el dinero
 

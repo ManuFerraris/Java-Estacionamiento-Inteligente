@@ -1,4 +1,4 @@
-package ar.gov.rosario.estacionamiento.domain;
+package estacionamiento.domain;
 
 public enum EstadoReserva {
 	PENDIENTE_PAGO,

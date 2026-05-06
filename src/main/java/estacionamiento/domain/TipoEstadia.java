@@ -1,4 +1,4 @@
-package ar.gov.rosario.estacionamiento.domain;
+package estacionamiento.domain;
 
 public class TipoEstadia {
 	private int numero;

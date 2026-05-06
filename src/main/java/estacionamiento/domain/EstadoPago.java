@@ -1,4 +1,4 @@
-package ar.gov.rosario.estacionamiento.domain;
+package estacionamiento.domain;
 
 //Usamos los enums para mantener la consistencia de estados
 public enum EstadoPago {

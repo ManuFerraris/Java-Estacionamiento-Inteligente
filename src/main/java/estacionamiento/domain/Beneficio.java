@@ -1,4 +1,4 @@
-package ar.gov.rosario.estacionamiento.domain;
+package estacionamiento.domain;
 import java.time.LocalDateTime;
 
 public class Beneficio {
