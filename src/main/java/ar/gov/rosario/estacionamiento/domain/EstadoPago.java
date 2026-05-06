@@ -1,0 +1,8 @@
+package ar.gov.rosario.estacionamiento.domain;
+
+public enum EstadoPago {
+	PENDIENTE,  // Cuando se emitió (fechaHoraEmision) pero aún no se abonó
+    PAGADO,     // Cuando ya se registró el pago (fechaHoraPago)
+    VENCIDO,    // Si se pasó la fecha límite sin pagar
+    CANCELADO   // Si se anuló la suscripción o el comprobante
+}
