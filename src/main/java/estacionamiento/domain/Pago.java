@@ -1,16 +1,18 @@
 package estacionamiento.domain;
-import java.sql.Date;
+
+import java.time.LocalDateTime; 
+import java.math.BigDecimal;
 
 public class Pago {
 	private int numero;
-	private Date fechaHora;
-	private float monto;
+	private LocalDateTime fechaHora;
+	private BigDecimal monto;
 	private String tipoPago;
 	private String estado;
 	
 	public Pago() {}
 	
-	public Pago(int num, Date fh, float monto, String tp, String est) {
+	public Pago(int num, LocalDateTime fh, BigDecimal monto, String tp, String est) {
 		this.numero = num;
 		this.fechaHora = fh;
 		this.monto = monto;
@@ -26,19 +28,19 @@ public class Pago {
 		this.numero = numero;
 	}
 
-	public Date getFechaHora() {
+	public LocalDateTime getFechaHora() {
 		return fechaHora;
 	}
 
-	public void setFechaHora(Date fechaHora) {
+	public void setFechaHora(LocalDateTime fechaHora) {
 		this.fechaHora = fechaHora;
 	}
 
-	public float getMonto() {
+	public BigDecimal getMonto() {
 		return monto;
 	}
 
-	public void setMonto(float monto) {
+	public void setMonto(BigDecimal monto) {
 		this.monto = monto;
 	}
 
