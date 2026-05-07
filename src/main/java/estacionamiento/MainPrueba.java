@@ -1,11 +1,12 @@
 package estacionamiento;
 import estacionamiento.domain.Vehiculo;
 import estacionamiento.domain.TipoVehiculo;
-import estacionamiento.repository.VehiculoRepository;
+import estacionamiento.repository.VehiculoRepositoryMemoria;
 
+// Aca podemos probar las distintas clases que vamos creando
 public class MainPrueba {
     public static void main(String[] args) {
-        VehiculoRepository repo = new VehiculoRepository();
+        VehiculoRepositoryMemoria repo = new VehiculoRepositoryMemoria();
         TipoVehiculo tipoAuto = new TipoVehiculo(1, "Auto");
 
         // 1. CREATE

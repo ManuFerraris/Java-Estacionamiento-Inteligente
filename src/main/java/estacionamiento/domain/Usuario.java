@@ -9,6 +9,7 @@ public class Usuario {
 	private String numeroTelefono;
 	private String direccion;
 	private String mail;
+	private String mailRecuperacion;
 	private Date fechaBaja;
 	private String nombreUsuario;
 	private String contrasenia;
@@ -16,13 +17,16 @@ public class Usuario {
 	public Usuario() {
 	}
 
-	public Usuario(int numero, String nombre, String apellido, String numeroTelefono, String direccion, String mail, Date fechaBaja,String nombreUsuario, String contrasenia) {
+	public Usuario(int numero, String nombre, String apellido, String numeroTelefono
+			, String direccion, String mail, String mailRecuperacion
+			, Date fechaBaja,String nombreUsuario, String contrasenia) {
 		this.nombre = nombre;
 		this.numero = numero;
 		this.apellido = apellido;
 		this.numeroTelefono = numeroTelefono;
 		this.direccion = direccion;
 		this.mail = mail;
+		this.mailRecuperacion = mailRecuperacion;
 		this.fechaBaja = fechaBaja;
 		this.nombreUsuario = nombreUsuario;
 		this.contrasenia = contrasenia;
@@ -70,6 +74,14 @@ public class Usuario {
 
 	public String getMail() {
 		return mail;
+	}
+
+	public String getMailRecuperacion() {
+		return mailRecuperacion;
+	}
+
+	public void setMailRecuperacion(String mailRecuperacion) {
+		this.mailRecuperacion = mailRecuperacion;
 	}
 
 	public void setMail(String mail) {
