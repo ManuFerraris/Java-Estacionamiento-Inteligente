@@ -6,6 +6,7 @@ public class Suscripcion {
 	private Usuario usuario;
 	private LocalDateTime fechaDesde;
 	private LocalDateTime fechaHasta;
+	private EstadoSuscripcion estado;
 	
 	public Suscripcion() {}
 	
@@ -47,4 +48,14 @@ public class Suscripcion {
 	public void setFechaHasta(LocalDateTime fechaHasta) {
 		this.fechaHasta = fechaHasta;
 	}
+
+	public EstadoSuscripcion getEstado() {
+		return estado;
+	}
+
+	public void setEstado(EstadoSuscripcion estado) {
+		this.estado = estado;
+	}
+	
+	
 }

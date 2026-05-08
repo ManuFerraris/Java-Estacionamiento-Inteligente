@@ -1,9 +1,10 @@
 package estacionamiento.domain;
 
 public enum EstadoReserva {
-	PENDIENTE_PAGO,
+	PENDIENTE_INGRESO,
     CONFIRMADA,
     EN_CURSO,
     FINALIZADA,
-    CANCELADA
+    CANCELADA,
+    EXPIRADA
 }
