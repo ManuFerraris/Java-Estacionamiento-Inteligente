@@ -7,12 +7,12 @@ public class Pago {
 	private int numero;
 	private LocalDateTime fechaHora;
 	private BigDecimal monto;
-	private String tipoPago;
-	private String estado;
+	private TipoPago tipoPago;
+	private EstadoPago estado;
 	
 	public Pago() {}
 	
-	public Pago(int num, LocalDateTime fh, BigDecimal monto, String tp, String est) {
+	public Pago(int num, LocalDateTime fh, BigDecimal monto, TipoPago tp, EstadoPago est) {
 		this.numero = num;
 		this.fechaHora = fh;
 		this.monto = monto;
@@ -44,19 +44,19 @@ public class Pago {
 		this.monto = monto;
 	}
 
-	public String getTipoPago() {
+	public TipoPago getTipoPago() {
 		return tipoPago;
 	}
 
-	public void setTipoPago(String tipoPago) {
+	public void setTipoPago(TipoPago tipoPago) {
 		this.tipoPago = tipoPago;
 	}
 
-	public String getEstado() {
+	public EstadoPago getEstado() {
 		return estado;
 	}
 
-	public void setEstado(String estado) {
+	public void setEstado(EstadoPago estado) {
 		this.estado = estado;
 	}
 	
