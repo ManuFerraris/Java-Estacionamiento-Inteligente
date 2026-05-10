@@ -3,11 +3,34 @@ package estacionamiento.domain;
 import java.time.LocalDateTime; 
 import java.math.BigDecimal;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import jakarta.persistence.Column;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+
+@Entity //@Entity le indica a Hibernate que esta clase será una tabla en la base de datos.
+@Table(name = "pago") //@Table Es opcional y permite elegir el nombre exacto de la tabla en MySQL.
 public class Pago {
+		
+	@Id // Marca este atributo como la Clave Primaria (Primary Key).
+	@Column(name = "numero")
 	private int numero;
+	
+	@Column(name = "fecha_hora", nullable = false)
 	private LocalDateTime fechaHora;
+	
+	@Column(name = "monto", nullable = false, precision = 10, scale = 2)
 	private BigDecimal monto;
+	
+	
+    @Enumerated(EnumType.STRING) // @Enumerated guarda el Enum como un texto plano en la base de datos en lugar de un número.
+    @Column(name = "tipo_pago", nullable = false)
 	private TipoPago tipoPago;
+    
+    @Enumerated(EnumType.STRING)
+    @Column(name = "estado", nullable = false)
 	private EstadoPago estado;
 	
 	public Pago() {}
