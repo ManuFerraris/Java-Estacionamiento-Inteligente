@@ -21,6 +21,7 @@ Puede ocurrir que el cliente en una estadía (de cualquier tipo menos la “x ho
 - **TipoEstadia**: numero, descripcion, cupo.
 - **Pago**: numero, fechaHora, monto, tipoPago, estado.
 - **Pago_Suscripcion**: numero, fechaHora, monto, tipoPago, estado.
+- **Cochera**: codigo, nombre, direccion, descripcion.
 - **Lugar**: codigo, numeroPiso, descripcion.
 - **TipoPlan**: codigo, nombre, detalle.
 - **PrecioHistoricoTV**: fechaDesde, precio.
