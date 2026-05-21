@@ -82,6 +82,4 @@ public class Pago {
 	public void setEstado(EstadoPago estado) {
 		this.estado = estado;
 	}
-	
-	
 }
