@@ -1,11 +1,25 @@
 package estacionamiento.domain;
 
-import java.time.LocalDateTime; 
+import jakarta.persistence.*;
+import java.time.LocalDateTime;
+import estacionamiento.domain.claves.PrecioHistoricoTVId;
 import java.math.BigDecimal; 
 
+@Entity
+@IdClass(PrecioHistoricoTVId.class)
+@Table(name="precio_historicotv")
 public class PrecioHistoricoTV {
+	
+	@Id
+	@ManyToOne
+	@JoinColumn(name="numero", nullable=false)
 	private TipoVehiculo tipoVehiculo;
+	
+	@Id
+	@Column(name="fecha_desde", nullable=false)
 	private LocalDateTime fechaDesde;
+	
+	@Column(name="precio", nullable=false, precision = 10, scale = 2)
 	private BigDecimal precio;
 	
 	public PrecioHistoricoTV() {
