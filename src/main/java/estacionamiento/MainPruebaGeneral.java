@@ -3,6 +3,7 @@ package estacionamiento;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+import estacionamiento.domain.Cochera;
 import estacionamiento.domain.EstadoReserva;
 import estacionamiento.domain.Lugar;
 import estacionamiento.domain.Reserva;
@@ -51,8 +52,11 @@ public class MainPruebaGeneral {
         estadiaPorHora.setCupo(50);
         repoTipoEstadia.guardar(estadiaPorHora);
 
+        //Crear la cochera
+        Cochera cocheraNueva = new Cochera(1, "Los Amigos", "Calle Sarmiento 1353", "Admite todo tipo de vehiculos");
+        
         // Crear un Lugar (El espacio físico)
-        Lugar lugarA1 = new Lugar(1, "Sector Verde - PB", "A1");
+        Lugar lugarA1 = new Lugar(1, "Sector Verde - PB", "A1", cocheraNueva);
 
         System.out.println("\n--- 3. CREANDO LA RESERVA ---");
         

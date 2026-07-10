@@ -15,7 +15,7 @@ public class TipoVehiculo {
 	private String nombre;
 
 	// "tipoVehiculo" es el nombre EXACTO de la variable dentro de PrecioHistoricoTV.
-	@OneToMany(mappedBy = "tipoVehiculo")
+	@OneToMany(mappedBy = "tipoVehiculo", targetEntity = PrecioHistoricoTV.class)
 	private List<PrecioHistoricoTV> preciosHistoricos;
 		
 	public TipoVehiculo() {
