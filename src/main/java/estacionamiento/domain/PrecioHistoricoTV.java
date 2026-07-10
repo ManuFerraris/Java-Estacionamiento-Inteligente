@@ -6,16 +6,20 @@ import estacionamiento.domain.claves.PrecioHistoricoTVId;
 import java.math.BigDecimal; 
 
 @Entity
-@IdClass(PrecioHistoricoTVId.class)
+//@IdClass(PrecioHistoricoTVId.class)
 @Table(name="precio_historicotv")
 public class PrecioHistoricoTV {
 	
-	@Id
+	@EmbeddedId
+    private PrecioHistoricoTVId id;
+	
+	//@Id
 	@ManyToOne
+	@MapsId("numeroTipoVehiculo")
 	@JoinColumn(name="numero", nullable=false)
 	private TipoVehiculo tipoVehiculo;
 	
-	@Id
+	//@Id
 	@Column(name="fecha_desde", nullable=false)
 	private LocalDateTime fechaDesde;
 	
