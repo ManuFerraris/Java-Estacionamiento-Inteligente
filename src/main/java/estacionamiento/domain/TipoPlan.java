@@ -1,8 +1,22 @@
 package estacionamiento.domain;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import jakarta.persistence.Column;
+
+@Entity
+@Table(name="tipo_plan")
 public class TipoPlan {
+	
+	@Id
+	@Column(name="codigo")
 	private int codigo;
+	
+	@Column(name="nombre", nullable = false)
 	private String nombre;
+	
+	@Column(name="detalle", nullable = false)
 	private String detalle;
 
 	public TipoPlan() {
