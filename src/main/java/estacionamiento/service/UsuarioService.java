@@ -12,7 +12,6 @@ public class UsuarioService {
 	} 
 	
 	public void registrarUsuario(Usuario nuevoUsuario) {
-		// Validar que el objeto no sea nulo
 		if (nuevoUsuario == null) {
             throw new IllegalArgumentException("No se puede registrar un usuario nulo.");
         }
