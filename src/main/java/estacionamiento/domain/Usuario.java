@@ -1,25 +1,58 @@
 package estacionamiento.domain;
 
-import java.sql.Date;
+import java.time.LocalDate;
+import java.util.List;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import jakarta.persistence.Column;
+import jakarta.persistence.OneToMany;
+
+@Entity
+@Table(name="usuario")
 public class Usuario {
+	
+	@Id
+	@Column(name="numero")
 	private int numero;
+	
+	@Column(name="nombre", nullable = false)
 	private String nombre;
+	
+	@Column(name="apellido", nullable = false)
 	private String apellido;
+	
+	@Column(name="numero_telefono", nullable = false)
 	private String numeroTelefono;
+	
+	@Column(name="direccion", nullable = false)
 	private String direccion;
+	
+	@Column(name="mail", nullable = false)
 	private String mail;
+	
+	@Column(name="mail_recuperacion", nullable = true)
 	private String mailRecuperacion;
-	private Date fechaBaja;
+	
+	@Column(name="fecha_baja", nullable = true)
+	private LocalDate fechaBaja;
+	
+	@Column(name="nombre_usuario", nullable = false)
 	private String nombreUsuario;
+	
+	@Column(name="contrasenia", nullable = false)
 	private String contrasenia;
+	
+	@OneToMany(mappedBy = "usuario", targetEntity = Suscripcion.class)
+	private List<Suscripcion> suscripciones;
 
 	public Usuario() {
 	}
 
 	public Usuario(int numero, String nombre, String apellido, String numeroTelefono
 			, String direccion, String mail, String mailRecuperacion
-			, Date fechaBaja,String nombreUsuario, String contrasenia) {
+			, LocalDate fechaBaja,String nombreUsuario, String contrasenia) {
 		this.nombre = nombre;
 		this.numero = numero;
 		this.apellido = apellido;
@@ -88,11 +121,11 @@ public class Usuario {
 		this.mail = mail;
 	}
 
-	public Date getFechaBaja() {
+	public LocalDate getFechaBaja() {
 		return fechaBaja;
 	}
 
-	public void setFechaBaja(Date fechaBaja) {
+	public void setFechaBaja(LocalDate fechaBaja) {
 		this.fechaBaja = fechaBaja;
 	}
 
