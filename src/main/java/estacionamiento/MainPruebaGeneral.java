@@ -69,7 +69,7 @@ public class MainPruebaGeneral {
             miAuto,                 // El objeto Vehiculo entero
             usuario1,               // El objeto Usuario entero
             estadiaPorHora,         // El objeto TipoEstadia entero
-            fechaInicio,            // fechaDesde
+            //fechaInicio,            // fechaDesde
             null,                   // El servicio se encarga de calcular la fechaHastaTentativa
             null,                   // fechaHastaReal (todavía no terminó)
             EstadoReserva.CONFIRMADA, // Usando el Enum
