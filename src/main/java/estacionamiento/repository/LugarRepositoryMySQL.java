@@ -41,7 +41,7 @@ public class LugarRepositoryMySQL implements LugarRepository {
             em.getTransaction().begin();
             lugarExistente.setDescripcion(lugarNuevosDatos.getDescripcion());
             lugarExistente.setNumeroPiso(lugarNuevosDatos.getNumeroPiso());
-            lugarExistente.setCodigo_cochera(lugarNuevosDatos.getCodigo_cochera());
+            lugarExistente.setCodigoCochera(lugarNuevosDatos.getCodigoCochera());
             em.getTransaction().commit();
             System.out.println("MySQL: Lugar actualizado correctamente.");
         } else {

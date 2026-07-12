@@ -1,10 +1,32 @@
 package estacionamiento.domain;
 
+import java.util.List;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import jakarta.persistence.Column;
+import jakarta.persistence.OneToMany;
+
+
+@Entity()
+@Table(name="cochera")
 public class Cochera {
+	
+	@Id
+	@Column(name="codigo")
 	private int codigo;
+	
+	@Column(name="nombre", nullable=false)
 	private String nombre;
+	
+	@Column(name="direccion", nullable=false)
 	private String direccion;
+	
+	@Column(name="descripcion", nullable=false)
 	private String descripcion;
+	
+	@OneToMany(mappedBy = "cochera", targetEntity = Lugar.class)
+	private List<Lugar> lugares;
 	
 	public Cochera() {}
 	

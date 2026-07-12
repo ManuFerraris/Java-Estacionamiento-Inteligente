@@ -16,11 +16,6 @@ public class TipoPlanService {
             throw new IllegalArgumentException("No se puede registrar un tipo de plan nulo.");
         }
 
-        // Validación del código identificador
-        if (nuevoTipoPlan.getCodigo() <= 0) {
-            throw new IllegalArgumentException("El código del tipo de plan debe ser un número válido mayor a cero.");
-        }
-
         // Validación del nombre (obligatorio según nullable = false)
         if (nuevoTipoPlan.getNombre() == null || nuevoTipoPlan.getNombre().trim().isEmpty()) {
             throw new IllegalArgumentException("El nombre del tipo de plan es obligatorio.");
