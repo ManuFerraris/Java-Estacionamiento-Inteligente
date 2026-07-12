@@ -14,7 +14,7 @@ public class PrecioHistoricoTP {
 	
 	@ManyToOne
 	@MapsId("codigoPlan") // Vincula este objeto al atributo 'codigoPlan' del PrecioHistoricoTPId
-	@JoinColumn(name="codigo_plan", nullable=false)
+	@JoinColumn(name="codigo", nullable=false)
 	private TipoPlan tipoPlan;
 	
 	//private LocalDateTime fechaDesde; Se manda en el constructor y se asigna en la clase Id.

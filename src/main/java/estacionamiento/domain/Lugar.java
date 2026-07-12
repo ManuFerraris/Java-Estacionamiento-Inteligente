@@ -4,6 +4,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.persistence.Column;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.JoinColumn;
 
 @Entity
 @Table(name="lugar")
@@ -19,8 +21,9 @@ public class Lugar {
 	@Column(name="numero_piso", nullable = false)
 	private String numeroPiso;
 	
-	@Column(name="codigo_cochera", nullable = false)
-	private Cochera codigo_cochera;
+	@ManyToOne
+	@JoinColumn(name="codigo_cochera", nullable = false)
+	private Cochera cochera;
 	
 	public Lugar() {}
 	
@@ -28,7 +31,7 @@ public class Lugar {
 		this.codigo = cod;
 		this.descripcion = desc;
 		this.numeroPiso = numPi;
-		this.codigo_cochera = nroCoch;
+		this.cochera = nroCoch;
 	}
 
 	public int getCodigo() {
@@ -55,12 +58,12 @@ public class Lugar {
 		this.numeroPiso = numeroPiso;
 	}
 
-	public Cochera getCodigo_cochera() {
-		return codigo_cochera;
+	public Cochera getCodigoCochera() {
+		return cochera;
 	}
 
-	public void setCodigo_cochera(Cochera codigo_cochera) {
-		this.codigo_cochera = codigo_cochera;
+	public void setCodigoCochera(Cochera codigo_cochera) {
+		this.cochera = codigo_cochera;
 	}
 	
 	
