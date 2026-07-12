@@ -25,12 +25,9 @@ public class PagoSuscripcionService {
         int numUsu = nuevoPago.getSuscripcion().getUsuario().getNumero();
         LocalDateTime desde = nuevoPago.getSuscripcion().getFechaDesde();
 
-        // TODO: @Nati - Descomenta esta validación cuando termines tu parte de suscripcion.
-        // Lo comento con /* */ para que Java no lance NullPointerException cuando intento probar el pagoSuscripcion.
-        /*if (suscripcionRepository.buscarPorClave(codTP, numUsu, desde) == null) {
+        if (suscripcionRepository.buscarPorClave(codTP, numUsu, desde) == null) {
             throw new IllegalArgumentException("No se puede registrar el pago: La suscripción no existe.");
         }
-        */
 
         // Monto debe ser positivo y exacto
         if (nuevoPago.getMonto() == null || nuevoPago.getMonto().compareTo(BigDecimal.ZERO) <= 0) {
