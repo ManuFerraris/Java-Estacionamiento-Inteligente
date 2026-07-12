@@ -47,6 +47,9 @@ public class Usuario {
 	@OneToMany(mappedBy = "usuario", targetEntity = Suscripcion.class)
 	private List<Suscripcion> suscripciones;
 
+	@OneToMany(mappedBy = "usuario", targetEntity = Reserva.class)
+	private List<Reserva> reservas;
+	
 	public Usuario() {
 	}
 
