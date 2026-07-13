@@ -1,11 +1,27 @@
 package estacionamiento.domain;
 
 import java.time.LocalDateTime;
+import jakarta.persistence.*;
 
+import estacionamiento.domain.claves.LugarTipoEstadiaId;
+
+@Entity
+@Table(name="lugar_tipo_estadia")
+@IdClass(LugarTipoEstadiaId.class) 
 public class LugarTipoEstadia {
     
+    @Id
+    @ManyToOne
+    @JoinColumn(name="codigo_lugar", nullable = false)
     private Lugar lugar;
+
+    @Id
+    @ManyToOne
+    @JoinColumn(name="numero", nullable = false) 
     private TipoEstadia tipoEstadia;
+
+    @Id
+    @Column(name="fecha_desde", nullable = false)
     private LocalDateTime fechaDesde;
 
     public LugarTipoEstadia() {

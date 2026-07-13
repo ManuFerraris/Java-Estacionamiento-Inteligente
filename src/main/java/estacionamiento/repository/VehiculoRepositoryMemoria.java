@@ -3,58 +3,46 @@ package estacionamiento.repository;
 import estacionamiento.domain.Vehiculo;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class VehiculoRepositoryMemoria implements VehiculoRepository {
-	// 1. Nuestra "BD" en memoria.
-	// Usamos la interfaz 'List' para la declaración y la clase 'ArrayList' para la instanciación.
-    // Esto es una buena práctica de programación orientada a interfaces.
-	private List<Vehiculo> baseDeDatosMemoria;
-	
-	public VehiculoRepositoryMemoria() {
-		this.baseDeDatosMemoria = new ArrayList<>();
-	}
     
-    // R - READ (findAll)
-    // ===================
-    // Obtener todos los registros
-	@Override
+    private List<Vehiculo> baseDeDatosMemoria;
+    
+    public VehiculoRepositoryMemoria() {
+        this.baseDeDatosMemoria = new ArrayList<>();
+    }
+    
+    @Override
     public List<Vehiculo> obtenerTodos() {
-        return this.baseDeDatosMemoria;
+        // Retornamos una copia para proteger los datos en memoria
+        return new ArrayList<>(this.baseDeDatosMemoria);
     }
 
-    /// R - READ (findOne)
-    // =======================
-    // Obtener un registro por su ID (patente)
     @Override
-    public Vehiculo buscarPorPatente(String patente) {
-        for (Vehiculo v : this.baseDeDatosMemoria) {
-            if (v.getPatente().equalsIgnoreCase(patente)) {
-                return v; // Lo encontramos, lo devolvemos
-            }
-        }
-        return null; // Si termina el ciclo y no lo encontró, devuelve null (vacío)
+    public Optional<Vehiculo> buscarPorPatente(String patente) {
+        return this.baseDeDatosMemoria.stream()
+                .filter(v -> v.getPatente().equalsIgnoreCase(patente))
+                .findFirst();
     }
     
-    // C - CREATE
-    // ==============
     @Override
-    public void guardar(Vehiculo vehiculo) {
-        // Validamos que no exista un vehículo con esa patente antes de guardarlo
-        if (buscarPorPatente(vehiculo.getPatente()) != null) {
+    public Vehiculo guardar(Vehiculo vehiculo) {
+        if (buscarPorPatente(vehiculo.getPatente()).isPresent()) {
             throw new IllegalArgumentException("Ya existe un vehículo con la patente: " + vehiculo.getPatente());
         }
         this.baseDeDatosMemoria.add(vehiculo);
         System.out.println("Vehículo guardado con éxito: " + vehiculo.getPatente());
+        
+        return vehiculo;
     }
     
-    // U - UPDATE
-    // ==============
     @Override
     public void actualizar(String patenteBuscada, Vehiculo vehiculoNuevosDatos) {
-        Vehiculo vehiculoExistente = buscarPorPatente(patenteBuscada);
+        Optional<Vehiculo> vehiculoExistenteOpt = buscarPorPatente(patenteBuscada);
         
-        if (vehiculoExistente != null) {
-            // Actualizamos los datos usando los Setters
+        if (vehiculoExistenteOpt.isPresent()) {
+            Vehiculo vehiculoExistente = vehiculoExistenteOpt.get();
             vehiculoExistente.setDescripcion(vehiculoNuevosDatos.getDescripcion());
             vehiculoExistente.setTipoVehiculo(vehiculoNuevosDatos.getTipoVehiculo());
             System.out.println("Vehículo actualizado: " + patenteBuscada);
@@ -63,14 +51,12 @@ public class VehiculoRepositoryMemoria implements VehiculoRepository {
         }
     }
     
-    // D - DELETE
-    // ==============
     @Override
     public void eliminar(String patente) {
-        Vehiculo vehiculoAEliminar = buscarPorPatente(patente);
+        Optional<Vehiculo> vehiculoAEliminarOpt = buscarPorPatente(patente);
         
-        if (vehiculoAEliminar != null) {
-            this.baseDeDatosMemoria.remove(vehiculoAEliminar);
+        if (vehiculoAEliminarOpt.isPresent()) {
+            this.baseDeDatosMemoria.remove(vehiculoAEliminarOpt.get());
             System.out.println("Vehículo eliminado: " + patente);
         } else {
             System.out.println("No se encontró el vehículo para eliminar.");

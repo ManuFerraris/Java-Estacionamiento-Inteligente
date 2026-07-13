@@ -1,6 +1,7 @@
 package estacionamiento.repository;
 
 import java.util.List;
+import java.util.Optional;
 import estacionamiento.domain.Lugar;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
@@ -8,24 +9,28 @@ import jakarta.persistence.Persistence;
 
 public class LugarRepositoryMySQL implements LugarRepository {
 
-	private EntityManager em;
-	
-	public LugarRepositoryMySQL() {
-		EntityManagerFactory emf = Persistence.createEntityManagerFactory("EstacionamientoPU");
+    private EntityManager em;
+    
+    public LugarRepositoryMySQL() {
+        EntityManagerFactory emf = Persistence.createEntityManagerFactory("EstacionamientoPU");
         this.em = emf.createEntityManager();
-	}
-	
-	@Override
-    public void guardar(Lugar lugar) {
+    }
+    
+    @Override
+    public Lugar guardar(Lugar lugar) {
         em.getTransaction().begin();
         em.persist(lugar);
         em.getTransaction().commit();
         System.out.println("MySQL: Lugar insertado correctamente en la base de datos.");
+
+        return lugar;
     }
-	
-	@Override
-    public Lugar buscarPorClave(int codigo) {
-        return em.find(Lugar.class, codigo);
+    
+    @Override
+    public Optional<Lugar> buscarPorClave(String codigo) {
+    
+        Lugar lugarEncontrado = em.find(Lugar.class, codigo);
+        return Optional.ofNullable(lugarEncontrado);
     }
     
     @Override
@@ -34,15 +39,19 @@ public class LugarRepositoryMySQL implements LugarRepository {
     }
     
     @Override
-    public void actualizar(int codigo, Lugar lugarNuevosDatos) {
-        Lugar lugarExistente = buscarPorClave(codigo);
+    public void actualizar(String codigo, Lugar lugarNuevosDatos) {
+        Optional<Lugar> lugarExistenteOpt = buscarPorClave(codigo);
         
-        if (lugarExistente != null) {
+        if (lugarExistenteOpt.isPresent()) {
+            Lugar lugarExistente = lugarExistenteOpt.get(); 
+            
             em.getTransaction().begin();
+            
             lugarExistente.setDescripcion(lugarNuevosDatos.getDescripcion());
             lugarExistente.setNumeroPiso(lugarNuevosDatos.getNumeroPiso());
             lugarExistente.setCodigoCochera(lugarNuevosDatos.getCodigoCochera());
             em.getTransaction().commit();
+            
             System.out.println("MySQL: Lugar actualizado correctamente.");
         } else {
             throw new IllegalArgumentException("MySQL: No se encontró el lugar para actualizar.");
@@ -50,12 +59,13 @@ public class LugarRepositoryMySQL implements LugarRepository {
     }
     
     @Override
-    public void eliminar(int codigo) {
-        Lugar lugarAEliminar = buscarPorClave(codigo);
+    public void eliminar(String codigo) {
+        Optional<Lugar> lugarAEliminarOpt = buscarPorClave(codigo);
         
-        if (lugarAEliminar != null) {
+        if (lugarAEliminarOpt.isPresent()) {
             em.getTransaction().begin();
-            em.remove(lugarAEliminar);
+           
+            em.remove(lugarAEliminarOpt.get());
             em.getTransaction().commit();
             System.out.println("MySQL: Lugar eliminado correctamente.");
         } else {

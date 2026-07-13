@@ -1,12 +1,18 @@
 package estacionamiento.repository;
 
 import java.util.List;
+import java.util.Optional;
 import estacionamiento.domain.Lugar;
 
 public interface LugarRepository {
-	void guardar(Lugar lugar);
-    Lugar buscarPorClave(int codigo);
+
+    Lugar guardar(Lugar lugar);
+
+    Optional<Lugar> buscarPorClave(String codigo);
+    
     List<Lugar> obtenerTodos();
-    void actualizar(int codigo, Lugar lugar);
-    void eliminar(int codigo);
+    
+    void actualizar(String codigo, Lugar lugar);
+    
+    void eliminar(String codigo);
 }

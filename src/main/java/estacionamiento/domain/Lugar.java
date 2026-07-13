@@ -13,32 +13,32 @@ public class Lugar {
 	
 	@Id
 	@Column(name="codigo")
-	private int codigo;
+	private String codigo;
 	
 	@Column(name="descripcion", nullable = false)
 	private String descripcion;
 	
 	@Column(name="numero_piso", nullable = false)
-	private String numeroPiso;
+	private int numeroPiso;
 	
 	@ManyToOne
 	@JoinColumn(name="codigo_cochera", nullable = false)
 	private Cochera cochera;
 	
 	public Lugar() {}
-	
-	public Lugar(int cod, String desc, String numPi, Cochera nroCoch) {
+
+	public Lugar(String cod, String desc, int numPi, Cochera nroCoch) {
 		this.codigo = cod;
 		this.descripcion = desc;
 		this.numeroPiso = numPi;
 		this.cochera = nroCoch;
 	}
 
-	public int getCodigo() {
+	public String getCodigo() {
 		return codigo;
 	}
 
-	public void setCodigo(int codigo) {
+	public void setCodigo(String codigo) {
 		this.codigo = codigo;
 	}
 
@@ -50,11 +50,11 @@ public class Lugar {
 		this.descripcion = descripcion;
 	}
 
-	public String getNumeroPiso() {
+	public int getNumeroPiso() {
 		return numeroPiso;
 	}
 
-	public void setNumeroPiso(String numeroPiso) {
+	public void setNumeroPiso(int numeroPiso) {
 		this.numeroPiso = numeroPiso;
 	}
 
@@ -65,6 +65,5 @@ public class Lugar {
 	public void setCodigoCochera(Cochera codigo_cochera) {
 		this.cochera = codigo_cochera;
 	}
-	
 	
 }

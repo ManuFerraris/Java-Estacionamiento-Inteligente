@@ -56,7 +56,7 @@ public class MainPruebaGeneral {
         Cochera cocheraNueva = new Cochera(1, "Los Amigos", "Calle Sarmiento 1353", "Admite todo tipo de vehiculos");
         
         // Crear un Lugar (El espacio físico)
-        Lugar lugarA1 = new Lugar(1, "Sector Verde - PB", "A1", cocheraNueva);
+        Lugar lugarA1 = new Lugar("A1", "Sector Verde - PB", 1, cocheraNueva);
 
         System.out.println("\n--- 3. CREANDO LA RESERVA ---");
         
