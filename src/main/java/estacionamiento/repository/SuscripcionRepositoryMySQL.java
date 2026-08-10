@@ -20,7 +20,7 @@ public class SuscripcionRepositoryMySQL implements SuscripcionRepository{
     
 	@Override
 	public Suscripcion buscarPorClave(int codigoTP, int numeroUsuario, LocalDateTime fechaDesde) {
-		SuscripcionId claveCompuesta = new SuscripcionId(codigoTP, numeroUsuario, fechaDesde);
+		SuscripcionId claveCompuesta = new SuscripcionId(numeroUsuario, codigoTP, fechaDesde);
 		return em.find(Suscripcion.class, claveCompuesta);
 	}
 
