@@ -1,45 +1,54 @@
 package estacionamiento.domain.claves;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Embeddable;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
+@Embeddable
 public class LugarTipoEstadiaId implements Serializable {
+	
     private static final long serialVersionUID = 1L;
 
-    private String lugar;         
-    private int tipoEstadia;       
+    @Column(name = "codigo")
+    private String codigoLugar;
+    
+    @Column(name = "numero") 
+    private int numeroTipoEstadia;
+    
+    @Column(name = "fecha_desde")
     private LocalDateTime fechaDesde;
 
     public LugarTipoEstadiaId() {}
 
-    public LugarTipoEstadiaId(String lugar, int tipoEstadia, LocalDateTime fechaDesde) {
-        this.lugar = lugar;
-        this.tipoEstadia = tipoEstadia;
+    public LugarTipoEstadiaId(String codigoLugar, int numeroTipoEstadia, LocalDateTime fechaDesde) {
+        this.codigoLugar = codigoLugar;
+        this.numeroTipoEstadia = numeroTipoEstadia;
         this.fechaDesde = fechaDesde;
     }
 
-    public String getLugar() { return lugar; }
-    public void setLugar(String lugar) { this.lugar = lugar; }
+    public String getCodigoLugar() { return codigoLugar; }
+    public void setCodigoLugar(String codigoLugar) { this.codigoLugar = codigoLugar; }
 
-    public int getTipoEstadia() { return tipoEstadia; }
-    public void setTipoEstadia(int tipoEstadia) { this.tipoEstadia = tipoEstadia; }
+    public int getNumeroTipoEstadia() { return numeroTipoEstadia; }
+    public void setNumeroTipoEstadia(int numeroTipoEstadia) { this.numeroTipoEstadia = numeroTipoEstadia; }
 
     public LocalDateTime getFechaDesde() { return fechaDesde; }
     public void setFechaDesde(LocalDateTime fechaDesde) { this.fechaDesde = fechaDesde; }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        LugarTipoEstadiaId that = (LugarTipoEstadiaId) o;
-        return tipoEstadia == that.tipoEstadia &&
-               Objects.equals(lugar, that.lugar) &&
-               Objects.equals(fechaDesde, that.fechaDesde);
+    public int hashCode() {
+        return Objects.hash(codigoLugar, fechaDesde, numeroTipoEstadia);
     }
 
     @Override
-    public int hashCode() {
-        return Objects.hash(lugar, tipoEstadia, fechaDesde);
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        LugarTipoEstadiaId other = (LugarTipoEstadiaId) obj;
+        return codigoLugar == other.codigoLugar && 
+               numeroTipoEstadia == other.numeroTipoEstadia && 
+               Objects.equals(fechaDesde, other.fechaDesde);
     }
 }
