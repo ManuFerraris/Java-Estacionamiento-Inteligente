@@ -11,16 +11,16 @@ public class ReservaId implements Serializable {
 	
 	private static final long serialVersionUID = 1L;
 	
-	@Column(name = "patente")
+	@Column(name = "patente", insertable=false, updatable=false)
     private String patenteVehiculo;
 
-    @Column(name = "numero_usuario")
+    @Column(name = "numero_usuario", insertable=false, updatable=false)
     private int numeroUsuario;
 
-    @Column(name = "numero_tipo_estadia")
+    @Column(name = "numero_tipo_estadia", insertable=false, updatable=false)
     private int numeroTipoEstadia;
 
-    @Column(name = "fecha_desde")
+    @Column(name = "fecha_desde", insertable=false, updatable=false)
     private LocalDateTime fechaDesde;
     
     public ReservaId() {}

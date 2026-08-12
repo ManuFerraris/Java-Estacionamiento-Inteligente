@@ -12,7 +12,7 @@ public class HistoricoSalidasId implements Serializable {
 
     private ReservaId reservaId; 
 
-    @Column(name = "fecha_hora_salida_parcial")
+    @Column(name = "fecha_hora_salida_parcial", insertable=false, updatable=false)
     private LocalDateTime fechaHoraSalidaParcial;
 
     public HistoricoSalidasId() {}

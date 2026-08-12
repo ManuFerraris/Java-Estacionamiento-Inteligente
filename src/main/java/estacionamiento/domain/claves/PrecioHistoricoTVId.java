@@ -14,16 +14,34 @@ public class PrecioHistoricoTVId implements Serializable {
 	private static final long serialVersionUID = 1L; //Para cuando hagamos modificaciones no tengamos problemas
 	
 	// Estos nombres deben coincidir con los atributos de PrecioHistoricoTV
-	@Column(name="numero")
+	@Column(name="numero", insertable=false, updatable=false)
 	private int numeroTipoVehiculo; // Hibernate sabe extraer el ID del objeto TipoVehiculo
 	
-	@Column(name="fecha_desde")
+	@Column(name="fecha_desde", insertable=false, updatable=false)
 	private LocalDateTime fechaDesde;
 	
 	public PrecioHistoricoTVId() {}
 	
 	public PrecioHistoricoTVId(int tipoVehiculo, LocalDateTime fechaDesde) {
 	    this.numeroTipoVehiculo = tipoVehiculo;
+	    this.fechaDesde = fechaDesde;
+	}
+	
+	// --- GETTERS Y SETTERS ---
+	
+	public int getNumeroTipoVehiculo() {
+	    return numeroTipoVehiculo;
+	}
+
+	public void setNumeroTipoVehiculo(int numeroTipoVehiculo) {
+	    this.numeroTipoVehiculo = numeroTipoVehiculo;
+	}
+
+	public LocalDateTime getFechaDesde() {
+	    return fechaDesde;
+	}
+
+	public void setFechaDesde(LocalDateTime fechaDesde) {
 	    this.fechaDesde = fechaDesde;
 	}
 	

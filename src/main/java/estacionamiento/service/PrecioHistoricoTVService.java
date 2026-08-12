@@ -24,9 +24,11 @@ public class PrecioHistoricoTVService {
         }
 
         // La fecha de vigencia es obligatoria
+        /*
         if (nuevoPrecio.getFechaDesde() == null) {
             throw new IllegalArgumentException("La fecha de inicio de vigencia es obligatoria.");
         }
+        */
 
         // El precio debe ser un número positivo (Usando BigDecimal correctamente)
         if (nuevoPrecio.getPrecio() == null || nuevoPrecio.getPrecio().compareTo(BigDecimal.ZERO) <= 0) {
@@ -45,9 +47,11 @@ public class PrecioHistoricoTVService {
         // =====================================================================
 
         // Evitar duplicados exactos en el historial
+        /*
         if (precioHistoricoRepository.buscarPorClave(numTV, nuevoPrecio.getFechaDesde()) != null) {
             throw new IllegalArgumentException("Ya existe una tarifa configurada para este vehículo en esa fecha exacta.");
         }
+        */
 
         precioHistoricoRepository.guardar(nuevoPrecio);
         

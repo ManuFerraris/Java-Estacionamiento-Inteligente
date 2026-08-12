@@ -11,13 +11,13 @@ public class SuscripcionId implements Serializable {
 	
 	private static final long serialVersionUID = 1L;
 
-	@Column(name = "numero")
+	@Column(name = "numero", insertable=false, updatable=false)
 	private int numero; 
 
-	@Column(name = "codigo")
+	@Column(name = "codigo", insertable=false, updatable=false)
 	private int codigo;
 
-	@Column(name = "fecha_desde")
+	@Column(name = "fecha_desde", insertable=false, updatable=false)
 	private LocalDateTime fechaDesde;
 
 	public SuscripcionId() {}

@@ -29,7 +29,7 @@ public class MainPruebaPrecioSQL {
 
             PrecioHistoricoTV nuevoPrecio = new PrecioHistoricoTV();
             nuevoPrecio.setTipoVehiculo(tipoAuto);
-            nuevoPrecio.setFechaDesde(fechaRegistro);
+            //nuevoPrecio.setFechaDesde(fechaRegistro);
             nuevoPrecio.setPrecio(new BigDecimal("1500.00"));
 
             System.out.println("--- 1. INTENTANDO GUARDAR EL PRECIO HISTÓRICO ---");
@@ -42,7 +42,7 @@ public class MainPruebaPrecioSQL {
             if (recuperado != null) {
                 System.out.println("¡ÉXITO: Se recuperó el registro correctamente!");
                 System.out.println("Vehículo Código: " + recuperado.getTipoVehiculo().getNumero());
-                System.out.println("Fecha Desde: " + recuperado.getFechaDesde());
+                //System.out.println("Fecha Desde: " + recuperado.getFechaDesde());
                 System.out.println("Precio asignado: $" + recuperado.getPrecio());
             } else {
                 System.out.println("Fallo: No se pudo encontrar el registro con esa clave compuesta.");

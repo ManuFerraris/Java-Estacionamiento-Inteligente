@@ -10,10 +10,10 @@ public class BeneficioId implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
-	@Column(name = "codigo")
+	@Column(name = "codigo", insertable=false, updatable=false)
 	private int codigoPlan;
 
-	@Column(name = "numero")
+	@Column(name = "numero", insertable=false, updatable=false)
 	private int numero;
 
 	public BeneficioId() {}

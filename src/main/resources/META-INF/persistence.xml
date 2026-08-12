@@ -1,17 +1,47 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<persistence xmlns="https://jakarta.ee/xml/ns/persistence" version="3.0">
+<persistence version="3.0" 
+             xmlns="https://jakarta.ee/xml/ns/persistence" 
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+             xsi:schemaLocation="https://jakarta.ee/xml/ns/persistence https://jakarta.ee/xml/ns/persistence/persistence_3_0.xsd">
+             
     <persistence-unit name="EstacionamientoPU" transaction-type="RESOURCE_LOCAL">
         <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
+		<class>estacionamiento.domain.Cochera</class>
+        <class>estacionamiento.domain.HistoricoSalidas</class>
+        <class>estacionamiento.domain.Lugar</class>
+        <class>estacionamiento.domain.LugarTipoEstadia</class>
+        <class>estacionamiento.domain.PagoSuscripcion</class>
+        <class>estacionamiento.domain.Reserva</class>
+        <class>estacionamiento.domain.Suscripcion</class>
+        <class>estacionamiento.domain.TipoEstadia</class>
+        <class>estacionamiento.domain.TipoPlan</class>
+        <class>estacionamiento.domain.Usuario</class>
+        <class>estacionamiento.domain.Vehiculo</class>
+        <class>estacionamiento.domain.Beneficio</class>
+        <class>estacionamiento.domain.Pago</class>
+        <class>estacionamiento.domain.PrecioHistoricoTP</class>
+        <class>estacionamiento.domain.PrecioHistoricoTV</class>
+        <class>estacionamiento.domain.TipoVehiculo</class>
+        <class>estacionamiento.domain.claves.BeneficioId</class>
+        <class>estacionamiento.domain.claves.HistoricoSalidasId</class>
+        <class>estacionamiento.domain.claves.LugarTipoEstadiaId</class>
+        <class>estacionamiento.domain.claves.PagoSuscripcionId</class>
+        <class>estacionamiento.domain.claves.PrecioHistoricoTPId</class>
+        <class>estacionamiento.domain.claves.PrecioHistoricoTVId</class>
+        <class>estacionamiento.domain.claves.ReservaId</class>
+        <class>estacionamiento.domain.claves.SuscripcionId</class>
         
         <properties>
+            <!-- Conexión a MySQL -->
+            <property name="jakarta.persistence.jdbc.driver" value="com.mysql.cj.jdbc.Driver"/>
             <property name="jakarta.persistence.jdbc.url" value="jdbc:mysql://localhost:3306/estacionamiento_inteligente?serverTimezone=UTC"/>
             <property name="jakarta.persistence.jdbc.user" value="root"/>
             <property name="jakarta.persistence.jdbc.password" value="root"/>
-            <property name="jakarta.persistence.jdbc.driver" value="com.mysql.cj.jdbc.Driver"/>
 
+            <!-- Configuración de Hibernate -->
+            <property name="hibernate.dialect" value="org.hibernate.dialect.MySQLDialect"/>
             <property name="hibernate.show_sql" value="true"/>
             <property name="hibernate.format_sql" value="true"/>
-            
             <property name="hibernate.hbm2ddl.auto" value="update"/>
         </properties>
     </persistence-unit>

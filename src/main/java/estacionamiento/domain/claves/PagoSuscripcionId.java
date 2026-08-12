@@ -14,7 +14,7 @@ public class PagoSuscripcionId implements Serializable {
 	// Anidamos el ID de la entidad a la que depende que es suscripcion (la agregacion).
 	private SuscripcionId suscripcionId;
 
-	@Column(name = "fecha_hora_emision")
+	@Column(name = "fecha_hora_emision", insertable=false, updatable=false)
 	private LocalDateTime fechaHoraEmision;
 
 	public PagoSuscripcionId() {}
