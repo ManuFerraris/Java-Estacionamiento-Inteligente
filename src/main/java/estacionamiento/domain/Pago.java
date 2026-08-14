@@ -9,12 +9,15 @@ import jakarta.persistence.Table;
 import jakarta.persistence.Column;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 
 @Entity //@Entity le indica a Hibernate que esta clase será una tabla en la base de datos.
 @Table(name = "pago") //@Table Es opcional y permite elegir el nombre exacto de la tabla en MySQL.
 public class Pago {
 		
-	@Id // Marca este atributo como la Clave Primaria (Primary Key).
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "numero")
 	private int numero;
 	

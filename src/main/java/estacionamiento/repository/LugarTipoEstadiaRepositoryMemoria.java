@@ -1,5 +1,6 @@
 package estacionamiento.repository;
 
+import estacionamiento.domain.Cochera;
 import estacionamiento.domain.LugarTipoEstadia;
 
 import java.time.LocalDateTime;
@@ -9,44 +10,46 @@ import java.util.Optional;
 
 public class LugarTipoEstadiaRepositoryMemoria implements LugarTipoEstadiaRepository {
 
-    private List<LugarTipoEstadia> baseDeDatos = new ArrayList<>();
+    private List<LugarTipoEstadia> baseDeDatosMemoria = new ArrayList<>();
 
     @Override
     public LugarTipoEstadia save(LugarTipoEstadia lugarTipoEstadia) {
         
-        String codigoLugar = lugarTipoEstadia.getLugar().getCodigo();
+        int codigoLugar = lugarTipoEstadia.getLugar().getCodigo();
         int numeroTipoEstadia = lugarTipoEstadia.getTipoEstadia().getNumero();
         LocalDateTime fechaDesde = lugarTipoEstadia.getFechaDesde();
 
         
-        baseDeDatos.removeIf(l -> l.getLugar().getCodigo().equals(codigoLugar) && 
+        baseDeDatosMemoria.removeIf(l -> l.getLugar().getCodigo() == codigoLugar && 
                                   l.getTipoEstadia().getNumero() == numeroTipoEstadia &&
                                   l.getFechaDesde().equals(fechaDesde));
         
-        baseDeDatos.add(lugarTipoEstadia);
+        baseDeDatosMemoria.add(lugarTipoEstadia);
         System.out.println("Memoria: Registro de LugarTipoEstadia guardado con éxito.");
         return lugarTipoEstadia;
     }
 
     @Override
-    public Optional<LugarTipoEstadia> findById(String codigoLugar, int numeroTipoEstadia, LocalDateTime fechaDesde) {
+    public LugarTipoEstadia findById(int codigoLugar, int numeroTipoEstadia, LocalDateTime fechaDesde) {
         
-        return baseDeDatos.stream()
-                .filter(l -> l.getLugar().getCodigo().equals(codigoLugar) && 
-                             l.getTipoEstadia().getNumero() == numeroTipoEstadia &&
-                             l.getFechaDesde().equals(fechaDesde))
-                .findFirst();
+    	for (LugarTipoEstadia l : this.baseDeDatosMemoria) {
+            
+			 if (l.getLugar().getCodigo() == codigoLugar && l.getTipoEstadia().getNumero() == numeroTipoEstadia && l.getFechaDesde() == fechaDesde) {
+				 return l;
+			 }
+		 }
+		 return null;
     }
 
     @Override
     public List<LugarTipoEstadia> findAll() {
-        return new ArrayList<>(baseDeDatos);
+        return new ArrayList<>(baseDeDatosMemoria);
     }
 
     @Override
-    public void delete(String codigoLugar, int numeroTipoEstadia, LocalDateTime fechaDesde) {
+    public void delete(int codigoLugar, int numeroTipoEstadia, LocalDateTime fechaDesde) {
         
-        boolean eliminado = baseDeDatos.removeIf(l -> l.getLugar().getCodigo().equals(codigoLugar) && 
+        boolean eliminado = baseDeDatosMemoria.removeIf(l -> l.getLugar().getCodigo() == codigoLugar && 
                                   l.getTipoEstadia().getNumero() == numeroTipoEstadia &&
                                   l.getFechaDesde().equals(fechaDesde));
                                   

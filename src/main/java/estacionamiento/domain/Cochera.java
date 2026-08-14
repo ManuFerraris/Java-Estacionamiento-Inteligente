@@ -3,6 +3,8 @@ package estacionamiento.domain;
 import java.util.List;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Table;
 import jakarta.persistence.Column;
 import jakarta.persistence.OneToMany;
@@ -13,8 +15,9 @@ import jakarta.persistence.OneToMany;
 public class Cochera {
 	
 	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name="codigo")
-	private int codigo;
+	private Integer codigo;
 	
 	@Column(name="nombre", nullable=false)
 	private String nombre;
@@ -30,18 +33,18 @@ public class Cochera {
 	
 	public Cochera() {}
 	
-	public Cochera(int cod, String nom, String direc, String desc) {
+	public Cochera(Integer cod, String nom, String direc, String desc) {
 		this.codigo = cod;
 		this.nombre = nom;
 		this.direccion = direc;
 		this.descripcion = desc;
 	}
 
-	public int getCodigo() {
+	public Integer getCodigo() {
 		return codigo;
 	}
 
-	public void setCodigo(int codigo) {
+	public void setCodigo(Integer codigo) {
 		this.codigo = codigo;
 	}
 

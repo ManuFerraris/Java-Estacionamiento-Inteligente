@@ -18,7 +18,7 @@ public class CocheraRepositoryMemoria implements CocheraRepository {
 	 }
 
 	 @Override
-	 public Cochera buscarPorClave(int codigo) {
+	 public Cochera buscarPorClave(Integer codigo) {
 		 for (Cochera c : this.baseDeDatosMemoria) {
 	            
 			 if (c.getCodigo() == codigo) {
@@ -31,7 +31,7 @@ public class CocheraRepositoryMemoria implements CocheraRepository {
 	 @Override
 	 public void guardar(Cochera cochera) {
 	        
-		 int codigo = cochera.getCodigo();
+		 Integer codigo = cochera.getCodigo();
 
 		 if (buscarPorClave(codigo) != null) {
 			 throw new IllegalArgumentException("Ya existe una cochera en el sistema con ese codigo numerico.");
@@ -41,7 +41,7 @@ public class CocheraRepositoryMemoria implements CocheraRepository {
 	 }
 
 	 @Override
-	 public void actualizar(int codigo, Cochera nuevaCochera) {
+	 public void actualizar(Integer codigo, Cochera nuevaCochera) {
 		 Cochera cocheraExistente = buscarPorClave(codigo);
 
 		 if (cocheraExistente != null) {
@@ -59,7 +59,7 @@ public class CocheraRepositoryMemoria implements CocheraRepository {
 	 }
 
 	 @Override
-	 public void eliminar(int codigo) {
+	 public void eliminar(Integer codigo) {
 		 Cochera cocheraAEliminar = buscarPorClave(codigo);
 
 		 if (cocheraAEliminar != null) {

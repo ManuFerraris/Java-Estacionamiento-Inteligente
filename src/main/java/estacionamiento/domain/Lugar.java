@@ -1,7 +1,10 @@
 package estacionamiento.domain;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+
 import jakarta.persistence.Table;
 import jakarta.persistence.Column;
 import jakarta.persistence.ManyToOne;
@@ -12,8 +15,9 @@ import jakarta.persistence.JoinColumn;
 public class Lugar {
 	
 	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name="codigo")
-	private String codigo;
+	private Integer codigo;
 	
 	@Column(name="descripcion", nullable = false)
 	private String descripcion;
@@ -25,20 +29,21 @@ public class Lugar {
 	@JoinColumn(name="codigo_cochera", nullable = false)
 	private Cochera cochera;
 	
-	public Lugar() {}
+	public Lugar() {
+	}
 
-	public Lugar(String cod, String desc, int numPi, Cochera nroCoch) {
+	public Lugar(Integer cod, String desc, int numPi, Cochera nroCoch) {
 		this.codigo = cod;
 		this.descripcion = desc;
 		this.numeroPiso = numPi;
 		this.cochera = nroCoch;
 	}
 
-	public String getCodigo() {
+	public Integer getCodigo() {
 		return codigo;
 	}
 
-	public void setCodigo(String codigo) {
+	public void setCodigo(Integer codigo) {
 		this.codigo = codigo;
 	}
 
@@ -58,12 +63,12 @@ public class Lugar {
 		this.numeroPiso = numeroPiso;
 	}
 
-	public Cochera getCodigoCochera() {
+	public Cochera getCochera() {
 		return cochera;
 	}
 
-	public void setCodigoCochera(Cochera codigo_cochera) {
-		this.cochera = codigo_cochera;
+	public void setCochera(Cochera cochera) {
+		this.cochera = cochera;
 	}
 	
 }

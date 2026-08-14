@@ -30,7 +30,7 @@ public class LugarTipoEstadiaRepositoryMySQL implements LugarTipoEstadiaReposito
         try (Connection conn = getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-            stmt.setString(1, lugarTipoEstadia.getLugar().getCodigo());
+            stmt.setInt(1, lugarTipoEstadia.getLugar().getCodigo());
             stmt.setInt(2, lugarTipoEstadia.getTipoEstadia().getNumero());
             
             Timestamp timestamp = Timestamp.valueOf(lugarTipoEstadia.getFechaDesde());
@@ -66,7 +66,7 @@ public class LugarTipoEstadiaRepositoryMySQL implements LugarTipoEstadiaReposito
         return lista;
     }
 
-    public Optional<LugarTipoEstadia> findById(String codigoLugar, int numeroTipoEstadia, LocalDateTime fechaDesde) {
+    public LugarTipoEstadia findById(int codigoLugar, int numeroTipoEstadia, LocalDateTime fechaDesde) {
        
     	String sql = "SELECT * FROM lugar_tipo_estadia WHERE codigo_lugar = ? AND numero_tipo_estadia = ? AND fecha_desde = ?";
         LugarTipoEstadia registro = null;
@@ -74,7 +74,7 @@ public class LugarTipoEstadiaRepositoryMySQL implements LugarTipoEstadiaReposito
         try (Connection conn = getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-            stmt.setString(1, codigoLugar);
+            stmt.setInt(1, codigoLugar);
             stmt.setInt(2, numeroTipoEstadia);
             stmt.setTimestamp(3, Timestamp.valueOf(fechaDesde));
 
@@ -88,17 +88,17 @@ public class LugarTipoEstadiaRepositoryMySQL implements LugarTipoEstadiaReposito
             System.err.println("Error al buscar por ID en MySQL: " + e.getMessage());
         }
 
-        return Optional.ofNullable(registro);
+        return registro;
     }
 
-    public void delete(String codigoLugar, int numeroTipoEstadia, LocalDateTime fechaDesde) {
+    public void delete(int codigoLugar, int numeroTipoEstadia, LocalDateTime fechaDesde) {
         
         String sql = "DELETE FROM lugar_tipo_estadia WHERE codigo_lugar = ? AND numero_tipo_estadia = ? AND fecha_desde = ?";
 
         try (Connection conn = getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-            stmt.setString(1, codigoLugar);
+            stmt.setInt(1, codigoLugar);
             stmt.setInt(2, numeroTipoEstadia);
             stmt.setTimestamp(3, Timestamp.valueOf(fechaDesde));
             
@@ -112,7 +112,7 @@ public class LugarTipoEstadiaRepositoryMySQL implements LugarTipoEstadiaReposito
 
     private LugarTipoEstadia mapearResultSet(ResultSet rs) throws SQLException {
        
-        String codigoLugar = rs.getString("codigo_lugar");
+        int codigoLugar = rs.getInt("codigo_lugar");
         int numeroTipoEstadia = rs.getInt("numero_tipo_estadia");
         LocalDateTime fechaDesde = rs.getTimestamp("fecha_desde").toLocalDateTime();
 

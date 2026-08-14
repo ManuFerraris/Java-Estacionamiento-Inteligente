@@ -6,9 +6,9 @@
              
     <persistence-unit name="EstacionamientoPU" transaction-type="RESOURCE_LOCAL">
         <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
+        <class>estacionamiento.domain.Lugar</class>
 		<class>estacionamiento.domain.Cochera</class>
         <class>estacionamiento.domain.HistoricoSalidas</class>
-        <class>estacionamiento.domain.Lugar</class>
         <class>estacionamiento.domain.LugarTipoEstadia</class>
         <class>estacionamiento.domain.PagoSuscripcion</class>
         <class>estacionamiento.domain.Reserva</class>

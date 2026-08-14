@@ -51,7 +51,8 @@ public class Reserva {
 	@Column(name="senia", precision = 10, scale = 2)
 	private BigDecimal senia;
 	
-	public Reserva() {}
+	public Reserva() {
+	}
 	
 	public Reserva(Vehiculo vehiculo, Usuario usuario, TipoEstadia tipoEstadia, LocalDateTime fechaHastaTentativa, 
 	            LocalDateTime fechaHastaReal, EstadoReserva estado, BigDecimal senia, Pago pago, Lugar lugar) {

@@ -3,6 +3,8 @@ package estacionamiento.domain;
 import java.util.List;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.persistence.Column;
@@ -13,6 +15,7 @@ import jakarta.persistence.OneToMany;
 public class TipoEstadia {
 	
 	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name="numero")
 	private int numero;
 	

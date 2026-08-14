@@ -5,8 +5,8 @@ import estacionamiento.domain.Cochera;
 
 public interface CocheraRepository {
     void guardar(Cochera cochera);
-    Cochera buscarPorClave(int codigo);
+    Cochera buscarPorClave(Integer codigo);
     List<Cochera> obtenerTodos();
-    void actualizar(int codigo, Cochera cochera);
-    void eliminar(int codigo);
+    void actualizar(Integer codigo, Cochera cochera);
+    void eliminar(Integer codigo);
 }

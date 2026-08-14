@@ -4,64 +4,103 @@ import java.util.List;
 import estacionamiento.domain.Cochera;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
+import jakarta.persistence.EntityTransaction;
 import jakarta.persistence.Persistence;
 
 public class CocheraRepositoryMySQL implements CocheraRepository {
-	private EntityManager em;
+	private EntityManagerFactory emf;
     
     public CocheraRepositoryMySQL() {
-        EntityManagerFactory emf = Persistence.createEntityManagerFactory("EstacionamientoPU");
-        this.em = emf.createEntityManager();
+        this.emf = Persistence.createEntityManagerFactory("EstacionamientoPU");
     }
     
     // El famoso 'getOne()' de diseño
     @Override
-    public Cochera buscarPorClave(int codigo) {
-        return em.find(Cochera.class, codigo);
+    public Cochera buscarPorClave(Integer codigo) {
+    	EntityManager em = emf.createEntityManager();
+    	try {
+    		return em.find(Cochera.class, codigo);
+    	}finally {
+    		em.close(); // liberamos la memoria
+    	}
     }
     
     //El famoso 'FindAll()' de diseño
     @Override
     public List<Cochera> obtenerTodos() {
-        return em.createQuery("SELECT c FROM Cochera c", Cochera.class).getResultList();
+    	EntityManager em = emf.createEntityManager();
+        try {
+            return em.createQuery("SELECT c FROM Cochera c", Cochera.class).getResultList();
+        } finally {
+            em.close();
+        }
     }
     
     //El 'save()' del amado Aldo que si te lo olvidavas te bochaba.
     @Override
     public void guardar(Cochera cochera) {
-        em.getTransaction().begin();
-        em.persist(cochera);
-        em.getTransaction().commit();
-        System.out.println("MySQL: Cochera registrada correctamente en la base de datos.");
-    }
-    
-    @Override
-    public void actualizar(int codigo, Cochera cocheraNuevosDatos) {
-        Cochera cocheraExistente = buscarPorClave(codigo);
-        
-        if (cocheraExistente != null) {
-            em.getTransaction().begin();
-            cocheraExistente.setNombre(cocheraNuevosDatos.getNombre());
-            cocheraExistente.setDescripcion(cocheraNuevosDatos.getDescripcion());
-            cocheraExistente.setDireccion(cocheraNuevosDatos.getDireccion());
-            em.getTransaction().commit();
-            System.out.println("MySQL: Cochera actualizada correctamente.");
-        } else {
-            throw new IllegalArgumentException("MySQL: No se encontró la cochera para actualizar.");
+        EntityManager em = emf.createEntityManager();
+        EntityTransaction tx = em.getTransaction();
+        try {
+            tx.begin();
+            
+            if (cochera.getCodigo() == null) {
+                em.persist(cochera); // Nuevo -> INSERT
+            } else {
+                em.merge(cochera);   // Ya existe -> UPDATE
+            }
+            
+            tx.commit();
+        } catch (Exception e) {
+            if (tx != null && tx.isActive()) {
+                tx.rollback(); // Limpia la memoria si algo sale mal
+            }
+            throw e; // Le tira el error al Servlet
+        } finally {
+            em.close();
         }
     }
     
     @Override
-    public void eliminar(int codigo) {
-        Cochera cocheraAEliminar = buscarPorClave(codigo);
-        
-        if (cocheraAEliminar != null) {
-            em.getTransaction().begin();
-            em.remove(cocheraAEliminar);
-            em.getTransaction().commit();
-            System.out.println("MySQL: Cochera eliminada correctamente.");
-        } else {
-            System.out.println("MySQL: La cochera no fue encontrada para ser eliminada.");
+    public void actualizar(Integer codigo, Cochera cocheraNuevosDatos) {
+        EntityManager em = emf.createEntityManager();
+        EntityTransaction tx = em.getTransaction();
+        try {
+            tx.begin();
+            Cochera cocheraExistente = em.find(Cochera.class, codigo);
+            if (cocheraExistente != null) {
+                cocheraExistente.setNombre(cocheraNuevosDatos.getNombre());
+                cocheraExistente.setDescripcion(cocheraNuevosDatos.getDescripcion());
+                cocheraExistente.setDireccion(cocheraNuevosDatos.getDireccion());
+                em.merge(cocheraExistente);
+                tx.commit();
+            } else {
+                throw new IllegalArgumentException("MySQL: No se encontró la cochera.");
+            }
+        } catch (Exception e) {
+            if (tx != null && tx.isActive()) tx.rollback();
+            throw e;
+        } finally {
+            em.close();
+        }
+    }
+    
+    @Override
+    public void eliminar(Integer codigo) {
+        EntityManager em = emf.createEntityManager();
+        EntityTransaction tx = em.getTransaction();
+        try {
+            tx.begin();
+            Cochera cocheraAEliminar = em.find(Cochera.class, codigo);
+            if (cocheraAEliminar != null) {
+                em.remove(cocheraAEliminar);
+                tx.commit();
+            }
+        } catch (Exception e) {
+            if (tx != null && tx.isActive()) tx.rollback();
+            throw e;
+        } finally {
+            em.close();
         }
     }
 }

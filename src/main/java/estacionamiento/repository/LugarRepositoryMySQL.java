@@ -27,10 +27,8 @@ public class LugarRepositoryMySQL implements LugarRepository {
     }
     
     @Override
-    public Optional<Lugar> buscarPorClave(String codigo) {
-    
-        Lugar lugarEncontrado = em.find(Lugar.class, codigo);
-        return Optional.ofNullable(lugarEncontrado);
+    public Lugar buscarPorClave(int codigo) {
+        return em.find(Lugar.class, codigo);
     }
     
     @Override
@@ -39,17 +37,16 @@ public class LugarRepositoryMySQL implements LugarRepository {
     }
     
     @Override
-    public void actualizar(String codigo, Lugar lugarNuevosDatos) {
-        Optional<Lugar> lugarExistenteOpt = buscarPorClave(codigo);
+    public void actualizar(int codigo, Lugar lugarNuevosDatos) {
+        Lugar lugarExistente = buscarPorClave(codigo);
         
-        if (lugarExistenteOpt.isPresent()) {
-            Lugar lugarExistente = lugarExistenteOpt.get(); 
+        if (lugarExistente != null) {
             
             em.getTransaction().begin();
             
             lugarExistente.setDescripcion(lugarNuevosDatos.getDescripcion());
             lugarExistente.setNumeroPiso(lugarNuevosDatos.getNumeroPiso());
-            lugarExistente.setCodigoCochera(lugarNuevosDatos.getCodigoCochera());
+            lugarExistente.setCochera(lugarNuevosDatos.getCochera());
             em.getTransaction().commit();
             
             System.out.println("MySQL: Lugar actualizado correctamente.");
@@ -59,13 +56,13 @@ public class LugarRepositoryMySQL implements LugarRepository {
     }
     
     @Override
-    public void eliminar(String codigo) {
-        Optional<Lugar> lugarAEliminarOpt = buscarPorClave(codigo);
+    public void eliminar(int codigo) {
+        Lugar lugarAEliminar = buscarPorClave(codigo);
         
-        if (lugarAEliminarOpt.isPresent()) {
+        if (lugarAEliminar != null) {
             em.getTransaction().begin();
            
-            em.remove(lugarAEliminarOpt.get());
+            em.remove(lugarAEliminar);
             em.getTransaction().commit();
             System.out.println("MySQL: Lugar eliminado correctamente.");
         } else {

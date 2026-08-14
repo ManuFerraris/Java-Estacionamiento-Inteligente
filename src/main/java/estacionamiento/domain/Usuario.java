@@ -4,6 +4,8 @@ import java.time.LocalDate;
 import java.util.List;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.persistence.Column;
@@ -14,6 +16,7 @@ import jakarta.persistence.OneToMany;
 public class Usuario {
 	
 	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name="numero")
 	private int numero;
 	

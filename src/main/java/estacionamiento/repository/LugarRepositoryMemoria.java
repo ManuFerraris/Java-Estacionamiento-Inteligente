@@ -1,5 +1,6 @@
 package estacionamiento.repository;
 
+import estacionamiento.domain.Cochera;
 import estacionamiento.domain.Lugar;
 
 import java.util.ArrayList;
@@ -20,18 +21,22 @@ public class LugarRepositoryMemoria implements LugarRepository {
     }
 
     @Override
-    public Optional<Lugar> buscarPorClave(String codigo) {
+    public Lugar buscarPorClave(int codigo) {
 
-        return this.baseDeDatosMemoria.stream()
-                .filter(l -> l.getCodigo().equals(codigo))
-                .findFirst();
+    	for (Lugar l : this.baseDeDatosMemoria) {
+            
+			 if (l.getCodigo() == codigo) {
+				 return l;
+			 }
+		 }
+		 return null;
     }
 
     @Override
     public Lugar guardar(Lugar lugar) {
-        String codigo = lugar.getCodigo();
+        int codigo = lugar.getCodigo();
 
-        if (buscarPorClave(codigo).isPresent()) {
+        if (buscarPorClave(codigo) != null) {
             throw new IllegalArgumentException("Ya existe un Lugar en el sistema con ese numero.");
         }
         
@@ -42,12 +47,10 @@ public class LugarRepositoryMemoria implements LugarRepository {
     }
 
     @Override
-    public void actualizar(String codigo, Lugar lugarNuevosDatos) {
-        Optional<Lugar> lugarExistenteOpt = buscarPorClave(codigo);
+    public void actualizar(int codigo, Lugar lugarNuevosDatos) {
+        Lugar lugarExistente = buscarPorClave(codigo);
 
-        if (lugarExistenteOpt.isPresent()) {
-            Lugar lugarExistente = lugarExistenteOpt.get(); 
-            
+        if (lugarExistente != null) {
             lugarExistente.setDescripcion(lugarNuevosDatos.getDescripcion());
             lugarExistente.setNumeroPiso(lugarNuevosDatos.getNumeroPiso());
                        
@@ -61,12 +64,12 @@ public class LugarRepositoryMemoria implements LugarRepository {
     }
 
     @Override
-    public void eliminar(String codigo) {
-        Optional<Lugar> lugarAEliminarOpt = buscarPorClave(codigo);
+    public void eliminar(int codigo) {
+        Lugar lugarAEliminar = buscarPorClave(codigo);
 
-        if (lugarAEliminarOpt.isPresent()) {
+        if (lugarAEliminar != null) {
            
-            this.baseDeDatosMemoria.remove(lugarAEliminarOpt.get());
+            this.baseDeDatosMemoria.remove(lugarAEliminar);
             System.out.println("Lugar eliminado con éxito.");
         } else {
             System.out.println("No se encontró el lugar para eliminar.");

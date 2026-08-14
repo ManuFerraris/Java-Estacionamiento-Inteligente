@@ -23,7 +23,6 @@ private static final long serialVersionUID = 1L;
 
     @Override
     public void init() throws ServletException {
-        // Inicializamos las capas de Servicio y Repositorio manuales
         this.cocheraService = new CocheraService(new CocheraRepositoryMySQL());
     }
 
@@ -31,15 +30,23 @@ private static final long serialVersionUID = 1L;
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
-        
+    	// Para que el mensaje de exito no aparezca en un refresco de pantalla luego de hacer un alta
+    	String mensajeExito = (String) request.getSession().getAttribute("exito");
+    	if (mensajeExito != null) {
+    		System.out.println("¡DEBUG en consola. Mensaje!: " + mensajeExito);
+    	    // Lo pasamos al request para que el JSP lo lea con SweetAlert
+    	    request.setAttribute("exito", mensajeExito);
+    	    // Aca es donde lo borramos de la sesión para que no vuelva a salir si apretan F5
+    	    request.getSession().removeAttribute("exito");
+    	}
+    	
         try {
-            // 1. Pedimos los datos a la capa de servicio
             List<Cochera> cocheras = cocheraService.obtenerTodas();
             
-            // 2. Guardamos la lista en la solicitud (Request) para que la vista JSP la pueda leer
+            // Guardamos la lista en la solicitud (Request) para que la vista JSP la pueda leer
             request.setAttribute("listaCocheras", cocheras);
             
-            // 3. Despachamos (redireccionamos internamente) hacia la vista JSP
+            // Despachamos (redireccionamos internamente) hacia la vista JSP
             request.getRequestDispatcher("/WEB-INF/views/cocheras.jsp").forward(request, response);
             
         } catch (Exception e) {
@@ -55,21 +62,25 @@ private static final long serialVersionUID = 1L;
         
         try {
             // 1. Leemos el dato enviado desde el formulario HTML (<input name="numero">)
-            String numeroStr = request.getParameter("numero");
-            int numero = Integer.parseInt(numeroStr);
+        	String nombre = request.getParameter("nombre");
+            String descripcion = request.getParameter("descripcion");
+            String direccion = request.getParameter("direccion");
 
             // 2. Creamos la entidad y llamamos al servicio para ejecutar las validaciones
             Cochera nuevaCochera = new Cochera();
-            nuevaCochera.setCodigo(numero);
+            nuevaCochera.setNombre(nombre);
+            nuevaCochera.setDescripcion(descripcion);
+            nuevaCochera.setDireccion(direccion);
             
             cocheraService.guardar(nuevaCochera);
 
+            request.getSession().setAttribute("exito", "La cochera '" + nombre + "' fue registrada correctamente.");
             // 3. Redirección (Patrón Post/Redirect/Get) para evitar re-envíos duplicados si el usuario refresca la página
             response.sendRedirect(request.getContextPath() + "/cocheras");
-
+            
         } catch (IllegalArgumentException e) {
             // Si la regla de negocio falla (ej. cochera duplicada), re-enviamos el error al JSP
-            request.setAttribute("error", e.getMessage());
+        	request.setAttribute("error", "Error al guardar: " + e.getMessage());
             doGet(request, response); // Recargamos la lista y mostramos el mensaje
         } catch (Exception e) {
             request.setAttribute("error", "Error inesperado: " + e.getMessage());

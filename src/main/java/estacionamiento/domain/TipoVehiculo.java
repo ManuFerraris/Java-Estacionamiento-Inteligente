@@ -8,6 +8,7 @@ import java.util.List;
 public class TipoVehiculo {
 	
 	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "numero")
 	private int numero;
 	

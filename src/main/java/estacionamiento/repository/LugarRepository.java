@@ -8,11 +8,11 @@ public interface LugarRepository {
 
     Lugar guardar(Lugar lugar);
 
-    Optional<Lugar> buscarPorClave(String codigo);
+    Lugar buscarPorClave(int codigo);
     
     List<Lugar> obtenerTodos();
     
-    void actualizar(String codigo, Lugar lugar);
+    void actualizar(int codigo, Lugar lugar);
     
-    void eliminar(String codigo);
+    void eliminar(int codigo);
 }

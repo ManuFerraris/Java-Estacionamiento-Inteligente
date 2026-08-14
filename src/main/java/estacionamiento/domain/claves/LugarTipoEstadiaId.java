@@ -11,25 +11,25 @@ public class LugarTipoEstadiaId implements Serializable {
 	
     private static final long serialVersionUID = 1L;
 
-    @Column(name = "codigo", insertable=false, updatable=false)
-    private String codigoLugar;
+    @Column(name = "codigo_lugar")
+    private int codigoLugar;
     
-    @Column(name = "numero", insertable=false, updatable=false) 
+    @Column(name = "numero_tipo_estadia") 
     private int numeroTipoEstadia;
     
-    @Column(name = "fecha_desde", insertable=false, updatable=false)
+    @Column(name = "fecha_desde")
     private LocalDateTime fechaDesde;
 
     public LugarTipoEstadiaId() {}
 
-    public LugarTipoEstadiaId(String codigoLugar, int numeroTipoEstadia, LocalDateTime fechaDesde) {
+    public LugarTipoEstadiaId(int codigoLugar, int numeroTipoEstadia, LocalDateTime fechaDesde) {
         this.codigoLugar = codigoLugar;
         this.numeroTipoEstadia = numeroTipoEstadia;
         this.fechaDesde = fechaDesde;
     }
 
-    public String getCodigoLugar() { return codigoLugar; }
-    public void setCodigoLugar(String codigoLugar) { this.codigoLugar = codigoLugar; }
+    public int getCodigoLugar() { return codigoLugar; }
+    public void setCodigoLugar(int codigoLugar) { this.codigoLugar = codigoLugar; }
 
     public int getNumeroTipoEstadia() { return numeroTipoEstadia; }
     public void setNumeroTipoEstadia(int numeroTipoEstadia) { this.numeroTipoEstadia = numeroTipoEstadia; }

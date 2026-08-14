@@ -8,8 +8,8 @@ import estacionamiento.domain.LugarTipoEstadia;
 public interface LugarTipoEstadiaRepository {
 
 	LugarTipoEstadia save(LugarTipoEstadia lugarTipoEstadia);
-	Optional<LugarTipoEstadia> findById(String codigoLugar, int numeroTipoEstadia, LocalDateTime fechaDesde);
+	LugarTipoEstadia findById(int codigoLugar, int numeroTipoEstadia, LocalDateTime fechaDesde);
     List<LugarTipoEstadia> findAll();
-    void delete(String codigoLugar, int numeroTipoEstadia, LocalDateTime fechaDesde);
+    void delete(int codigoLugar, int numeroTipoEstadia, LocalDateTime fechaDesde);
     
 }

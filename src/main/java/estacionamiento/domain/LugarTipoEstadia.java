@@ -13,12 +13,12 @@ public class LugarTipoEstadia {
     
 	@ManyToOne
     @MapsId("codigoLugar")
-    @JoinColumn(name="codigo", nullable = false)
+    @JoinColumn(name="codigo_lugar", nullable = false)
     private Lugar lugar;
 
 	@ManyToOne
     @MapsId("numeroTipoEstadia")
-    @JoinColumn(name="numero", nullable = false)
+    @JoinColumn(name="numero_tipo_estadia", nullable = false)
     private TipoEstadia tipoEstadia;
 
     public LugarTipoEstadia() {
@@ -28,7 +28,7 @@ public class LugarTipoEstadia {
         this.lugar = lugar;
         this.tipoEstadia = tipoEstadia;
         
-        String codLugar = (lugar != null) ? lugar.getCodigo() : "";
+        int codLugar = (lugar != null) ? lugar.getCodigo() : null;
         int numEstadia = (tipoEstadia != null) ? tipoEstadia.getNumero() : 0;
         
         this.id = new LugarTipoEstadiaId(codLugar, numEstadia, fechaDesde);

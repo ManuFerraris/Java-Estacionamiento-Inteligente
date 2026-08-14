@@ -18,14 +18,29 @@ public class CocheraService {
         if (cochera == null) {
             throw new IllegalArgumentException("La cochera a registrar no puede ser nula.");
         }
-        if (cochera.getCodigo() <= 0) {
-            throw new IllegalArgumentException("El número de cochera debe ser mayor a cero.");
+        
+        if(cochera.getNombre() == null) {
+        	throw new IllegalArgumentException("El nombre es obligatorio.");
         }
         
-        // 2. Validación de negocio: No pueden existir dos cocheras con el mismo código
-        Cochera cocheraExistente = cocheraRepository.buscarPorClave(cochera.getCodigo());
-        if (cocheraExistente != null) {
-            throw new IllegalArgumentException("Error: Ya existe una cochera registrada con el número " + cochera.getCodigo() + ".");
+        if(cochera.getNombre().length() > 255) {
+        	throw new IllegalArgumentException("El nombre no puede superar los 255 caracteres.");
+        }
+        
+        if(cochera.getDescripcion() == null) {
+        	throw new IllegalArgumentException("La descripcion es obligatoria.");
+        }
+        
+        if(cochera.getDescripcion().length() > 255) {
+        	throw new IllegalArgumentException("La descripcion no puede superar los 255 caracteres.");
+        }
+        
+        if(cochera.getDireccion() == null) {
+        	throw new IllegalArgumentException("La direccion es obligatoria.");
+        }
+        
+        if(cochera.getDireccion().length() > 255) {
+        	throw new IllegalArgumentException("La direccion no puede superar los 255 caracteres.");
         }
 
         // 3. Si todo está correcto, delegamos a la capa de acceso a datos

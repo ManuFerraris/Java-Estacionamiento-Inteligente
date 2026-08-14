@@ -17,7 +17,7 @@ public class LugarTipoEstadiaService {
         this.repository = repository;
     }
 
-    public LugarTipoEstadia asignarTipoEstadiaALugar(String codigoLugar, int numeroTipoEstadia, LocalDateTime fechaDesde) {
+    public LugarTipoEstadia asignarTipoEstadiaALugar(int codigoLugar, int numeroTipoEstadia, LocalDateTime fechaDesde) {
         
         Lugar lugar = new Lugar();
         lugar.setCodigo(codigoLugar);
@@ -34,18 +34,18 @@ public class LugarTipoEstadiaService {
         return repository.findAll();
     }
 
-    public LugarTipoEstadia buscarPorId(String codigoLugar, int numeroTipoEstadia, LocalDateTime fechaDesde) throws Exception {
-        Optional<LugarTipoEstadia> registro = repository.findById(codigoLugar, numeroTipoEstadia, fechaDesde);
+    public LugarTipoEstadia buscarPorId(int codigoLugar, int numeroTipoEstadia, LocalDateTime fechaDesde) throws Exception {
+        LugarTipoEstadia registro = repository.findById(codigoLugar, numeroTipoEstadia, fechaDesde);
         
-        if (registro.isPresent()) {
-            return registro.get();
+        if (registro != null) {
+            return registro;
         } else {
             throw new Exception("No se encontró el registro con Código: " + codigoLugar + 
                                 ", Tipo: " + numeroTipoEstadia + " y Fecha: " + fechaDesde);
         }
     }
 
-    public void eliminarRegistro(String codigoLugar, int numeroTipoEstadia, LocalDateTime fechaDesde) {
+    public void eliminarRegistro(int codigoLugar, int numeroTipoEstadia, LocalDateTime fechaDesde) {
         repository.delete(codigoLugar, numeroTipoEstadia, fechaDesde);
     }
 }
