@@ -14,19 +14,16 @@
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
-        <!-- Para evitar que Eclipse moleste con el web.xml faltante -->
         <failOnMissingWebXml>false</failOnMissingWebXml>
     </properties>
     
     <dependencies>
-        <!-- 1. Driver de MySQL -->
         <dependency>
             <groupId>com.mysql</groupId>
             <artifactId>mysql-connector-j</artifactId>
             <version>8.3.0</version>
         </dependency>
 
-        <!-- 2. Hibernate y JPA (Como tenías originalmente) -->
         <dependency> 
             <groupId>org.hibernate.orm</groupId>
             <artifactId>hibernate-core</artifactId>
@@ -38,7 +35,6 @@
             <version>3.1.0</version>
         </dependency>
 
-        <!-- 3. LIBRERÍAS WEB (NUEVO) -->
         <!-- API de Servlets para recibir peticiones HTTP -->
         <dependency>
             <groupId>jakarta.servlet</groupId>
@@ -46,6 +42,7 @@
             <version>6.0.0</version>
             <scope>provided</scope>
         </dependency>
+        
         <!-- API de JSP y JSTL para las vistas -->
         <dependency>
             <groupId>jakarta.servlet.jsp</groupId>
@@ -53,15 +50,38 @@
             <version>3.1.1</version>
             <scope>provided</scope>
         </dependency>
+        
         <dependency>
             <groupId>jakarta.servlet.jsp.jstl</groupId>
             <artifactId>jakarta.servlet.jsp.jstl-api</artifactId>
             <version>3.0.0</version>
         </dependency>
+        
         <dependency>
             <groupId>org.glassfish.web</groupId>
             <artifactId>jakarta.servlet.jsp.jstl</artifactId>
             <version>3.0.1</version>
+        </dependency>
+        
+        <!-- BCrypt: Para encriptar contraseñas y no guardarlas en texto plano -->
+        <dependency>
+            <groupId>org.mindrot</groupId>
+            <artifactId>jbcrypt</artifactId>
+            <version>0.4</version>
+        </dependency>
+
+        <!-- Auth0 JWT: Libreria para crear y validar Tokens -->
+        <dependency>
+            <groupId>com.auth0</groupId>
+            <artifactId>java-jwt</artifactId>
+            <version>4.4.0</version>
+        </dependency>
+
+        <!-- Gson: Para convertir objetos de Java a JSON fácilmente (usamos en el front) -->
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>2.10.1</version>
         </dependency>
     </dependencies>
     

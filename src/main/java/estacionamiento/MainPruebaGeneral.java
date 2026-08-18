@@ -11,10 +11,10 @@ import estacionamiento.domain.TipoEstadia;
 import estacionamiento.domain.TipoVehiculo;
 import estacionamiento.domain.Usuario;
 import estacionamiento.domain.Vehiculo;
-import estacionamiento.repository.ReservaRepositoryMemoria;
-import estacionamiento.repository.TipoEstadiaRepositoryMemoria;
-import estacionamiento.repository.UsuarioRepositoryMemoria;
-import estacionamiento.repository.VehiculoRepositoryMemoria;
+import estacionamiento.repository.memoria.ReservaRepositoryMemoria;
+import estacionamiento.repository.memoria.TipoEstadiaRepositoryMemoria;
+import estacionamiento.repository.memoria.UsuarioRepositoryMemoria;
+import estacionamiento.repository.memoria.VehiculoRepositoryMemoria;
 import estacionamiento.service.ReservaService;
 
 // Aca probamos la creacion de reservar y demas cosas que tienen mas relaciones.

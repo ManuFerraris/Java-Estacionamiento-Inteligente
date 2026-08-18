@@ -1,7 +1,7 @@
 package estacionamiento.servlet;
 
 import estacionamiento.domain.Cochera;
-import estacionamiento.repository.CocheraRepositoryMySQL;
+import estacionamiento.repository.mysql.CocheraRepositoryMySQL;
 import estacionamiento.service.CocheraService;
 
 import jakarta.servlet.ServletException;

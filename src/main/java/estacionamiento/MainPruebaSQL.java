@@ -4,7 +4,7 @@ import estacionamiento.domain.EstadoPago;
 import estacionamiento.domain.Pago;
 import estacionamiento.domain.TipoPago;
 import estacionamiento.repository.PagoRepository;
-import estacionamiento.repository.PagoRepositoryMySQL;
+import estacionamiento.repository.mysql.PagoRepositoryMySQL;
 import estacionamiento.service.PagoService;
 
 import java.math.BigDecimal;

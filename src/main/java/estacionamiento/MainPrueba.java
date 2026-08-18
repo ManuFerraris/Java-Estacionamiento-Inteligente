@@ -2,8 +2,7 @@ package estacionamiento;
 import estacionamiento.domain.*;
 
 import estacionamiento.repository.PagoSuscripcionRepository;
-import estacionamiento.repository.PagoSuscripcionRepositoryMemoria;
-
+import estacionamiento.repository.memoria.PagoSuscripcionRepositoryMemoria;
 import estacionamiento.service.PagoSuscripcionService;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;

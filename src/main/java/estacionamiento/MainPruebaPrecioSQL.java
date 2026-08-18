@@ -6,7 +6,7 @@ import java.util.List;
 
 import estacionamiento.domain.PrecioHistoricoTV;
 import estacionamiento.domain.TipoVehiculo;
-import estacionamiento.repository.PrecioHistoricoTVRepositorySQL;
+import estacionamiento.repository.mysql.PrecioHistoricoTVRepositorySQL;
 
 public class MainPruebaPrecioSQL {
 
