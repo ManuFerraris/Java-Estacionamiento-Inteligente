@@ -60,28 +60,50 @@ private static final long serialVersionUID = 1L;
     protected void doPost(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
         
-        try {
-            // 1. Leemos el dato enviado desde el formulario HTML (<input name="numero">)
-        	String nombre = request.getParameter("nombre");
-            String descripcion = request.getParameter("descripcion");
-            String direccion = request.getParameter("direccion");
+    	try {
+            // Capturamos la acción solicitada (viene de los input hidden del HTML)
+            String accion = request.getParameter("accion");
+            if (accion == null || accion.trim().isEmpty()) {
+                accion = "crear";
+            }
 
-            // 2. Creamos la entidad y llamamos al servicio para ejecutar las validaciones
-            Cochera nuevaCochera = new Cochera();
-            nuevaCochera.setNombre(nombre);
-            nuevaCochera.setDescripcion(descripcion);
-            nuevaCochera.setDireccion(direccion);
-            
-            cocheraService.guardar(nuevaCochera);
+            // Inferimos la accion
+            switch (accion) {
+                case "bajaLogica":
+                    int codigoBaja = Integer.parseInt(request.getParameter("codigo"));
+                    cocheraService.darDeBaja(codigoBaja);
+                    request.getSession().setAttribute("exito", "La cochera fue dada de baja correctamente.");
+                    break;
 
-            request.getSession().setAttribute("exito", "La cochera '" + nombre + "' fue registrada correctamente.");
-            // 3. Redirección (Patrón Post/Redirect/Get) para evitar re-envíos duplicados si el usuario refresca la página
+                case "editar":
+                    int codigoEditar = Integer.parseInt(request.getParameter("codigo"));
+                    Cochera cocheraEditada = new Cochera();
+                    cocheraEditada.setNombre(request.getParameter("nombre"));
+                    cocheraEditada.setDescripcion(request.getParameter("descripcion"));
+                    cocheraEditada.setDireccion(request.getParameter("direccion"));
+                    
+                    cocheraService.actualizar(codigoEditar, cocheraEditada);
+                    request.getSession().setAttribute("exito", "Cochera actualizada correctamente.");
+                    break;
+
+                case "crear":
+                default:
+                    Cochera nuevaCochera = new Cochera();
+                    nuevaCochera.setNombre(request.getParameter("nombre"));
+                    nuevaCochera.setDescripcion(request.getParameter("descripcion"));
+                    nuevaCochera.setDireccion(request.getParameter("direccion"));
+                    
+                    cocheraService.guardar(nuevaCochera);
+                    request.getSession().setAttribute("exito", "La cochera fue registrada correctamente.");
+                    break;
+            }
+
+            // 3. Redirección PRG (Post-Redirect-Get) para evitar re-envíos con F5
             response.sendRedirect(request.getContextPath() + "/cocheras");
             
         } catch (IllegalArgumentException e) {
-            // Si la regla de negocio falla (ej. cochera duplicada), re-enviamos el error al JSP
-        	request.setAttribute("error", "Error al guardar: " + e.getMessage());
-            doGet(request, response); // Recargamos la lista y mostramos el mensaje
+            request.setAttribute("error", "Error de validación: " + e.getMessage());
+            doGet(request, response);
         } catch (Exception e) {
             request.setAttribute("error", "Error inesperado: " + e.getMessage());
             doGet(request, response);

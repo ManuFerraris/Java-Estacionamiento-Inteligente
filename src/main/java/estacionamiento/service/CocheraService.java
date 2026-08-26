@@ -47,6 +47,40 @@ public class CocheraService {
         cocheraRepository.guardar(cochera);
         System.out.println("Servicio: Cochera " + cochera.getCodigo() + " validada y guardada con éxito.");
     }
+    
+    public void actualizar (int codigo, Cochera cocheraActualizada) {
+    	if (cocheraActualizada == null) {
+            throw new IllegalArgumentException("La cochera a actualizar no puede ser nula.");
+        }
+    	
+    	buscarPorCodigo(codigo);
+        
+        if(cocheraActualizada.getNombre() == null) {
+        	throw new IllegalArgumentException("El nombre es obligatorio.");
+        }
+        
+        if(cocheraActualizada.getNombre().length() > 255) {
+        	throw new IllegalArgumentException("El nombre no puede superar los 255 caracteres.");
+        }
+        
+        if(cocheraActualizada.getDescripcion() == null) {
+        	throw new IllegalArgumentException("La descripcion es obligatoria.");
+        }
+        
+        if(cocheraActualizada.getDescripcion().length() > 255) {
+        	throw new IllegalArgumentException("La descripcion no puede superar los 255 caracteres.");
+        }
+        
+        if(cocheraActualizada.getDireccion() == null) {
+        	throw new IllegalArgumentException("La direccion no puede estar vacia.");
+        }
+        
+        if(cocheraActualizada.getDireccion().length() > 255) {
+        	throw new IllegalArgumentException("La direccion no puede superar los 255 caracteres.");
+        }
+        cocheraRepository.actualizar(codigo, cocheraActualizada);
+        System.out.println("Servicio: Cochera " + cocheraActualizada.getCodigo() + " validada y actualizada con éxito.");
+    }
 
     public List<Cochera> obtenerTodas() {
         // En este caso no hay reglas de negocio complejas para listar, solo delegamos
@@ -72,5 +106,18 @@ public class CocheraService {
         buscarPorCodigo(codigo); 
         cocheraRepository.eliminar(codigo);
         System.out.println("Servicio: Cochera " + codigo + " eliminada con éxito.");
+    }
+
+    public void darDeBaja(int codigo) throws Exception {
+
+        Cochera cochera = buscarPorCodigo(codigo);
+        
+        if (cochera != null) {
+            cochera.setDescripcion("Inactiva");
+            // Mandas a guardar el cambio
+            cocheraRepository.actualizar(codigo, cochera); 
+        } else {
+            throw new Exception("La cochera no existe.");
+        }
     }
 }
