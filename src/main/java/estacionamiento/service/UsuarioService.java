@@ -1,5 +1,10 @@
 package estacionamiento.service;
 
+import org.mindrot.jbcrypt.BCrypt;
+
+import java.util.List;
+import java.time.LocalDate;
+
 import estacionamiento.domain.Usuario;
 import estacionamiento.repository.UsuarioRepository;
 
@@ -49,6 +54,10 @@ public class UsuarioService {
         if (esNuloOBlanco(nuevoUsuario.getContrasenia()) || nuevoUsuario.getContrasenia().length() < 6) {
             throw new IllegalArgumentException("La contraseña es obligatoria y debe tener al menos 6 caracteres.");
         }
+        // ENCRIPTACIÓN BCRYPT
+        // Genera un "salt" aleatorio y hashea la contraseña plana
+        String hashContrasenia = BCrypt.hashpw(nuevoUsuario.getContrasenia(), BCrypt.gensalt());
+        nuevoUsuario.setContrasenia(hashContrasenia);
 
         // Si es un usuario nuevo, lógicamente no debería tener fecha de baja
         if (nuevoUsuario.getFechaBaja() != null) {
@@ -64,5 +73,84 @@ public class UsuarioService {
 	// Método auxiliar privado para no repetir la lógica de validación de Strings vacíos
 	private boolean esNuloOBlanco(String valor) {
 		return valor == null || valor.trim().isEmpty();
+	}
+	
+	public List<Usuario> obtenerTodos() {
+		return usuarioRepository.obtenerTodos();
+	}
+	
+	public Usuario buscarPorNumero(Integer numero) {
+		if (numero <= 0) {
+            throw new IllegalArgumentException("El numero de búsqueda debe ser válido.");
+        }
+		Usuario usuario = usuarioRepository.buscarPorNumero(numero);
+		if(usuario == null) {
+			throw new IllegalArgumentException("No se encontró ningun usuario con el numero " + numero + ".");
+		}
+		return usuario;
+	}
+	
+	public void darDeBaja(Integer numero) throws Exception {
+		Usuario usuario = buscarPorNumero(numero);
+		if(usuario != null) {
+			usuario.setFechaBaja(LocalDate.now());
+			usuarioRepository.actualizar(numero, usuario);
+		}else {
+			throw new Exception("El usuario a dar de baja no existe.");
+		}
+	}
+	
+	public void darDeAltaPostBaja(Integer numero) throws Exception {
+		Usuario usuario = buscarPorNumero(numero);
+		if(usuario != null) {
+			usuario.setFechaBaja(null);
+			usuarioRepository.actualizar(numero, usuario);
+		}else {
+			throw new Exception("El usuario a volver a dar de alta no existe.");
+		}
+	}
+	
+	public void actualizar(Integer numero, Usuario usuarioAActualizar) {
+	    if(usuarioAActualizar == null) {
+	        throw new IllegalArgumentException("El usuario a actualizar no puede ser nulo.");
+	    }
+	    
+	    Usuario usuarioExistente = buscarPorNumero(numero);
+	    
+	    usuarioAActualizar.setFechaBaja(usuarioExistente.getFechaBaja());
+	    
+	    if (esNuloOBlanco(usuarioAActualizar.getContrasenia())) {
+	        usuarioAActualizar.setContrasenia(usuarioExistente.getContrasenia());
+	    } else if (usuarioAActualizar.getContrasenia().length() < 6) {
+	        throw new IllegalArgumentException("Si desea cambiar la contraseña, debe tener al menos 6 caracteres.");
+	    } else {
+	        // ENCRIPTACIÓN DE NUEVA CLAVE 
+	        String nuevoHash = BCrypt.hashpw(usuarioAActualizar.getContrasenia(), BCrypt.gensalt());
+	        usuarioAActualizar.setContrasenia(nuevoHash);
+	    }
+
+	    if (esNuloOBlanco(usuarioAActualizar.getNombre()) || esNuloOBlanco(usuarioAActualizar.getApellido())) {
+	        throw new IllegalArgumentException("El nombre y el apellido son obligatorios.");
+	    }
+	    if (esNuloOBlanco(usuarioAActualizar.getDireccion())) {
+	        throw new IllegalArgumentException("La dirección es obligatoria.");
+	    }
+	    if (esNuloOBlanco(usuarioAActualizar.getNumeroTelefono())) {
+	        throw new IllegalArgumentException("El número de teléfono es obligatorio.");
+	    }
+	    if (esNuloOBlanco(usuarioAActualizar.getMail()) || !usuarioAActualizar.getMail().contains("@")) {
+	        throw new IllegalArgumentException("Se debe proporcionar un correo electrónico válido.");
+	    }
+	    if (usuarioAActualizar.getMailRecuperacion() != null && !usuarioAActualizar.getMailRecuperacion().trim().isEmpty()) {
+	        if (!usuarioAActualizar.getMailRecuperacion().contains("@")) {
+	            throw new IllegalArgumentException("El correo de recuperación proporcionado no es válido.");
+	        }
+	    }
+	    if (esNuloOBlanco(usuarioAActualizar.getNombreUsuario())) {
+	        throw new IllegalArgumentException("El nombre de usuario es obligatorio.");
+	    }
+	    
+	    usuarioRepository.actualizar(numero, usuarioAActualizar);
+	    System.out.println("Servicio: Usuario " + usuarioAActualizar.getNumero() + " validado y actualizado con éxito.");
 	}
 }
