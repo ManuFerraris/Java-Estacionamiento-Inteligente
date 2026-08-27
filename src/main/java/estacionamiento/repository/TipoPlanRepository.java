@@ -6,8 +6,8 @@ import estacionamiento.domain.TipoPlan;
 
 public interface TipoPlanRepository {
 	void guardar(TipoPlan tp);
-	TipoPlan buscarPorClave(int codigo);
+	TipoPlan buscarPorClave(Integer codigo);
     List<TipoPlan> obtenerTodos();
-    void actualizar(int codigo, TipoPlan tp);
-    void eliminar(int codigo);
+    void actualizar(Integer codigo, TipoPlan tp);
+    void eliminar(Integer codigo);
 }
