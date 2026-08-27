@@ -1,5 +1,6 @@
 package estacionamiento.domain;
 
+import java.time.LocalDate;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -14,28 +15,32 @@ public class TipoPlan {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name="codigo")
-	private int codigo;
+	private Integer codigo;
 	
 	@Column(name="nombre", nullable = false)
 	private String nombre;
 	
 	@Column(name="detalle", nullable = false)
 	private String detalle;
+	
+	@Column(name="fecha_baja", nullable = true)
+	private LocalDate fechaBaja;
 
 	public TipoPlan() {
 	}
 	
-	public TipoPlan(int cod, String nombre, String det) {
+	public TipoPlan(Integer cod, String nombre, String det, LocalDate fechaBaja) {
 		this.nombre = nombre;
 		this.codigo = cod;
 		this.detalle = det;
+		this.fechaBaja = fechaBaja;
 	}
 	
-	public int getCodigo() {
+	public Integer getCodigo() {
 		return codigo;
 	}
 	
-	public void setCodigo(int codigo) {
+	public void setCodigo(Integer codigo) {
 		this.codigo = codigo;
 	}
 	
@@ -54,4 +59,14 @@ public class TipoPlan {
 	public void setDetalle(String detalle) {
 		this.detalle = detalle;
 	}
+
+	public LocalDate getFechaBaja() {
+		return fechaBaja;
+	}
+
+	public void setFechaBaja(LocalDate fechaBaja) {
+		this.fechaBaja = fechaBaja;
+	}
+	
+	
 }

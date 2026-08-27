@@ -16,7 +16,7 @@ public class TipoPlanRepositoryMemoria implements TipoPlanRepository{
     
 	@Override
 	public void guardar(TipoPlan tp) {
-		int codigo = tp.getCodigo();
+		Integer codigo = tp.getCodigo();
 
         if (buscarPorClave(codigo) != null) {
             throw new IllegalArgumentException("Ya existe un tipo de plan en el sistema con ese numero.");
@@ -26,7 +26,7 @@ public class TipoPlanRepositoryMemoria implements TipoPlanRepository{
 	}
 
 	@Override
-	public TipoPlan buscarPorClave(int codigo) {
+	public TipoPlan buscarPorClave(Integer codigo) {
 		for (TipoPlan tp : this.baseDeDatosMemoria) {
             
             if (tp.getCodigo() == codigo) {
@@ -42,15 +42,17 @@ public class TipoPlanRepositoryMemoria implements TipoPlanRepository{
 	}
 
 	@Override
-	public void actualizar(int codigo, TipoPlan tpNuevosDatos) {
+	public void actualizar(Integer codigo, TipoPlan tpNuevosDatos) {
 		TipoPlan tpExistente = buscarPorClave(codigo);
 
         if (tpExistente != null) {
         	tpExistente.setNombre(tpNuevosDatos.getNombre());
         	tpExistente.setDetalle(tpNuevosDatos.getDetalle());
+        	tpExistente.setFechaBaja(tpNuevosDatos.getFechaBaja());
             System.out.println("Tipo de plan actualizado con exito, codigo: " + codigo + " "
             		+ tpNuevosDatos.getNombre() + " "
             		+ tpNuevosDatos.getDetalle() + " "
+            		+ tpNuevosDatos.getFechaBaja() + " "
             );
         } else {
             throw new IllegalArgumentException("No se puede actualizar. No se encontró el tipo de plan.");
@@ -58,7 +60,7 @@ public class TipoPlanRepositoryMemoria implements TipoPlanRepository{
 	}
 
 	@Override
-	public void eliminar(int codigo) {
+	public void eliminar(Integer codigo) {
 		TipoPlan tpAEliminar = buscarPorClave(codigo);
 
         if (tpAEliminar != null) {

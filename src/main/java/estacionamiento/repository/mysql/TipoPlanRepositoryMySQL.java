@@ -6,61 +6,104 @@ import estacionamiento.domain.TipoPlan;
 import estacionamiento.repository.TipoPlanRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
+import jakarta.persistence.EntityTransaction;
 import jakarta.persistence.Persistence;
 
 public class TipoPlanRepositoryMySQL implements TipoPlanRepository{
 	
-	private EntityManager em;
+	private EntityManagerFactory emf;
 	
 	public TipoPlanRepositoryMySQL() {
-		EntityManagerFactory emf = Persistence.createEntityManagerFactory("EstacionamientoPU");
-        this.em = emf.createEntityManager();
+		this.emf = Persistence.createEntityManagerFactory("EstacionamientoPU");
 	}
 	
 	@Override
 	public void guardar(TipoPlan tp) {
-		em.getTransaction().begin();
-        em.persist(tp);
-        em.getTransaction().commit();
-        System.out.println("MySQL: Tipo de plan insertado correctamente en la base de datos.");
+		EntityManager em = emf.createEntityManager();
+		EntityTransaction tx = em.getTransaction();
+		
+		try {
+			tx.begin();
+			if(tp.getCodigo() == null) {
+				em.persist(tp);
+			}else {
+				em.merge(tp);
+			}
+			tx.commit();
+		}catch(Exception e) {
+			if(tx != null && tx.isActive()) {
+				tx.rollback();
+			}
+			throw e;
+		}finally {
+			em.close();
+		}
 	}
 
 	@Override
-	public TipoPlan buscarPorClave(int codigo) {
-		return em.find(TipoPlan.class, codigo);
+	public TipoPlan buscarPorClave(Integer codigo) {
+		EntityManager em = emf.createEntityManager();
+		try {
+			return em.find(TipoPlan.class, codigo);
+		} finally {
+			em.close();
+		}
 	}
 
 	@Override
 	public List<TipoPlan> obtenerTodos() {
-		return em.createQuery("SELECT tp FROM TipoPlan tp", TipoPlan.class).getResultList();
+		EntityManager em = emf.createEntityManager();
+
+		try {
+			return em.createQuery("SELECT tp FROM TipoPlan tp", TipoPlan.class).getResultList();
+		} finally {
+			em.close();
+		}
 	}
 
 	@Override
-	public void actualizar(int codigo, TipoPlan tpNuevosDatos) {
-		TipoPlan tpExistente = buscarPorClave(codigo);
+	public void actualizar(Integer codigo, TipoPlan tpNuevosDatos) {
+		EntityManager em = emf.createEntityManager();
+        EntityTransaction tx = em.getTransaction();
         
-        if (tpExistente != null) {
-            em.getTransaction().begin();
-            tpExistente.setNombre(tpNuevosDatos.getNombre());
-            tpExistente.setDetalle(tpNuevosDatos.getDetalle());
-            em.getTransaction().commit();
-            System.out.println("MySQL: Tipo de plan actualizado correctamente.");
-        } else {
-            throw new IllegalArgumentException("MySQL: No se encontró el ripo de plan para actualizar.");
+        try {
+        	tx.begin();
+        	TipoPlan tpExistente = em.find(TipoPlan.class, codigo);
+        	if(tpExistente != null) {
+        		tpExistente.setNombre(tpNuevosDatos.getNombre());
+                tpExistente.setDetalle(tpNuevosDatos.getDetalle());
+                tpExistente.setFechaBaja(tpNuevosDatos.getFechaBaja());
+                em.merge(tpExistente);
+                tx.commit();
+        	}else {
+        		throw new IllegalArgumentException("MySQL: No se encontro el tipo de plan.");
+        	}
+        }catch(Exception e) {
+        	if (tx != null && tx.isActive()) tx.rollback();
+            throw e;
+        }finally {
+        	em.close();
         }
 	}
 
 	@Override
-	public void eliminar(int codigo) {
-		TipoPlan tpAEliminar = buscarPorClave(codigo);
+	public void eliminar(Integer codigo) {
+		EntityManager em = emf.createEntityManager();
+        EntityTransaction tx = em.getTransaction();
         
-        if (tpAEliminar != null) {
-            em.getTransaction().begin();
-            em.remove(tpAEliminar);
-            em.getTransaction().commit();
-            System.out.println("MySQL: Tipo de plan eliminado correctamente.");
-        } else {
-            System.out.println("MySQL: No se encontró el tipo de plan para eliminar.");
+        try {
+        	tx.begin();
+        	TipoPlan tpAEliminar = em.find(TipoPlan.class, codigo);
+        	if(tpAEliminar != null) {
+        		em.remove(tpAEliminar);
+        		tx.commit();
+        	}
+        }catch(Exception e) {
+        	if (tx != null && tx.isActive()) tx.rollback();
+        	throw e;
+        }finally {
+        	em.close();
         }
 	}
+	
 }
