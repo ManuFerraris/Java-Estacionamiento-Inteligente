@@ -19,7 +19,7 @@ public class UsuarioRepositoryMemoria implements UsuarioRepository {
     }
 	
 	 @Override
-	 public Usuario buscarPorNumero(int numero) {
+	 public Usuario buscarPorNumero(Integer numero) {
 		 for (Usuario u : this.baseDeDatosMemoria) {
 			 if (u.getNumero() == numero) {
 	         	return u;
@@ -39,7 +39,7 @@ public class UsuarioRepositoryMemoria implements UsuarioRepository {
 	 }
 	 
 	 @Override
-	 public void actualizar(int numeroBuscado, Usuario usuarioNuevosDatos) {
+	 public void actualizar(Integer numeroBuscado, Usuario usuarioNuevosDatos) {
 		 Usuario usuarioExistente = buscarPorNumero(numeroBuscado);
 	        
 		 if (usuarioExistente != null) {
@@ -59,7 +59,7 @@ public class UsuarioRepositoryMemoria implements UsuarioRepository {
 	 }
 	 
 	 @Override
-	 public void eliminar(int numero) {
+	 public void eliminar(Integer numero) {
 		 Usuario usuarioAEliminar = buscarPorNumero(numero);
 		 
 		 if (usuarioAEliminar != null) {

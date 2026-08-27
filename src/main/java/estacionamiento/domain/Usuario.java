@@ -17,8 +17,8 @@ public class Usuario {
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name="numero")
-	private int numero;
+	@Column(name="numero") 
+	private Integer numero;
 	
 	@Column(name="nombre", nullable = false)
 	private String nombre;
@@ -56,7 +56,7 @@ public class Usuario {
 	public Usuario() {
 	}
 
-	public Usuario(int numero, String nombre, String apellido, String numeroTelefono
+	public Usuario(Integer numero, String nombre, String apellido, String numeroTelefono
 			, String direccion, String mail, String mailRecuperacion
 			, LocalDate fechaBaja,String nombreUsuario, String contrasenia) {
 		this.nombre = nombre;
@@ -71,11 +71,11 @@ public class Usuario {
 		this.contrasenia = contrasenia;
 	}
 
-	public int getNumero() {
+	public Integer getNumero() {
 		return numero;
 	}
 
-	public void setNumero(int numero) {
+	public void setNumero(Integer numero) {
 		this.numero = numero;
 	}
 
@@ -150,6 +150,4 @@ public class Usuario {
 	public void setContrasenia(String contrasenia) {
 		this.contrasenia = contrasenia;
 	}
-	
-	
 }

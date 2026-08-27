@@ -48,7 +48,7 @@ public class CocheraService {
         System.out.println("Servicio: Cochera " + cochera.getCodigo() + " validada y guardada con éxito.");
     }
     
-    public void actualizar (int codigo, Cochera cocheraActualizada) {
+    public void actualizar (Integer codigo, Cochera cocheraActualizada) {
     	if (cocheraActualizada == null) {
             throw new IllegalArgumentException("La cochera a actualizar no puede ser nula.");
         }
@@ -87,7 +87,7 @@ public class CocheraService {
         return cocheraRepository.obtenerTodos();
     }
 
-    public Cochera buscarPorCodigo(int codigo) {
+    public Cochera buscarPorCodigo(Integer codigo) {
         if (codigo <= 0) {
             throw new IllegalArgumentException("El código de búsqueda debe ser válido.");
         }
@@ -101,14 +101,14 @@ public class CocheraService {
         return cochera;
     }
     
-    public void eliminar(int codigo) {
+    public void eliminar(Integer codigo) {
         // Reutilizamos nuestra propia validación de búsqueda antes de intentar borrar
         buscarPorCodigo(codigo); 
         cocheraRepository.eliminar(codigo);
         System.out.println("Servicio: Cochera " + codigo + " eliminada con éxito.");
     }
 
-    public void darDeBaja(int codigo) throws Exception {
+    public void darDeBaja(Integer codigo) throws Exception {
 
         Cochera cochera = buscarPorCodigo(codigo);
         

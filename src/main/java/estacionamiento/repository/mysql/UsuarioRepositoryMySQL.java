@@ -6,69 +6,107 @@ import estacionamiento.domain.Usuario;
 import estacionamiento.repository.UsuarioRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
+import jakarta.persistence.EntityTransaction;
 import jakarta.persistence.Persistence;
 
 public class UsuarioRepositoryMySQL implements UsuarioRepository{
 
-	private EntityManager em;
+	private EntityManagerFactory emf;
     
     public UsuarioRepositoryMySQL() {
-        EntityManagerFactory emf = Persistence.createEntityManagerFactory("EstacionamientoPU");
-        this.em = emf.createEntityManager();
+        this.emf = Persistence.createEntityManagerFactory("EstacionamientoPU");
     }
     
 	@Override
 	public void guardar(Usuario usuario) {
-        em.getTransaction().begin();
-        em.persist(usuario);
-        em.getTransaction().commit();
-        System.out.println("MySQL: Usuario insertado correctamente en la base de datos.");
+		EntityManager em = emf.createEntityManager();
+		EntityTransaction tx = em.getTransaction();
+		
+		try {
+			tx.begin();
+			if(usuario.getNumero() == null) {
+				em.persist(usuario);
+			}else {
+				em.merge(usuario);
+			}
+			tx.commit();
+	        System.out.println("MySQL: Usuario insertado correctamente en la base de datos.");
+		}catch(Exception e){
+			if(tx != null && tx.isActive()) {
+				tx.rollback();
+			}
+			throw e;
+		}finally {
+			em.close();
+		}
 	}
 
 	@Override
-	public Usuario buscarPorNumero(int numero) {
-		return em.find(Usuario.class, numero);
+	public Usuario buscarPorNumero(Integer numero) {
+		EntityManager em = emf.createEntityManager();
+		try {
+			return em.find(Usuario.class, numero);
+		}finally {
+			em.close();
+		}
 	}
 
 	@Override
 	public List<Usuario> obtenerTodos() {
-		return em.createQuery("SELECT u FROM Usuario u", Usuario.class).getResultList();
+		EntityManager em = emf.createEntityManager();
+		try {
+			return em.createQuery("SELECT u FROM Usuario u", Usuario.class).getResultList();
+		}finally {
+			em.close();
+		}
 	}
 
 	@Override
-	public void actualizar(int numero, Usuario usuarioNuevosDatos) {
-		Usuario usuarioExistente = buscarPorNumero(numero);
-        
-        if (usuarioExistente != null) {
-            em.getTransaction().begin();
-            // Al estar dentro de una transacción, los setters modifican la BD automáticamente
-            usuarioExistente.setNombre(usuarioNuevosDatos.getNombre());
-			usuarioExistente.setApellido(usuarioNuevosDatos.getApellido());
-			usuarioExistente.setNumeroTelefono(usuarioNuevosDatos.getNumeroTelefono());
-			usuarioExistente.setDireccion(usuarioNuevosDatos.getDireccion());
-			usuarioExistente.setMail(usuarioNuevosDatos.getMail());
-			usuarioExistente.setMailRecuperacion(usuarioNuevosDatos.getMailRecuperacion());
-			usuarioExistente.setFechaBaja(usuarioNuevosDatos.getFechaBaja());
-			usuarioExistente.setNombreUsuario(usuarioNuevosDatos.getNombreUsuario());
-			usuarioExistente.setContrasenia(usuarioNuevosDatos.getContrasenia());
-            em.getTransaction().commit();
-            System.out.println("Usuario actualizado: " + numero + " " + usuarioExistente.getNombre() + " " + usuarioExistente.getApellido());
-        } else {
-            throw new IllegalArgumentException("MySQL: No se encontró el usuario para actualizar.");
+	public void actualizar(Integer numero, Usuario usuarioNuevosDatos) {
+		EntityManager em = emf.createEntityManager();
+        EntityTransaction tx = em.getTransaction();
+        try {
+        	tx.begin();
+        	Usuario usuarioExistente = em.find(Usuario.class, numero);
+        	if(usuarioExistente != null) {
+        		usuarioExistente.setNombre(usuarioNuevosDatos.getNombre());
+    			usuarioExistente.setApellido(usuarioNuevosDatos.getApellido());
+    			usuarioExistente.setNumeroTelefono(usuarioNuevosDatos.getNumeroTelefono());
+    			usuarioExistente.setDireccion(usuarioNuevosDatos.getDireccion());
+    			usuarioExistente.setMail(usuarioNuevosDatos.getMail());
+    			usuarioExistente.setMailRecuperacion(usuarioNuevosDatos.getMailRecuperacion());
+    			usuarioExistente.setFechaBaja(usuarioNuevosDatos.getFechaBaja());
+    			usuarioExistente.setNombreUsuario(usuarioNuevosDatos.getNombreUsuario());
+    			usuarioExistente.setContrasenia(usuarioNuevosDatos.getContrasenia());
+    			em.merge(usuarioExistente);
+    			tx.commit();
+        	}else {
+        		throw new IllegalArgumentException("MySQL: No se encontro el usuario.");
+        	}
+        }catch(Exception e) {
+        	if (tx != null && tx.isActive()) tx.rollback();
+            throw e;
+        } finally {
+            em.close();
         }
 	}
 
 	@Override
-	public void eliminar(int numero) {
-		Usuario usuarioAEliminar = buscarPorNumero(numero);
-        
-        if (usuarioAEliminar != null) {
-            em.getTransaction().begin();
-            em.remove(usuarioAEliminar);
-            em.getTransaction().commit();
-            System.out.println("MySQL: Usuario eliminado correctamente.");
-        } else {
-            System.out.println("MySQL: No se encontró el usuario para eliminar.");
+	public void eliminar(Integer numero) {
+		EntityManager em = emf.createEntityManager();
+        EntityTransaction tx = em.getTransaction();
+
+        try {
+        	Usuario usuarioAEliminar = em.find(Usuario.class, numero);
+        	if(usuarioAEliminar != null) {
+        		em.remove(usuarioAEliminar);
+        		tx.commit();
+        	}
+        }catch(Exception e) {
+        	if (tx != null && tx.isActive()) tx.rollback();
+        	throw e;
+        }finally {
+        	em.close();
         }
 	}
 
