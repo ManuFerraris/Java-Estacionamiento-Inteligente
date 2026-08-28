@@ -9,4 +9,5 @@ public interface BeneficioRepository {
     List<Beneficio> obtenerTodos();
     void actualizar(int codTP, int numero, Beneficio beneficio);
     void eliminar(int codTP, int numero);
+    int obtenerProximoNumeroPorPlan(int codigoPlan);
 }
