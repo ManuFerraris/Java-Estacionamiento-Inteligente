@@ -1,50 +1,82 @@
 package estacionamiento.service;
 
+import java.time.LocalDateTime;
+import java.util.List;
+
+import estacionamiento.domain.EstadoSuscripcion;
 import estacionamiento.domain.Suscripcion;
+import estacionamiento.domain.claves.SuscripcionId;
+import estacionamiento.domain.TipoPlan;
+import estacionamiento.domain.Usuario;
 import estacionamiento.repository.SuscripcionRepository;
+import estacionamiento.repository.TipoPlanRepository;
+import estacionamiento.repository.UsuarioRepository;
 
 public class SuscripcionService {
 
     private final SuscripcionRepository suscripcionRepository;
+    private final UsuarioRepository usuarioRepository;
+    private final TipoPlanRepository tipoPlanRepository;
 
-    public SuscripcionService(SuscripcionRepository suscripcionRepository) {
+    public SuscripcionService(SuscripcionRepository suscripcionRepository, UsuarioRepository usuarioRepository, TipoPlanRepository tipoPlanRepository) {
         this.suscripcionRepository = suscripcionRepository;
+        this.usuarioRepository = usuarioRepository;
+        this.tipoPlanRepository = tipoPlanRepository;
     }
 
-    public void registrarSuscripcion(Suscripcion nuevaSuscripcion) {
-        if (nuevaSuscripcion == null) {
-            throw new IllegalArgumentException("No se puede registrar una suscripción nula.");
+    public void registrarOActualizarSuscripcion(int numeroUsuario, int codigoPlan) {
+        Usuario usuario = usuarioRepository.buscarPorNumero(numeroUsuario);
+        if (usuario == null) {
+            throw new IllegalArgumentException("El usuario seleccionado no existe.");
         }
 
-        // 1. Validación de las entidades fuertes de las que depende
-        if (nuevaSuscripcion.getUsuario() == null) {
-            throw new IllegalArgumentException("La suscripción debe estar asociada a un usuario válido.");
+        TipoPlan plan = tipoPlanRepository.buscarPorClave(codigoPlan);
+        if (plan == null) {
+            throw new IllegalArgumentException("El tipo de plan seleccionado no existe.");
         }
 
-        if (nuevaSuscripcion.getTipoPlan() == null) {
-            throw new IllegalArgumentException("La suscripción debe estar asociada a un tipo de plan válido.");
+        // 1. Buscamos si el usuario ya tiene una suscripción activa
+        Suscripcion activaActual = suscripcionRepository.buscarActivaPorUsuario(numeroUsuario);
+        LocalDateTime ahora = LocalDateTime.now();
+
+        // 2. Si ya tiene una activa, la "pisamos" (Upgrade/Downgrade)
+        if (activaActual != null) {
+            if (activaActual.getTipoPlan().getCodigo() == codigoPlan) {
+                throw new IllegalArgumentException("El usuario ya posee este mismo plan activo.");
+            }
+            // Cancelamos la vieja y le cortamos la fechaHasta al momento exacto de ahora
+            activaActual.setEstado(EstadoSuscripcion.CANCELADA);
+            activaActual.setFechaHasta(ahora);
+            suscripcionRepository.actualizar(activaActual);
         }
 
-        // 2. Validación de la fecha de inicio (que ahora está dentro del EmbeddedId)
-        if (nuevaSuscripcion.getFechaDesde() == null) {
-            throw new IllegalArgumentException("La fecha de inicio (fechaDesde) es obligatoria.");
-        }
+        // 3. Creamos la nueva suscripción
+        Suscripcion nuevaSuscripcion = new Suscripcion(plan, usuario, ahora, ahora.plusDays(30));
+        nuevaSuscripcion.setEstado(EstadoSuscripcion.ACTIVA);
 
-        // 3. Validación lógica de coherencia de fechas
-        // Si tiene fecha de fin programada, jamás puede ser anterior a la fecha de inicio
-        if (nuevaSuscripcion.getFechaHasta() != null && 
-            nuevaSuscripcion.getFechaHasta().isBefore(nuevaSuscripcion.getFechaDesde())) {
-            throw new IllegalArgumentException("La fecha de finalización no puede ser anterior a la fecha de inicio.");
-        }
-
-        // 4. Validación del estado
-        if (nuevaSuscripcion.getEstado() == null) {
-            throw new IllegalArgumentException("Se debe especificar el estado inicial de la suscripción (ACTIVA, PAUSADA o CANCELADA).");
-        }
-
-        // Si pasa todas las validaciones, delegamos la persistencia al repositorio
+        // 4. Guardamos
         suscripcionRepository.guardar(nuevaSuscripcion);
+    }
 
-        System.out.println("Servicio: Suscripción validada y procesada correctamente.");
+    public void cancelarSuscripcionManual(int numeroUsuario, int codigoPlan, LocalDateTime fechaDesde) {
+        SuscripcionId id = new SuscripcionId(numeroUsuario, codigoPlan, fechaDesde);
+        Suscripcion suscripcion = suscripcionRepository.buscarPorClave(id);
+
+        if (suscripcion == null) {
+            throw new IllegalArgumentException("La suscripción no existe.");
+        }
+        
+        if (suscripcion.getEstado() == EstadoSuscripcion.CANCELADA) {
+            throw new IllegalArgumentException("Esta suscripción ya se encuentra cancelada.");
+        }
+
+        suscripcion.setEstado(EstadoSuscripcion.CANCELADA);
+        suscripcion.setFechaHasta(LocalDateTime.now()); // Cortamos la vigencia hoy
+        
+        suscripcionRepository.actualizar(suscripcion);
+    }
+
+    public List<Suscripcion> obtenerTodas() {
+        return suscripcionRepository.obtenerTodas();
     }
 }
