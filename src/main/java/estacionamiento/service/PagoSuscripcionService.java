@@ -6,6 +6,8 @@ import java.time.LocalDateTime;
 import estacionamiento.domain.PagoSuscripcion;
 import estacionamiento.repository.PagoSuscripcionRepository;
 import estacionamiento.repository.SuscripcionRepository;
+import estacionamiento.domain.claves.SuscripcionId;
+
 
 public class PagoSuscripcionService {
 
@@ -18,6 +20,7 @@ public class PagoSuscripcionService {
         this.suscripcionRepository = suscripcionRepository;
     }
 
+    
     public void registrarPagoSuscripcion(PagoSuscripcion nuevoPago) {
         
         // Validar existencia de la suscripción a la que pertenece.
@@ -25,7 +28,8 @@ public class PagoSuscripcionService {
         int numUsu = nuevoPago.getSuscripcion().getUsuario().getNumero();
         LocalDateTime desde = nuevoPago.getSuscripcion().getFechaDesde();
 
-        if (suscripcionRepository.buscarPorClave(codTP, numUsu, desde) == null) {
+        SuscripcionId id = new SuscripcionId(numUsu, codTP, desde);
+        if (suscripcionRepository.buscarPorClave(id) == null) {
             throw new IllegalArgumentException("No se puede registrar el pago: La suscripción no existe.");
         }
 
