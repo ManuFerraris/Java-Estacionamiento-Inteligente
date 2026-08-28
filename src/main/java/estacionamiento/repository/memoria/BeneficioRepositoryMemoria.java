@@ -58,4 +58,10 @@ public class BeneficioRepositoryMemoria implements BeneficioRepository {
             System.out.println("No se encontró el beneficio para eliminar.");
         }
     }
+
+	@Override
+	public int obtenerProximoNumeroPorPlan(int codigoPlan) {
+		int proximoCod = obtenerTodos().size() + 1;
+		return proximoCod;
+	}
 }

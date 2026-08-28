@@ -1,5 +1,6 @@
 package estacionamiento.repository.mysql;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import estacionamiento.domain.PrecioHistoricoTP;
@@ -9,63 +10,103 @@ import estacionamiento.repository.PrecioHistoricoTPRepository;
 import java.util.List;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
+import jakarta.persistence.EntityTransaction;
 import jakarta.persistence.Persistence;
 
 public class PrecioHistoricoTPRepositoryMySQL implements PrecioHistoricoTPRepository {
 	
-	private EntityManager em;
+private EntityManagerFactory emf;
     
     public PrecioHistoricoTPRepositoryMySQL() {
-        EntityManagerFactory emf = Persistence.createEntityManagerFactory("EstacionamientoPU");
-        this.em = emf.createEntityManager();
+        this.emf = Persistence.createEntityManagerFactory("EstacionamientoPU");
     }
 
-	@Override
-	public void guardar(PrecioHistoricoTP precioHistorico) {
-		em.getTransaction().begin();
-        em.persist(precioHistorico);
-        em.getTransaction().commit();
-        System.out.println("MySQL: PrecioHistoricoTP registrado correctamente en la base de datos.");
-		
-	}
-
-	@Override
-	public PrecioHistoricoTP buscarPorClave(int codigoTP, LocalDateTime fechaDesde) {
-		PrecioHistoricoTPId claveCompuesta = new PrecioHistoricoTPId(codigoTP, fechaDesde);
-		return em.find(PrecioHistoricoTP.class, claveCompuesta);
-	}
-
-	@Override
-	public List<PrecioHistoricoTP> obtenerTodos() {
-		return em.createQuery("SELECT tp FROM PrecioHistoricoTP tp", PrecioHistoricoTP.class).getResultList();
-	}
-
-	@Override
-	public void actualizar(int codigoTP, LocalDateTime fechaDesde, PrecioHistoricoTP phTPNuevosDatos) {
-		PrecioHistoricoTP phTPExistente = buscarPorClave(codigoTP, fechaDesde);
+    @Override
+    public void guardar(PrecioHistoricoTP precio) {
+        EntityManager em = emf.createEntityManager();
+        EntityTransaction tx = em.getTransaction();
         
-        if (phTPExistente != null) {
-            em.getTransaction().begin();
-            phTPExistente.setPrecio(phTPNuevosDatos.getPrecio());
-            em.getTransaction().commit();
-            System.out.println("MySQL: Precio historico del tipo de plan actualizado correctamente.");
-        } else {
-            throw new IllegalArgumentException("MySQL: No se encontró el historico para actualizar.");
+        try {
+            tx.begin();
+            // Merge maneja limpiamente la inserción con claves compuestas autogeneradas por constructores
+            em.merge(precio);
+            tx.commit();
+        } catch (Exception e) {
+            if (tx != null && tx.isActive()) tx.rollback();
+            throw e;
+        } finally {
+            em.close();
         }
-	}
+    }
 
-	@Override
-	public void eliminar(int codigoTP, LocalDateTime fechaDesde) {
-		PrecioHistoricoTP historioAEliminar = buscarPorClave(codigoTP, fechaDesde);
-        
-        if (historioAEliminar != null) {
-            em.getTransaction().begin();
-            em.remove(historioAEliminar);
-            em.getTransaction().commit();
-            System.out.println("MySQL: Historico eliminado correctamente.");
-        } else {
-            System.out.println("MySQL: El historico no fue encontrado para ser eliminado.");
+    @Override
+    public PrecioHistoricoTP buscarPorClave(PrecioHistoricoTPId id) {
+        EntityManager em = emf.createEntityManager();
+        try {
+            return em.find(PrecioHistoricoTP.class, id);
+        } finally {
+            em.close();
         }
-	}
+    }
+
+    @Override
+    public List<PrecioHistoricoTP> obtenerTodos() {
+        EntityManager em = emf.createEntityManager();
+        try {
+            // Ordenamos por fecha descendente para que en la vista el precio actual salga primero
+            return em.createQuery(
+                "SELECT p FROM PrecioHistoricoTP p ORDER BY p.id.fechaDesde DESC", 
+                PrecioHistoricoTP.class).getResultList();
+        } finally {
+            em.close();
+        }
+    }
+
+    @Override
+    public void actualizar(int codigoPlan, LocalDateTime fechaDesde, BigDecimal nuevoPrecio) {
+        EntityManager em = emf.createEntityManager();
+        EntityTransaction tx = em.getTransaction();
+        
+        try {
+            tx.begin();
+            PrecioHistoricoTPId id = new PrecioHistoricoTPId(codigoPlan, fechaDesde);
+            PrecioHistoricoTP precioExistente = em.find(PrecioHistoricoTP.class, id);
+            
+            if (precioExistente != null) {
+            	precioExistente.setPrecio(nuevoPrecio);
+                tx.commit();
+                System.out.println("MySQL: Precio histórico actualizado con éxito.");
+            } else {
+                throw new IllegalArgumentException("MySQL: Registro histórico no encontrado.");
+            }
+        } catch (Exception e) {
+            if (tx != null && tx.isActive()) tx.rollback();
+            throw e;
+        } finally {
+            em.close();
+        }
+    }
+
+    @Override
+    public void eliminar(int codigoPlan, LocalDateTime fechaDesde) {
+        EntityManager em = emf.createEntityManager();
+        EntityTransaction tx = em.getTransaction();
+        
+        try {
+            tx.begin();
+            PrecioHistoricoTPId id = new PrecioHistoricoTPId(codigoPlan, fechaDesde);
+            PrecioHistoricoTP precioAEliminar = em.find(PrecioHistoricoTP.class, id);
+            
+            if (precioAEliminar != null) {
+                em.remove(precioAEliminar);
+                tx.commit();
+            }
+        } catch (Exception e) {
+            if (tx != null && tx.isActive()) tx.rollback();
+            throw e;
+        } finally {
+            em.close();
+        }
+    }
     
 }

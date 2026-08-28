@@ -1,7 +1,12 @@
 package estacionamiento.service;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.List;
+
 import estacionamiento.domain.PrecioHistoricoTP;
+import estacionamiento.domain.TipoPlan;
+import estacionamiento.domain.claves.PrecioHistoricoTPId;
 import estacionamiento.repository.PrecioHistoricoTPRepository;
 import estacionamiento.repository.TipoPlanRepository;
 
@@ -16,36 +21,47 @@ public class PrecioHistoricoTPService {
         this.tipoPlanRepository = tipoPlanRepository;
     }
 
-    public void registrarPrecioHistorico(PrecioHistoricoTP nuevoPrecio) {
-        
-        if (nuevoPrecio == null) {
-            throw new IllegalArgumentException("El registro de precio histórico no puede ser nulo.");
+    public void registrarPrecio(int codigoPlan, BigDecimal precio) {
+        if (precio == null || precio.compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("El precio debe ser un valor numérico positivo o cero.");
         }
 
-        if (nuevoPrecio.getFechaDesde() == null) {
-            throw new IllegalArgumentException("La fecha de inicio de vigencia es obligatoria.");
+        TipoPlan planAsociado = tipoPlanRepository.buscarPorClave(codigoPlan);
+        if (planAsociado == null) {
+            throw new IllegalArgumentException("El tipo de plan seleccionado no existe.");
         }
 
-        if (nuevoPrecio.getPrecio() == null || nuevoPrecio.getPrecio().compareTo(BigDecimal.ZERO) <= 0) {
-            throw new IllegalArgumentException("El precio del plan debe ser mayor a cero.");
-        }
-
-        int codTP = nuevoPrecio.getTipoPlan().getCodigo();
-
-        // =====================================================================
-        // TODO: @Nati - Descomentar esta validación cuando termines tu parte.
-        /*
-        if (tipoPlanRepository.buscarPorCodigo(codTP) == null) {
-            throw new IllegalArgumentException("No se puede asignar el precio: El tipo de plan no existe.");
-        }
-        */
-        // =====================================================================
-
-        if (precioHistoricoRepository.buscarPorClave(codTP, nuevoPrecio.getFechaDesde()) != null) {
-            throw new IllegalArgumentException("Ya existe una tarifa configurada para este plan en esa fecha exacta.");
-        }
+        LocalDateTime fechaVigencia = LocalDateTime.now();
+        PrecioHistoricoTP nuevoPrecio = new PrecioHistoricoTP(planAsociado, fechaVigencia, precio);
 
         precioHistoricoRepository.guardar(nuevoPrecio);
-        System.out.println("Servicio: Nueva tarifa de suscripción validada y registrada correctamente.");
+        System.out.println("Servicio: Precio histórico registrado para el plan " + codigoPlan);
+    }
+
+    public List<PrecioHistoricoTP> obtenerTodos() {
+        return precioHistoricoRepository.obtenerTodos();
+    }
+    
+    public PrecioHistoricoTP buscarPorClaveCompuesta(int codigoPlan, LocalDateTime fechaDesde) {
+        PrecioHistoricoTPId idCompuesto = new PrecioHistoricoTPId(codigoPlan, fechaDesde);
+        PrecioHistoricoTP precioHistorico = precioHistoricoRepository.buscarPorClave(idCompuesto);
+        
+        if (precioHistorico == null) {
+            throw new IllegalArgumentException("No se encontró el registro histórico para la fecha solicitada.");
+        }
+        return precioHistorico;
+    }
+
+    public void actualizar(int codigoPlan, LocalDateTime fechaDesde, BigDecimal nuevoPrecio) {
+        if (nuevoPrecio == null || nuevoPrecio.compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("El precio a actualizar debe ser mayor o igual a cero.");
+        }
+        buscarPorClaveCompuesta(codigoPlan, fechaDesde);
+        precioHistoricoRepository.actualizar(codigoPlan, fechaDesde, nuevoPrecio);
+    }
+
+    public void eliminar(int codigoPlan, LocalDateTime fechaDesde) {
+        buscarPorClaveCompuesta(codigoPlan, fechaDesde);
+        precioHistoricoRepository.eliminar(codigoPlan, fechaDesde);
     }
 }
