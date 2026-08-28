@@ -1,9 +1,11 @@
 package estacionamiento.repository.memoria;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import estacionamiento.domain.PrecioHistoricoTP;
+import estacionamiento.domain.claves.PrecioHistoricoTPId;
 import estacionamiento.repository.PrecioHistoricoTPRepository;
 
 public class PrecioHistoricoTPRepositoryMemoria implements PrecioHistoricoTPRepository {
@@ -20,10 +22,9 @@ public class PrecioHistoricoTPRepositoryMemoria implements PrecioHistoricoTPRepo
     }
 
     @Override
-    public PrecioHistoricoTP buscarPorClave(int codigoTP, LocalDateTime fechaDesde) {
+    public PrecioHistoricoTP buscarPorClave(PrecioHistoricoTPId id) {
         for (PrecioHistoricoTP p : this.baseDeDatosMemoria) {
-            if (p.getTipoPlan().getCodigo() == codigoTP && 
-                p.getFechaDesde().equals(fechaDesde)) {
+            if (p.getId().equals(id)) {
                 return p;
             }
         }
@@ -32,38 +33,39 @@ public class PrecioHistoricoTPRepositoryMemoria implements PrecioHistoricoTPRepo
 
     @Override
     public void guardar(PrecioHistoricoTP precioHistorico) {
-        int codTP = precioHistorico.getTipoPlan().getCodigo();
-        LocalDateTime fecha = precioHistorico.getFechaDesde();
-
-        if (buscarPorClave(codTP, fecha) != null) {
+        if (buscarPorClave(precioHistorico.getId()) != null) {
             throw new IllegalArgumentException("Ya existe un precio histórico para este plan en esa fecha exacta.");
         }
         
         this.baseDeDatosMemoria.add(precioHistorico);
-        System.out.println("Precio histórico guardado: Plan " + codTP + " a partir del " + fecha);
-    }
-
-    @Override
-    public void actualizar(int codigoTP, LocalDateTime fechaDesde, PrecioHistoricoTP precioNuevosDatos) {
-        PrecioHistoricoTP precioExistente = buscarPorClave(codigoTP, fechaDesde);
-
-        if (precioExistente != null) {
-            precioExistente.setPrecio(precioNuevosDatos.getPrecio());
-            System.out.println("Precio histórico del plan actualizado con éxito a: $" + precioExistente.getPrecio());
-        } else {
-            throw new IllegalArgumentException("No se puede actualizar. No se encontró el precio histórico del plan.");
-        }
+        System.out.println("Memoria: Precio histórico guardado: Plan " + precioHistorico.getId().getCodigoPlan() + 
+                           " a partir del " + precioHistorico.getId().getFechaDesde());
     }
 
     @Override
     public void eliminar(int codigoTP, LocalDateTime fechaDesde) {
-        PrecioHistoricoTP precioAEliminar = buscarPorClave(codigoTP, fechaDesde);
+
+        PrecioHistoricoTPId idBusqueda = new PrecioHistoricoTPId(codigoTP, fechaDesde);
+        PrecioHistoricoTP precioAEliminar = buscarPorClave(idBusqueda);
 
         if (precioAEliminar != null) {
             this.baseDeDatosMemoria.remove(precioAEliminar);
-            System.out.println("Precio histórico del plan eliminado con éxito.");
+            System.out.println("Memoria: Precio histórico del plan eliminado con éxito.");
         } else {
-            System.out.println("No se encontró el precio histórico para eliminar.");
+            System.out.println("Memoria: No se encontró el precio histórico para eliminar.");
+        }
+    }
+
+    @Override
+    public void actualizar(int codigoPlan, LocalDateTime fechaDesde, BigDecimal nuevoPrecio) {
+        PrecioHistoricoTPId idBusqueda = new PrecioHistoricoTPId(codigoPlan, fechaDesde);
+        PrecioHistoricoTP precioExistente = buscarPorClave(idBusqueda);
+
+        if (precioExistente != null) {
+            precioExistente.setPrecio(nuevoPrecio);
+            System.out.println("Memoria: Precio histórico actualizado con éxito.");
+        } else {
+            throw new IllegalArgumentException("Memoria: No se encontró el registro histórico para actualizar.");
         }
     }
 }
