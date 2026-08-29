@@ -5,6 +5,7 @@ import org.mindrot.jbcrypt.BCrypt;
 import java.util.List;
 import java.time.LocalDate;
 
+import estacionamiento.domain.RolesUsuario;
 import estacionamiento.domain.Usuario;
 import estacionamiento.repository.UsuarioRepository;
 
@@ -163,4 +164,36 @@ public class UsuarioService {
 	    usuarioRepository.actualizar(numero, usuarioAActualizar);
 	    System.out.println("Servicio: Usuario " + usuarioAActualizar.getNumero() + " validado y actualizado con éxito.");
 	}
+
+	// Siempre devolvemos el mensaje generico para evitar ataque de fuerza bruta.
+	public Usuario autenticar(String nombreUsuario, String contraseniaPlana) {
+        if (esNuloOBlanco(nombreUsuario) || esNuloOBlanco(contraseniaPlana)) {
+            throw new IllegalArgumentException("Debe ingresar usuario y contraseña.");
+        }
+
+        Usuario usuario = usuarioRepository.buscarPorNombreUsuario(nombreUsuario);
+        
+        // Si el usuario no existe o la contraseña encriptada no coincide con la plana
+        if (usuario == null || !BCrypt.checkpw(contraseniaPlana, usuario.getContrasenia())) {
+            throw new IllegalArgumentException("Credenciales incorrectas o usuario inactivo.");
+        }
+
+        System.out.println("Servicio: Login exitoso para el usuario " + usuario.getNombreUsuario());
+        return usuario;
+    }
+
+	//Metodo UNICO para el signUp
+	public void registrarCliente(Usuario nuevoCliente) {
+        if (nuevoCliente == null) {
+            throw new IllegalArgumentException("Los datos del registro están vacíos.");
+        }
+        
+        // Regla de negocio: Todo registro público es CLIENTE
+        nuevoCliente.setRol(RolesUsuario.CLIENTE);
+        
+        // Reutilizamos el método que ya valida campos, hashea la clave y la guarda.
+        this.registrarUsuario(nuevoCliente);
+        
+        System.out.println("Servicio: Nuevo CLIENTE registrado exitosamente desde la web pública.");
+    }
 }

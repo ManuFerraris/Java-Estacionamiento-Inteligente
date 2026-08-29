@@ -15,6 +15,8 @@
 </head>
 <body class="bg-light">
 
+	<%@ include file="navbar.jsp" %>
+	
     <div class="container-fluid mt-5 px-4">
         <h1 class="mb-4 text-secondary">Caja Municipal - Pagos de Suscripciones</h1>
 

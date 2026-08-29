@@ -69,4 +69,10 @@ public class UsuarioRepositoryMemoria implements UsuarioRepository {
 			 System.out.println("No se encontró el usuario para eliminar.");
 		 }
 	 }
+
+	 @Override
+	 public Usuario buscarPorNombreUsuario(String nombreUsuario) {
+		// TODO Auto-generated method stub
+		return null;
+	 }
 }
