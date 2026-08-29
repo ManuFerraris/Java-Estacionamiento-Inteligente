@@ -59,6 +59,11 @@ public class UsuarioService {
         String hashContrasenia = BCrypt.hashpw(nuevoUsuario.getContrasenia(), BCrypt.gensalt());
         nuevoUsuario.setContrasenia(hashContrasenia);
 
+        // Validar el Rol en el Alta 
+        if (nuevoUsuario.getRol() == null) {
+            throw new IllegalArgumentException("El rol del usuario es obligatorio para el registro.");
+        }
+        
         // Si es un usuario nuevo, lógicamente no debería tener fecha de baja
         if (nuevoUsuario.getFechaBaja() != null) {
             throw new IllegalArgumentException("Un usuario nuevo no puede registrarse con una fecha de baja.");
@@ -127,6 +132,11 @@ public class UsuarioService {
 	        // ENCRIPTACIÓN DE NUEVA CLAVE 
 	        String nuevoHash = BCrypt.hashpw(usuarioAActualizar.getContrasenia(), BCrypt.gensalt());
 	        usuarioAActualizar.setContrasenia(nuevoHash);
+	    }
+	    
+	    if (usuarioAActualizar.getRol() == null) {
+	        // Mantenemos el que ya tenía si vino vacio.
+	        usuarioAActualizar.setRol(usuarioExistente.getRol());
 	    }
 
 	    if (esNuloOBlanco(usuarioAActualizar.getNombre()) || esNuloOBlanco(usuarioAActualizar.getApellido())) {

@@ -4,6 +4,8 @@ import java.time.LocalDate;
 import java.util.List;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -46,6 +48,10 @@ public class Usuario {
 	
 	@Column(name="contrasenia", nullable = false)
 	private String contrasenia;
+	
+	@Enumerated(EnumType.STRING) 
+	@Column(name="rol", nullable=false)
+	private RolesUsuario rol;
 	
 	@OneToMany(mappedBy = "usuario", targetEntity = Suscripcion.class)
 	private List<Suscripcion> suscripciones;
@@ -150,4 +156,14 @@ public class Usuario {
 	public void setContrasenia(String contrasenia) {
 		this.contrasenia = contrasenia;
 	}
+
+	public RolesUsuario getRol() {
+		return rol;
+	}
+
+	public void setRol(RolesUsuario rol) {
+		this.rol = rol;
+	}
+	
+	
 }

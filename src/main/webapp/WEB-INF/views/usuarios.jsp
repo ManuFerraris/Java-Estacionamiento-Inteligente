@@ -1,16 +1,14 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ page import="java.util.List" %>
 <%@ page import="estacionamiento.domain.Usuario" %>
+<%@ page import="estacionamiento.domain.RolesUsuario" %>
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <title>Gestión de Usuarios</title>
-    <!-- CSS Bootstrap -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-    <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body class="bg-light">
@@ -47,9 +45,25 @@
                                     <input type="text" class="form-control" id="nombreUsuario" name="nombreUsuario" placeholder="Ej. mferraris" required>
                                 </div>
                                 <div class="col-md-6 mb-3">
+                                    <label for="rol" class="form-label text-muted fw-bold">Rol</label>
+                                    <select class="form-select" id="rol" name="rol" required>
+                                        <option value="" disabled selected>Seleccione un rol...</option>
+                                        <% for (RolesUsuario r : RolesUsuario.values()) { %>
+                                            <option value="<%= r.name() %>"><%= r.name() %></option>
+                                        <% } %>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
                                     <label for="contrasenia" class="form-label text-muted fw-bold">Contraseña</label>
-                                    <input type="password" class="form-control" id="contrasenia" name="contrasenia">
+                                    <input type="password" class="form-control" id="contrasenia" name="contrasenia" required>
                                     <div class="form-text" id="helpContrasenia" style="display:none; font-size: 0.75rem;">Dejar en blanco para no cambiar.</div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="confirmarContrasenia" class="form-label text-muted fw-bold">Confirmar contraseña</label>
+                                    <input type="password" class="form-control" id="confirmarContrasenia" name="confirmarContrasenia" required>
                                 </div>
                             </div>
 
@@ -74,7 +88,6 @@
                                 </div>
                             </div>
                             
-                            <!-- Botones con íconos -->
                             <button type="submit" class="btn btn-success w-100 mb-2 mt-2" id="btnGuardar">
                                 <i class="bi bi-save me-2"></i>Guardar Usuario
                             </button>
@@ -97,7 +110,7 @@
                             <thead class="table-light">
                                 <tr>
                                     <th class="ps-3">#</th>
-                                    <th>Usuario</th>
+                                    <th>Usuario / Rol</th>
                                     <th>Nombre Completo</th>
                                     <th>Contacto</th>
                                     <th>Estado</th>
@@ -112,7 +125,10 @@
                                 %>
                                             <tr>
                                                 <td class="ps-3 fw-bold text-secondary"><%= u.getNumero() %></td>
-                                                <td class="fw-semibold text-primary"><%= u.getNombreUsuario() %></td>
+                                                <td>
+                                                    <span class="fw-semibold text-primary d-block"><%= u.getNombreUsuario() %></span>
+                                                    <span class="badge bg-info text-dark mt-1"><%= u.getRol() != null ? u.getRol().name() : "CLIENTE" %></span>
+                                                </td>
                                                 <td><%= u.getApellido() %>, <%= u.getNombre() %></td>
                                                 <td>
                                                     <div class="small"><i class="bi bi-envelope me-1"></i><%= u.getMail() %></div>
@@ -127,37 +143,34 @@
                                                 </td>
                                                 <td>
                                                     <div class="d-flex justify-content-center gap-2">
-													    <!-- Botón Editar -->
-													    <button type="button" class="btn btn-warning btn-sm text-dark" 
-													            title="Editar Usuario"
-													            onclick="cargarDatosEdicion('<%= u.getNumero() %>', '<%= u.getNombre() %>', '<%= u.getApellido() %>', '<%= u.getNombreUsuario() %>', '<%= u.getMail() %>', '<%= u.getMailRecuperacion() != null ? u.getMailRecuperacion() : "" %>', '<%= u.getNumeroTelefono() != null ? u.getNumeroTelefono() : "" %>', '<%= u.getDireccion() != null ? u.getDireccion() : "" %>')">
-													        <i class="bi bi-pencil-square"></i>
-													    </button>
-													
-													    <% if (u.getFechaBaja() != null) { %>
-													        <!-- Botón Alta Lógica (Para usuarios inactivos) -->
-													        <form action="<%= request.getContextPath() %>/usuarios" method="POST" class="m-0">
-													            <input type="hidden" name="accion" value="altaLogica">
-													            <input type="hidden" name="numero" value="<%= u.getNumero() %>">
-													            <button type="submit" class="btn btn-outline-success btn-sm" 
-													                    title="Reactivar Usuario"
-													                    onclick="return confirm('¿Seguro que deseas volver a dar de alta a este usuario?');">
-													                <i class="bi bi-check-circle"></i>
-													            </button>
-													        </form>
-													    <% } else { %>
-													        <!-- Botón Baja Lógica (Para usuarios activos) -->
-													        <form action="<%= request.getContextPath() %>/usuarios" method="POST" class="m-0">
-													            <input type="hidden" name="accion" value="bajaLogica">
-													            <input type="hidden" name="numero" value="<%= u.getNumero() %>">
-													            <button type="submit" class="btn btn-outline-danger btn-sm" 
-													                    title="Dar de Baja"
-													                    onclick="return confirm('¿Seguro que deseas dar de baja a este usuario?');">
-													                <i class="bi bi-ban"></i>
-													            </button>
-													        </form>
-													    <% } %>
-													</div>
+                                                        <button type="button" class="btn btn-warning btn-sm text-dark" 
+                                                                title="Editar Usuario"
+                                                                onclick="cargarDatosEdicion('<%= u.getNumero() %>', '<%= u.getNombre() %>', '<%= u.getApellido() %>', '<%= u.getNombreUsuario() %>', '<%= u.getRol() != null ? u.getRol().name() : "" %>', '<%= u.getMail() %>', '<%= u.getMailRecuperacion() != null ? u.getMailRecuperacion() : "" %>', '<%= u.getNumeroTelefono() != null ? u.getNumeroTelefono() : "" %>', '<%= u.getDireccion() != null ? u.getDireccion() : "" %>')">
+                                                            <i class="bi bi-pencil-square"></i>
+                                                        </button>
+                                                    
+                                                        <% if (u.getFechaBaja() != null) { %>
+                                                            <form action="<%= request.getContextPath() %>/usuarios" method="POST" class="m-0">
+                                                                <input type="hidden" name="accion" value="altaLogica">
+                                                                <input type="hidden" name="numero" value="<%= u.getNumero() %>">
+                                                                <button type="submit" class="btn btn-outline-success btn-sm" 
+                                                                        title="Reactivar Usuario"
+                                                                        onclick="return confirm('¿Seguro que deseas volver a dar de alta a este usuario?');">
+                                                                    <i class="bi bi-check-circle"></i>
+                                                                </button>
+                                                            </form>
+                                                        <% } else { %>
+                                                            <form action="<%= request.getContextPath() %>/usuarios" method="POST" class="m-0">
+                                                                <input type="hidden" name="accion" value="bajaLogica">
+                                                                <input type="hidden" name="numero" value="<%= u.getNumero() %>">
+                                                                <button type="submit" class="btn btn-outline-danger btn-sm" 
+                                                                        title="Dar de Baja"
+                                                                        onclick="return confirm('¿Seguro que deseas dar de baja a este usuario?');">
+                                                                    <i class="bi bi-ban"></i>
+                                                                </button>
+                                                            </form>
+                                                        <% } %>
+                                                    </div>
                                                 </td>
                                             </tr>
                                 <%
@@ -187,26 +200,46 @@
     %>
     
     <script>
-        function cargarDatosEdicion(numero, nombre, apellido, nombreUsuario, mail, mailRecup, telefono, direccion) {
+        // Validación frontend para que las contraseñas coincidan
+        document.getElementById('formUsuario').addEventListener('submit', function(event) {
+            let pass = document.getElementById('contrasenia').value;
+            let conf = document.getElementById('confirmarContrasenia').value;
+            let accion = document.getElementById('accionForm').value;
+
+            // Si es creación, o si es edición y escribieron algo en la contraseña
+            if (accion === 'crear' || pass.trim() !== '') {
+                if (pass !== conf) {
+                    event.preventDefault(); // Detiene el envío del formulario
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Contraseñas no coinciden',
+                        text: 'Por favor, verifica que la contraseña y su confirmación sean idénticas.',
+                        confirmButtonColor: '#ffc107'
+                    });
+                }
+            }
+        });
+
+        function cargarDatosEdicion(numero, nombre, apellido, nombreUsuario, rol, mail, mailRecup, telefono, direccion) {
             document.getElementById('numeroUsuario').value = numero;
             document.getElementById('accionForm').value = 'editar';
             
             document.getElementById('nombre').value = nombre;
             document.getElementById('apellido').value = apellido;
             document.getElementById('nombreUsuario').value = nombreUsuario;
+            document.getElementById('rol').value = rol;
             document.getElementById('mail').value = mail;
             document.getElementById('mailRecuperacion').value = mailRecup;
             document.getElementById('numeroTelefono').value = telefono;
             document.getElementById('direccion').value = direccion;
             
-            // La contraseña no se carga por seguridad. Hacemos visible el texto de ayuda.
+            // Lógica de contraseñas en edición
             document.getElementById('contrasenia').required = false;
+            document.getElementById('confirmarContrasenia').required = false;
             document.getElementById('helpContrasenia').style.display = 'block';
             
-            // Actualizar Título
             document.getElementById('tituloFormulario').innerHTML = '<i class="bi bi-pencil-square me-2"></i>Editar Usuario';
             
-            // Actualizar diseño del botón
             let btn = document.getElementById('btnGuardar');
             btn.innerHTML = '<i class="bi bi-arrow-clockwise me-2"></i>Actualizar Usuario';
             btn.className = 'btn btn-warning w-100 mb-2 mt-2 fw-bold text-dark';
@@ -221,13 +254,16 @@
             document.getElementById('nombre').value = '';
             document.getElementById('apellido').value = '';
             document.getElementById('nombreUsuario').value = '';
+            document.getElementById('rol').value = '';
             document.getElementById('mail').value = '';
             document.getElementById('mailRecuperacion').value = '';
             document.getElementById('numeroTelefono').value = '';
             document.getElementById('direccion').value = '';
             document.getElementById('contrasenia').value = '';
+            document.getElementById('confirmarContrasenia').value = '';
             
             document.getElementById('contrasenia').required = true;
+            document.getElementById('confirmarContrasenia').required = true;
             document.getElementById('helpContrasenia').style.display = 'none';
             
             document.getElementById('tituloFormulario').innerHTML = '<i class="bi bi-person-plus-fill me-2"></i>Registrar Nuevo Usuario';

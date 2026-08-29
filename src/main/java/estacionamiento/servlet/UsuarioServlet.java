@@ -1,6 +1,7 @@
 package estacionamiento.servlet;
 
 import estacionamiento.domain.Usuario;
+import estacionamiento.domain.RolesUsuario;
 import estacionamiento.repository.mysql.UsuarioRepositoryMySQL;
 import estacionamiento.service.UsuarioService;
 
@@ -78,8 +79,23 @@ public class UsuarioServlet extends HttpServlet {
                     //usuarioEditado.setFechaBaja(request.getParameter("fechaBaja"));
                     usuarioEditado.setMailRecuperacion(request.getParameter("mailRecuperacion"));
                     usuarioEditado.setNombreUsuario(request.getParameter("nombreUsuario"));
-                    usuarioEditado.setContrasenia(request.getParameter("contrasenia"));
                     
+                    // Parseo del Enum Rol
+                    String rolEditado = request.getParameter("rol");
+                    if (rolEditado != null && !rolEditado.isEmpty()) {
+                        usuarioEditado.setRol(RolesUsuario.valueOf(rolEditado));
+                    }
+                    
+                    // Lógica segura de contraseña para edición
+                    String passEdit = request.getParameter("contrasenia");
+                    String confEdit = request.getParameter("confirmarContrasenia");
+                    
+                    if (passEdit != null && !passEdit.trim().isEmpty()) {
+                        if (!passEdit.equals(confEdit)) {
+                            throw new IllegalArgumentException("Las contraseñas no coinciden.");
+                        }
+                        usuarioEditado.setContrasenia(passEdit);
+                    }
                     
                     usuarioService.actualizar(numeroEditar, usuarioEditado);
                     request.getSession().setAttribute("exito", "Usuario actualizado correctamente.");
@@ -95,7 +111,18 @@ public class UsuarioServlet extends HttpServlet {
                     nuevoUsuario.setMail(request.getParameter("mail"));
                     nuevoUsuario.setMailRecuperacion(request.getParameter("mailRecuperacion"));
                     nuevoUsuario.setNombreUsuario(request.getParameter("nombreUsuario"));
-                    nuevoUsuario.setContrasenia(request.getParameter("contrasenia"));
+
+                    // Parseo del Enum Rol (Es obligatorio en el alta)
+                    nuevoUsuario.setRol(RolesUsuario.valueOf(request.getParameter("rol")));
+                    
+                    // Validación dura de contraseñas en el backend
+                    String passCrear = request.getParameter("contrasenia");
+                    String confCrear = request.getParameter("confirmarContrasenia");
+                    
+                    if (passCrear == null || passCrear.trim().isEmpty() || !passCrear.equals(confCrear)) {
+                        throw new IllegalArgumentException("Las contraseñas son obligatorias y deben coincidir.");
+                    }
+                    nuevoUsuario.setContrasenia(passCrear);
                     
                     usuarioService.registrarUsuario(nuevoUsuario);
                     request.getSession().setAttribute("exito", "El usuario fue registrado correctamente.");
