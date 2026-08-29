@@ -110,4 +110,20 @@ public class UsuarioRepositoryMySQL implements UsuarioRepository{
         }
 	}
 
+	@Override
+	public Usuario buscarPorNombreUsuario(String nombreUsuario) {
+		
+		EntityManager em = emf.createEntityManager();
+        try {
+            // Buscamos al usuario por su nombre de usuario y verificamos de que no esté dado de baja
+            return em.createQuery("SELECT u FROM Usuario u WHERE u.nombreUsuario = :nombre AND u.fechaBaja IS NULL", Usuario.class)
+                     .setParameter("nombre", nombreUsuario)
+                     .getSingleResult();
+        } catch (jakarta.persistence.NoResultException e) {
+            return null; // Devolvemos null en caso de no encontrarlo
+        } finally {
+            em.close();
+        }
+	}
+
 }

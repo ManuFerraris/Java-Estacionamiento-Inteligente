@@ -14,6 +14,8 @@
 </head>
 <body class="bg-light">
 
+	<%@ include file="navbar.jsp" %>
+	
     <div class="container-fluid mt-5 px-4">
         <h1 class="mb-4 text-secondary">Historial de Precios por Plan</h1>
 

@@ -15,6 +15,8 @@
 </head>
 <body class="bg-light">
 
+	<%@ include file="navbar.jsp" %>
+	
     <div class="container mt-5">
         <h1 class="mb-4 text-secondary">Administración de Cocheras</h1>
 

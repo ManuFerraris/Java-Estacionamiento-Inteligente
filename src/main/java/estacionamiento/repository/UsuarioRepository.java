@@ -9,4 +9,5 @@ public interface UsuarioRepository {
     List<Usuario> obtenerTodos();
     void actualizar(Integer numero, Usuario usuario);
     void eliminar(Integer numero);
+    Usuario buscarPorNombreUsuario(String nombreUsuario);
 }
