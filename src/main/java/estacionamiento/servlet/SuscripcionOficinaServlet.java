@@ -7,6 +7,8 @@ import java.util.List;
 import estacionamiento.domain.Suscripcion;
 import estacionamiento.domain.TipoPlan;
 import estacionamiento.domain.Usuario;
+import estacionamiento.repository.mysql.PagoSuscripcionRepositoryMySQL;
+import estacionamiento.repository.mysql.PrecioHistoricoTPRepositoryMySQL;
 import estacionamiento.repository.mysql.SuscripcionRepositoryMySQL;
 import estacionamiento.repository.mysql.TipoPlanRepositoryMySQL;
 import estacionamiento.repository.mysql.UsuarioRepositoryMySQL;
@@ -32,10 +34,19 @@ public class SuscripcionOficinaServlet extends HttpServlet {
     public void init() throws ServletException {
         UsuarioRepositoryMySQL usuarioRepo = new UsuarioRepositoryMySQL();
         TipoPlanRepositoryMySQL planRepo = new TipoPlanRepositoryMySQL();
+        PrecioHistoricoTPRepositoryMySQL precioRepo = new PrecioHistoricoTPRepositoryMySQL();
+        PagoSuscripcionRepositoryMySQL pagoRepo = new PagoSuscripcionRepositoryMySQL();
         
         this.usuarioService = new UsuarioService(usuarioRepo);
         this.tipoPlanService = new TipoPlanService(planRepo);
-        this.suscripcionService = new SuscripcionService(new SuscripcionRepositoryMySQL(), usuarioRepo, planRepo);
+        
+        this.suscripcionService = new SuscripcionService(
+            new SuscripcionRepositoryMySQL(), 
+            usuarioRepo, 
+            planRepo,
+            precioRepo,
+            pagoRepo
+        );
     }
 
     @Override

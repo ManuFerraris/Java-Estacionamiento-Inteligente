@@ -68,4 +68,22 @@ public class PrecioHistoricoTPRepositoryMemoria implements PrecioHistoricoTPRepo
             throw new IllegalArgumentException("Memoria: No se encontró el registro histórico para actualizar.");
         }
     }
+    
+    @Override
+    public PrecioHistoricoTP obtenerPrecioVigente(int codigoPlan) {
+        PrecioHistoricoTP vigente = null;
+        LocalDateTime ahora = LocalDateTime.now();
+
+        for (PrecioHistoricoTP p : this.baseDeDatosMemoria) {
+            // Buscamos los del plan que nos interesa y que su fechaDesde sea menor o igual a hoy
+            if (p.getId().getCodigoPlan() == codigoPlan && !p.getId().getFechaDesde().isAfter(ahora)) {
+                
+                // Si es el primero que encontramos, o si su fecha es más reciente que el que teníamos guardado, lo reemplazamos
+                if (vigente == null || p.getId().getFechaDesde().isAfter(vigente.getId().getFechaDesde())) {
+                    vigente = p;
+                }
+            }
+        }
+        return vigente;
+    }
 }

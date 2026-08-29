@@ -1,60 +1,72 @@
 package estacionamiento.service;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
+import estacionamiento.domain.EstadoPago;
 import estacionamiento.domain.PagoSuscripcion;
-import estacionamiento.repository.PagoSuscripcionRepository;
-import estacionamiento.repository.SuscripcionRepository;
+import estacionamiento.domain.claves.PagoSuscripcionId;
 import estacionamiento.domain.claves.SuscripcionId;
-
+import estacionamiento.domain.TipoPago;
+import estacionamiento.repository.PagoSuscripcionRepository;
 
 public class PagoSuscripcionService {
 
-    private final PagoSuscripcionRepository pagoSuscripcionRepository;
-    private final SuscripcionRepository suscripcionRepository;
+    private final PagoSuscripcionRepository pagoRepository;
 
-    public PagoSuscripcionService(PagoSuscripcionRepository pagoSuscripcionRepository, 
-                                  SuscripcionRepository suscripcionRepository) {
-        this.pagoSuscripcionRepository = pagoSuscripcionRepository;
-        this.suscripcionRepository = suscripcionRepository;
+    public PagoSuscripcionService(PagoSuscripcionRepository pagoRepository) {
+        this.pagoRepository = pagoRepository;
     }
 
+    public void registrarCobro(int numUsuario, int codPlan, LocalDateTime fechaSub, LocalDateTime fechaEmi, TipoPago tipoPago) {
+        PagoSuscripcion pago = buscarComprobanteValidado(numUsuario, codPlan, fechaSub, fechaEmi);
+
+        if (pago.getEstado() != EstadoPago.PENDIENTE) {
+            throw new IllegalArgumentException("Solo se pueden cobrar comprobantes en estado PENDIENTE.");
+        }
+        
+        if (tipoPago == null) {
+            throw new IllegalArgumentException("Debe especificar un medio de pago.");
+        }
+
+        // Aplicamos el cobro
+        pago.setEstado(EstadoPago.PAGADO);
+        pago.setTipoPago(tipoPago);
+        pago.setFechaHoraPago(LocalDateTime.now());
+
+        pagoRepository.actualizar(pago);
+        System.out.println("Servicio: Pago cobrado vía " + tipoPago);
+    }
+
+    public void anularComprobante(int numUsuario, int codPlan, LocalDateTime fechaSub, LocalDateTime fechaEmi) {
+        PagoSuscripcion pago = buscarComprobanteValidado(numUsuario, codPlan, fechaSub, fechaEmi);
+
+        if (pago.getEstado() != EstadoPago.PENDIENTE) {
+            throw new IllegalArgumentException("No se puede anular un comprobante que ya está procesado o cancelado.");
+        }
+
+        pago.setEstado(EstadoPago.CANCELADO);
+        pagoRepository.actualizar(pago);
+        System.out.println("Servicio: Comprobante anulado.");
+    }
+
+    public List<PagoSuscripcion> obtenerTodos() {
+        return pagoRepository.obtenerTodos();
+    }
     
-    public void registrarPagoSuscripcion(PagoSuscripcion nuevoPago) {
+    private PagoSuscripcion buscarComprobanteValidado(int numUsuario, int codPlan, LocalDateTime fechaSub, LocalDateTime fechaEmi) {
+        // 1. Reconstruimos el ID de la entidad fuerte
+        SuscripcionId subId = new SuscripcionId(numUsuario, codPlan, fechaSub);
         
-        // Validar existencia de la suscripción a la que pertenece.
-        int codTP = nuevoPago.getSuscripcion().getTipoPlan().getCodigo();
-        int numUsu = nuevoPago.getSuscripcion().getUsuario().getNumero();
-        LocalDateTime desde = nuevoPago.getSuscripcion().getFechaDesde();
-
-        SuscripcionId id = new SuscripcionId(numUsu, codTP, desde);
-        if (suscripcionRepository.buscarPorClave(id) == null) {
-            throw new IllegalArgumentException("No se puede registrar el pago: La suscripción no existe.");
-        }
-
-        // Monto debe ser positivo y exacto
-        if (nuevoPago.getMonto() == null || nuevoPago.getMonto().compareTo(BigDecimal.ZERO) <= 0) {
-            throw new IllegalArgumentException("El monto del pago debe ser mayor a cero.");
-        }
-
-        // Coherencia de fechas
-        if (nuevoPago.getFechaHoraPago().isBefore(desde)) {
-            throw new IllegalArgumentException("La fecha de pago no puede ser anterior al inicio de la suscripción.");
-        }
-
-        // NO podemos permitir pagos en el futuro.
-        if (nuevoPago.getFechaHoraPago().isAfter(LocalDateTime.now().plusMinutes(1))) {
-            throw new IllegalArgumentException("No se pueden registrar pagos con fecha futura.");
-        }
-
-        // Verificación de duplicados
-        if (pagoSuscripcionRepository.buscarPorClave(codTP, numUsu, desde, nuevoPago.getFechaHoraEmision()) != null) {
-            throw new IllegalArgumentException("Ya existe un registro de pago para este comprobante de suscripción.");
-        }
-
-        pagoSuscripcionRepository.guardar(nuevoPago);
+        // 2. Lo inyectamos en el ID de la entidad débil
+        PagoSuscripcionId pagoId = new PagoSuscripcionId(subId, fechaEmi);
         
-        System.out.println("Servicio: Pago de suscripción procesado con éxito para el usuario " + numUsu);
+        PagoSuscripcion pago = pagoRepository.buscarPorClave(pagoId);
+        
+        if (pago == null) {
+            throw new IllegalArgumentException("El comprobante de pago solicitado no existe.");
+        }
+        
+        return pago;
     }
 }
