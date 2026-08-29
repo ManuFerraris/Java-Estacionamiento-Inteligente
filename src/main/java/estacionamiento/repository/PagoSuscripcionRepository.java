@@ -1,13 +1,12 @@
 package estacionamiento.repository;
 
 import java.util.List;
-import java.time.LocalDateTime;
 import estacionamiento.domain.PagoSuscripcion;
+import estacionamiento.domain.claves.PagoSuscripcionId;
 
 public interface PagoSuscripcionRepository {
-	void guardar(PagoSuscripcion pagoSuscripcion);
-	PagoSuscripcion buscarPorClave(int codigoTP, int numeroUsuario,LocalDateTime fechaDesde,LocalDateTime fechaHoraEmision);
+    void guardar(PagoSuscripcion pago);
+    void actualizar(PagoSuscripcion pago);
+    PagoSuscripcion buscarPorClave(PagoSuscripcionId id);
     List<PagoSuscripcion> obtenerTodos();
-    void actualizar(int codigoTP, int numeroUsuario,LocalDateTime fechaDesde,LocalDateTime fechaHoraEmision, PagoSuscripcion pagoSuscripcion);
-    void eliminar(int codigoTP, int numeroUsuario,LocalDateTime fechaDesde,LocalDateTime fechaHoraEmision);
 }

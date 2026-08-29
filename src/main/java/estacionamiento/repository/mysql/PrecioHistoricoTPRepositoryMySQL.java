@@ -109,4 +109,22 @@ private EntityManagerFactory emf;
         }
     }
     
+    @Override
+    public PrecioHistoricoTP obtenerPrecioVigente(int codigoPlan) {
+        EntityManager em = emf.createEntityManager();
+        try {
+            // Buscamos el precio más reciente cuya fecha de inicio sea menor o igual a hoy
+            return em.createQuery(
+                "SELECT p FROM PrecioHistoricoTP p WHERE p.id.codigoPlan = :planId AND p.id.fechaDesde <= :ahora ORDER BY p.id.fechaDesde DESC", 
+                PrecioHistoricoTP.class)
+                .setParameter("planId", codigoPlan)
+                .setParameter("ahora", LocalDateTime.now())
+                .setMaxResults(1) // Solo queremos el primero (el vigente)
+                .getSingleResult();
+        } catch (jakarta.persistence.NoResultException e) {
+            return null; // Si el plan es nuevo y olvidaron ponerle precio
+        } finally {
+            em.close();
+        }
+    }
 }

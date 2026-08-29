@@ -31,7 +31,7 @@ public class PagoSuscripcion {
 	private BigDecimal monto;
 	
 	@Enumerated(EnumType.STRING)
-	@Column(name="tipo_pago", nullable=false)
+	@Column(name="tipo_pago", nullable=true)
 	private TipoPago tipoPago;
 	
 	@Enumerated(EnumType.STRING)

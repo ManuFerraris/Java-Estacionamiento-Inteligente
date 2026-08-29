@@ -12,4 +12,5 @@ public interface PrecioHistoricoTPRepository {
     List<PrecioHistoricoTP> obtenerTodos();
     void actualizar(int codigoPlan, LocalDateTime fechaDesde, BigDecimal nuevoPrecio);
     void eliminar(int codigoPlan, LocalDateTime fechaDesde);
+    PrecioHistoricoTP obtenerPrecioVigente(int codigoPlan);
 }
