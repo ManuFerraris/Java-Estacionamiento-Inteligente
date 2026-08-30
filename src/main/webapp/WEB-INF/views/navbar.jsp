@@ -77,6 +77,12 @@
                             <i class="bi bi-file-earmark-check-fill me-1"></i>Gestion de Planes
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link <%= uriActual.endsWith("/beneficios-oficina") ? "active text-white fw-bold" : "" %>" 
+                           href="<%= request.getContextPath() %>/beneficios-oficina">
+                            <i class="bi bi-emoji-grin me-1"></i>Gestion Beneficios
+                        </a>
+                    </li>
                 <% } %>
                 
                 <%-- ENLACES PARA EL CIUDADANO (CLIENTE) --%>

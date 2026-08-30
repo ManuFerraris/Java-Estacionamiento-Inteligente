@@ -55,7 +55,8 @@ public class TipoPlanRepositoryMySQL implements TipoPlanRepository{
 		EntityManager em = emf.createEntityManager();
 
 		try {
-			return em.createQuery("SELECT tp FROM TipoPlan tp", TipoPlan.class).getResultList();
+			return em.createQuery("SELECT DISTINCT t FROM TipoPlan t LEFT JOIN FETCH t.beneficios", TipoPlan.class)
+	                 .getResultList();
 		} finally {
 			em.close();
 		}

@@ -57,7 +57,7 @@
         <div class="row g-4 mb-5">
             <!-- Tarjeta 1: Suscripciones del Cliente -->
             <div class="col-md-4">
-                <a href="#" class="text-decoration-none">
+                <a href="<%= request.getContextPath() %>/mis-suscripciones-user" class="text-decoration-none">
                     <div class="card border-0 shadow-sm rounded-4 h-100 hover-card">
                         <div class="card-body p-4 text-center">
                             <div class="bg-success bg-opacity-10 rounded-circle d-inline-flex p-3 mb-3">

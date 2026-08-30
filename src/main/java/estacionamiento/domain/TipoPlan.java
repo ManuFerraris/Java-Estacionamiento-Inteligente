@@ -1,10 +1,13 @@
 package estacionamiento.domain;
 
 import java.time.LocalDate;
+import java.util.List;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.Column;
 
@@ -26,6 +29,9 @@ public class TipoPlan {
 	@Column(name="fecha_baja", nullable = true)
 	private LocalDate fechaBaja;
 
+	@OneToMany(mappedBy = "tipoPlan", targetEntity = Beneficio.class)
+	private List<Beneficio> beneficios;
+	
 	public TipoPlan() {
 	}
 	
@@ -67,6 +73,15 @@ public class TipoPlan {
 	public void setFechaBaja(LocalDate fechaBaja) {
 		this.fechaBaja = fechaBaja;
 	}
+
+	public List<Beneficio> getBeneficios() {
+		return beneficios;
+	}
+
+	public void setBeneficios(List<Beneficio> beneficios) {
+		this.beneficios = beneficios;
+	}
+	
 	
 	
 }

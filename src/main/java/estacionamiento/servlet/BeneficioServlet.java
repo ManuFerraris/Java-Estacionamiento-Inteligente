@@ -17,7 +17,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
 
-@WebServlet("/beneficios")
+@WebServlet("/beneficios-oficina")
 public class BeneficioServlet extends HttpServlet {
 	
 	private static final long serialVersionUID = 1L;
@@ -107,7 +107,7 @@ public class BeneficioServlet extends HttpServlet {
                     request.getSession().setAttribute("exito", "Beneficio registrado correctamente.");
                 	break;
             }
-            response.sendRedirect(request.getContextPath() + "/beneficios");
+            response.sendRedirect(request.getContextPath() + "/beneficios-oficina");
 		}catch(IllegalArgumentException e) {
 			request.setAttribute("error", "Error de validación: " + e.getMessage());
             doGet(request, response);

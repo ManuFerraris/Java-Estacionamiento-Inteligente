@@ -29,7 +29,7 @@
                         <h5 class="mb-0" id="tituloFormulario"><i class="bi bi-star-fill me-2"></i>Registrar Nuevo Beneficio</h5>
                     </div>
                     <div class="card-body">
-                        <form action="<%= request.getContextPath() %>/beneficios" method="POST" id="formBeneficio">
+                        <form action="<%= request.getContextPath() %>/beneficios-oficina" method="POST" id="formBeneficio">
                             <input type="hidden" name="accion" id="accionForm" value="crear">
                             <!-- Para la clave compuesta en edición -->
                             <input type="hidden" name="numero" id="numeroBeneficio" value="">
@@ -123,7 +123,7 @@
                             
                                                         <% if (b.getFechaBaja() != null) { %>
                                                             <!-- Botón Alta Lógica -->
-                                                            <form action="<%= request.getContextPath() %>/beneficios" method="POST" class="m-0">
+                                                            <form action="<%= request.getContextPath() %>/beneficios-oficina" method="POST" class="m-0">
                                                                 <input type="hidden" name="accion" value="altaLogica">
                                                                 <!-- Pasamos ambas partes de la clave compuesta -->
                                                                 <input type="hidden" name="codigoPlan" value="<%= b.getTipoPlan().getCodigo() %>">
@@ -136,7 +136,7 @@
                                                             </form>
                                                         <% } else { %>
                                                             <!-- Botón Baja Lógica -->
-                                                            <form action="<%= request.getContextPath() %>/beneficios" method="POST" class="m-0">
+                                                            <form action="<%= request.getContextPath() %>/beneficios-oficina" method="POST" class="m-0">
                                                                 <input type="hidden" name="accion" value="bajaLogica">
                                                                 <!-- Pasamos ambas partes de la clave compuesta -->
                                                                 <input type="hidden" name="codigoPlan" value="<%= b.getTipoPlan().getCodigo() %>">
