@@ -59,6 +59,24 @@
                             <i class="bi bi-cash-coin me-1"></i>Caja / Pagos
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link <%= uriActual.endsWith("/cocheras-oficina") ? "active text-white fw-bold" : "" %>" 
+                           href="<%= request.getContextPath() %>/cocheras-oficina">
+                            <i class="bi bi-building me-1"></i>Cocheras
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link <%= uriActual.endsWith("/preciosHistoricos-oficina") ? "active text-white fw-bold" : "" %>" 
+                           href="<%= request.getContextPath() %>/preciosHistoricos-oficina">
+                            <i class="bi bi-cash-stack me-1"></i>Precios Beneficios
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link <%= uriActual.endsWith("/tipoPlanes-oficina") ? "active text-white fw-bold" : "" %>" 
+                           href="<%= request.getContextPath() %>/tipoPlanes-oficina">
+                            <i class="bi bi-file-earmark-check-fill me-1"></i>Gestion de Planes
+                        </a>
+                    </li>
                 <% } %>
                 
                 <%-- ENLACES PARA EL CIUDADANO (CLIENTE) --%>

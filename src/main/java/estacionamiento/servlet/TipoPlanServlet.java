@@ -13,7 +13,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
 
-@WebServlet("/tipoPlanes")
+@WebServlet("/tipoPlanes-oficina")
 public class TipoPlanServlet extends HttpServlet {
     
     private static final long serialVersionUID = 1L;
@@ -86,7 +86,7 @@ public class TipoPlanServlet extends HttpServlet {
                     break;
             }
             
-            response.sendRedirect(request.getContextPath() + "/tipoPlanes");
+            response.sendRedirect(request.getContextPath() + "/tipoPlanes-oficina");
             
         } catch (IllegalArgumentException e) {
             request.setAttribute("error", "Error de validación: " + e.getMessage());

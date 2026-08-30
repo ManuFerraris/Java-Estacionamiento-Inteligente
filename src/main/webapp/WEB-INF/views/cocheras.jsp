@@ -29,7 +29,7 @@
                         <h5 class="mb-0" id="tituloFormulario"><i class="bi bi-plus-circle me-2"></i>Registrar Nueva Cochera</h5>
                     </div>
                     <div class="card-body">
-                        <form action="<%= request.getContextPath() %>/cocheras" method="POST" id="formCochera">
+                        <form action="<%= request.getContextPath() %>/cocheras-oficina" method="POST" id="formCochera">
                             <input type="hidden" name="accion" id="accionForm" value="crear">
                             <input type="hidden" name="codigo" id="codigoCochera" value="">
                             
@@ -105,7 +105,7 @@
                                                         </button>
                             
                                                         <!-- Botón Baja Lógica con ícono outline -->
-                                                        <form action="<%= request.getContextPath() %>/cocheras" method="POST" class="m-0">
+                                                        <form action="<%= request.getContextPath() %>/cocheras-oficina" method="POST" class="m-0">
                                                             <input type="hidden" name="accion" value="bajaLogica">
                                                             <input type="hidden" name="codigo" value="<%= cochera.getCodigo() %>">
                                                             <button type="submit" class="btn btn-outline-danger btn-sm" 

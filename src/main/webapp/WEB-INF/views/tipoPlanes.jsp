@@ -28,7 +28,7 @@
                         <h5 class="mb-0" id="tituloFormulario"><i class="bi bi-tag-fill me-2"></i>Registrar Nuevo Plan</h5>
                     </div>
                     <div class="card-body">
-                        <form action="<%= request.getContextPath() %>/tipoPlanes" method="POST" id="formTipoPlan">
+                        <form action="<%= request.getContextPath() %>/tipoPlanes-oficina" method="POST" id="formTipoPlan">
                             <input type="hidden" name="accion" id="accionForm" value="crear">
                             <input type="hidden" name="codigo" id="codigoTipoPlan" value="">
                             
@@ -104,7 +104,7 @@
                             
                                                         <% if (plan.getFechaBaja() != null) { %>
                                                             <!-- Botón Alta Lógica -->
-                                                            <form action="<%= request.getContextPath() %>/tipoPlanes" method="POST" class="m-0">
+                                                            <form action="<%= request.getContextPath() %>/tipoPlanes-oficina" method="POST" class="m-0">
                                                                 <input type="hidden" name="accion" value="altaLogica">
                                                                 <input type="hidden" name="codigo" value="<%= plan.getCodigo() %>">
                                                                 <button type="submit" class="btn btn-outline-success btn-sm" 
@@ -115,7 +115,7 @@
                                                             </form>
                                                         <% } else { %>
                                                             <!-- Botón Baja Lógica -->
-                                                            <form action="<%= request.getContextPath() %>/tipoPlanes" method="POST" class="m-0">
+                                                            <form action="<%= request.getContextPath() %>/tipoPlanes-oficina" method="POST" class="m-0">
                                                                 <input type="hidden" name="accion" value="bajaLogica">
                                                                 <input type="hidden" name="codigo" value="<%= plan.getCodigo() %>">
                                                                 <button type="submit" class="btn btn-outline-danger btn-sm" 

@@ -18,7 +18,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
-@WebServlet("/preciosHistoricos")
+@WebServlet("/preciosHistoricos-oficina")
 public class PrecioHistoricoTPServlet extends HttpServlet {
     
     private static final long serialVersionUID = 1L;
@@ -96,7 +96,7 @@ public class PrecioHistoricoTPServlet extends HttpServlet {
                     break;
             }
             
-            response.sendRedirect(request.getContextPath() + "/preciosHistoricos");
+            response.sendRedirect(request.getContextPath() + "/preciosHistoricos-oficina");
             
         } catch(IllegalArgumentException e) {
             request.setAttribute("error", "Error de validación: " + e.getMessage());

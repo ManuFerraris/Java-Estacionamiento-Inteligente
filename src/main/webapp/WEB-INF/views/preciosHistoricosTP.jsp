@@ -27,7 +27,7 @@
                         <h5 class="mb-0" id="tituloFormulario"><i class="bi bi-currency-dollar me-2"></i>Registrar Nuevo Precio</h5>
                     </div>
                     <div class="card-body">
-                        <form action="<%= request.getContextPath() %>/preciosHistoricos" method="POST" id="formPrecio">
+                        <form action="<%= request.getContextPath() %>/preciosHistoricos-oficina" method="POST" id="formPrecio">
                             <input type="hidden" name="accion" id="accionForm" value="crear">
                             
                             <!-- Claves compuestas para edición -->
@@ -116,7 +116,7 @@
                                                         </button>
                             
                                                         <!-- Botón Eliminar Físico (No hay baja lógica aquí) -->
-                                                        <form action="<%= request.getContextPath() %>/preciosHistoricos" method="POST" class="m-0">
+                                                        <form action="<%= request.getContextPath() %>/preciosHistoricos-oficina" method="POST" class="m-0">
                                                             <input type="hidden" name="accion" value="eliminar">
                                                             <input type="hidden" name="codigoPlan" value="<%= codPlan %>">
                                                             <input type="hidden" name="fechaDesde" value="<%= fechaIso %>">

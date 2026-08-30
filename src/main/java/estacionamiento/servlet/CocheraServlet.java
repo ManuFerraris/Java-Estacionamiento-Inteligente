@@ -14,7 +14,7 @@ import java.io.IOException;
 import java.util.List;
 
 //La anotación @WebServlet mapea la URL. Cuando alguien entra a "http://localhost:8080/.../cocheras", este Servlet responde.
-@WebServlet("/cocheras")
+@WebServlet("/cocheras-oficina")
 public class CocheraServlet extends HttpServlet {
 
 private static final long serialVersionUID = 1L;
@@ -99,7 +99,7 @@ private static final long serialVersionUID = 1L;
             }
 
             // 3. Redirección PRG (Post-Redirect-Get) para evitar re-envíos con F5
-            response.sendRedirect(request.getContextPath() + "/cocheras");
+            response.sendRedirect(request.getContextPath() + "/cocheras-oficina");
             
         } catch (IllegalArgumentException e) {
             request.setAttribute("error", "Error de validación: " + e.getMessage());
