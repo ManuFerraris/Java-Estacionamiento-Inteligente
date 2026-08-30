@@ -4,6 +4,7 @@ import estacionamiento.domain.Cochera;
 import estacionamiento.domain.Lugar;
 import estacionamiento.repository.LugarRepository;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -76,4 +77,10 @@ public class LugarRepositoryMemoria implements LugarRepository {
             System.out.println("No se encontró el lugar para eliminar.");
         }
     }
+
+	@Override
+	public Lugar obtenerPrimerLugarLibre(int idCochera, LocalDateTime fechaDesde, LocalDateTime fechaHasta) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

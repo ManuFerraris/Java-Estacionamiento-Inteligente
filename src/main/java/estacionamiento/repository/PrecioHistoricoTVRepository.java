@@ -1,5 +1,6 @@
 package estacionamiento.repository;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import estacionamiento.domain.PrecioHistoricoTV;
@@ -10,4 +11,5 @@ public interface PrecioHistoricoTVRepository {
     List<PrecioHistoricoTV> obtenerTodos();
     void actualizar(int codigoTV, LocalDateTime fechaDesde, PrecioHistoricoTV precioHistorico);
     void eliminar(int codigoTV, LocalDateTime fechaDesde);
+	BigDecimal obtenerPrecioVigente(int numero);
 }
