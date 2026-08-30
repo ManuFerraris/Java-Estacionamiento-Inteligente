@@ -87,7 +87,7 @@
 
             <!-- Tarjeta 3: Perfil de Usuario -->
             <div class="col-md-4">
-                <a href="#" class="text-decoration-none">
+                <a href="<%= request.getContextPath() %>/perfil-user" class="text-decoration-none">
                     <div class="card border-0 shadow-sm rounded-4 h-100 hover-card">
                         <div class="card-body p-4 text-center">
                             <div class="bg-secondary bg-opacity-10 rounded-circle d-inline-flex p-3 mb-3">
