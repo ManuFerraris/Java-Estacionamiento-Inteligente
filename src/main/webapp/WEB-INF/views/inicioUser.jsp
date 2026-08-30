@@ -72,7 +72,7 @@
 
             <!-- Tarjeta 2: Reservas (Para el futuro módulo) -->
             <div class="col-md-4">
-                <a href="#" class="text-decoration-none">
+                <a href="<%= request.getContextPath() %>/mis-reservas-user" class="text-decoration-none">
                     <div class="card border-0 shadow-sm rounded-4 h-100 hover-card">
                         <div class="card-body p-4 text-center">
                             <div class="bg-info bg-opacity-10 rounded-circle d-inline-flex p-3 mb-3">

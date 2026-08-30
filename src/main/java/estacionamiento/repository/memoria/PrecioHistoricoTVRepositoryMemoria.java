@@ -1,5 +1,6 @@
 package estacionamiento.repository.memoria;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -71,4 +72,10 @@ public class PrecioHistoricoTVRepositoryMemoria implements PrecioHistoricoTVRepo
             System.out.println("No se encontró el precio histórico para eliminar.");
         }
     }
+
+	@Override
+	public BigDecimal obtenerPrecioVigente(int numero) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

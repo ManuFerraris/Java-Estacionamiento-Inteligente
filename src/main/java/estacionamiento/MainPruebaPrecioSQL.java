@@ -6,7 +6,7 @@ import java.util.List;
 
 import estacionamiento.domain.PrecioHistoricoTV;
 import estacionamiento.domain.TipoVehiculo;
-import estacionamiento.repository.mysql.PrecioHistoricoTVRepositorySQL;
+import estacionamiento.repository.mysql.PrecioHistoricoTVRepositoryMySQL;
 
 public class MainPruebaPrecioSQL {
 
@@ -17,7 +17,7 @@ public class MainPruebaPrecioSQL {
 
         try {
             // 1. Inicializamos el repositorio específico de MySQL
-            PrecioHistoricoTVRepositorySQL repoPrecios = new PrecioHistoricoTVRepositorySQL();
+            PrecioHistoricoTVRepositoryMySQL repoPrecios = new PrecioHistoricoTVRepositoryMySQL();
 
             // 2. Simulamos el Tipo de Vehículo que viene del dominio
             // Nota: En un escenario real, este objeto se recuperaría primero de su propio repositorio

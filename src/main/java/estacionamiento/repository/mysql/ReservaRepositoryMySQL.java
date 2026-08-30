@@ -12,62 +12,108 @@ import jakarta.persistence.Persistence;
 
 public class ReservaRepositoryMySQL implements ReservaRepository {
 
-	private EntityManager em;
+    private final EntityManagerFactory emf;
     
     public ReservaRepositoryMySQL() {
-        EntityManagerFactory emf = Persistence.createEntityManagerFactory("EstacionamientoPU");
-        this.em = emf.createEntityManager();
+        this.emf = Persistence.createEntityManagerFactory("EstacionamientoPU");
     }
     
-	@Override
-	public void guardar(Reserva reserva) {
-		em.getTransaction().begin();
-        em.persist(reserva);
-        em.getTransaction().commit();
-        System.out.println("MySQL: Reserva registrada correctamente en la base de datos.");
-	}
+    @Override
+    public void guardar(Reserva reserva) {
+        EntityManager em = emf.createEntityManager();
+        try {
+            em.getTransaction().begin();
+            em.merge(reserva);
+            em.getTransaction().commit();
+            System.out.println("MySQL: Reserva registrada correctamente en la base de datos.");
+        } catch (Exception e) {
+            if (em.getTransaction().isActive()) {
+                em.getTransaction().rollback();
+            }
+            throw e;
+        } finally {
+            em.close();
+        }
+    }
+
+    @Override
+    public Reserva buscarPorClave(ReservaId claveCompuesta) {
+        EntityManager em = emf.createEntityManager();
+        try {
+            return em.find(Reserva.class, claveCompuesta);
+        } finally {
+            em.close();
+        }
+    }
+
+    @Override
+    public List<Reserva> obtenerTodos() {
+        EntityManager em = emf.createEntityManager();
+        try {
+            return em.createQuery("SELECT r FROM Reserva r", Reserva.class).getResultList();
+        } finally {
+            em.close();
+        }
+    }
+
+    @Override
+    public void actualizar(Reserva reservaNuevosDatos) {
+        EntityManager em = emf.createEntityManager();
+        try {
+            em.getTransaction().begin();
+            em.merge(reservaNuevosDatos);
+            em.getTransaction().commit();
+            System.out.println("MySQL: Reserva actualizada correctamente.");
+        } catch (Exception e) {
+            if (em.getTransaction().isActive()) {
+                em.getTransaction().rollback();
+            }
+            throw e;
+        } finally {
+            em.close();
+        }
+    }
+
+    @Override
+    public void eliminar(ReservaId claveCompuesta) {
+        EntityManager em = emf.createEntityManager();
+        try {
+            em.getTransaction().begin();
+            Reserva resAEliminar = em.find(Reserva.class, claveCompuesta);
+            
+            if (resAEliminar != null) {
+                em.remove(resAEliminar);
+                em.getTransaction().commit();
+                System.out.println("MySQL: Reserva eliminada correctamente.");
+            } else {
+                em.getTransaction().rollback();
+                System.out.println("MySQL: La reserva no fue encontrada para ser eliminada.");
+            }
+        } catch (Exception e) {
+            if (em.getTransaction().isActive()) {
+                em.getTransaction().rollback();
+            }
+            throw e;
+        } finally {
+            em.close();
+        }
+    }
 
 	@Override
 	public Reserva buscarPorClave(String patente, int numeroUsu, int numeroTE, LocalDateTime fechaDesde) {
-		ReservaId claveCompuesta = new ReservaId(patente, numeroUsu, numeroTE, fechaDesde);
-		return em.find(Reserva.class, claveCompuesta);
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override
-	public List<Reserva> obtenerTodos() {
-		return em.createQuery("SELECT r FROM Reserva r", Reserva.class).getResultList();
-	}
-
-	@Override
-	public void actualizar(String patente, int numeroUsu, int numeroTE, LocalDateTime fechaDesde, Reserva reservaNuevosDatos) {
-		Reserva reservaExistente = buscarPorClave(patente, numeroUsu, numeroTE, fechaDesde);
-        
-        if (reservaExistente != null) {
-            em.getTransaction().begin();
-            reservaExistente.setFechaHastaTentativa(reservaNuevosDatos.getFechaHastaTentativa());
-            reservaExistente.setFechaHastaReal(reservaNuevosDatos.getFechaHastaReal());
-            reservaExistente.setEstado(reservaNuevosDatos.getEstado());
-            reservaExistente.setSenia(reservaNuevosDatos.getSenia());
-            reservaExistente.setLugar(reservaNuevosDatos.getLugar());
-            reservaExistente.setPago(reservaNuevosDatos.getPago());
-            em.getTransaction().commit();
-            System.out.println("MySQL: Reserva actualizada correctamente.");
-        } else {
-            throw new IllegalArgumentException("MySQL: No se encontró la reserva para actualizar.");
-        }
+	public void actualizar(String patente, int numeroUsu, int numeroTE, LocalDateTime fechaDesde, Reserva reserva) {
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override
 	public void eliminar(String patente, int numeroUsu, int numeroTE, LocalDateTime fechaDesde) {
-		Reserva resAEliminar = buscarPorClave(patente, numeroUsu, numeroTE, fechaDesde);
-        
-        if (resAEliminar != null) {
-            em.getTransaction().begin();
-            em.remove(resAEliminar);
-            em.getTransaction().commit();
-            System.out.println("MySQL: Reserva eliminada correctamente.");
-        } else {
-            System.out.println("MySQL: La reserva no fue encontrada para ser eliminada.");
-        }
+		// TODO Auto-generated method stub
+		
 	}
 }

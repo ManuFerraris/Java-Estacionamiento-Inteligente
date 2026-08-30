@@ -1,60 +1,155 @@
 package estacionamiento.service;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+
+import estacionamiento.domain.EstadoReserva;
 import estacionamiento.domain.Reserva;
+import estacionamiento.domain.claves.ReservaId;
+import estacionamiento.domain.Suscripcion;
+import estacionamiento.domain.TipoEstadia;
+import estacionamiento.domain.Usuario;
+import estacionamiento.domain.Vehiculo;
+import estacionamiento.domain.Lugar;
+
 import estacionamiento.repository.ReservaRepository;
+import estacionamiento.repository.LugarRepository;
 import estacionamiento.repository.VehiculoRepository;
 import estacionamiento.repository.UsuarioRepository;
 import estacionamiento.repository.TipoEstadiaRepository;
-
-import java.time.LocalDateTime;
+import estacionamiento.repository.PrecioHistoricoTVRepository;
 
 public class ReservaService {
 
-    private final ReservaRepository reservaRepository;
+	private final ReservaRepository reservaRepository;
+    private final LugarRepository lugarRepository;
     private final VehiculoRepository vehiculoRepository;
     private final UsuarioRepository usuarioRepository;
     private final TipoEstadiaRepository tipoEstadiaRepository;
-
-    // Inyectamos todas las dependencias necesarias
-    public ReservaService(ReservaRepository reservaRepository, VehiculoRepository vehiculoRepository,
-                          UsuarioRepository usuarioRepository, TipoEstadiaRepository tipoEstadiaRepository) {
-        this.reservaRepository = reservaRepository;
+    private final PrecioHistoricoTVRepository precioRepository;
+    private final SuscripcionService suscripcionService;
+ 
+    public ReservaService(
+    		ReservaRepository reservaRepository, 
+            LugarRepository lugarRepository,
+            VehiculoRepository vehiculoRepository,
+            UsuarioRepository usuarioRepository,
+            TipoEstadiaRepository tipoEstadiaRepository,
+            PrecioHistoricoTVRepository precioRepository,
+            SuscripcionService suscripcionService) {
+    	this.reservaRepository = reservaRepository;
+        this.lugarRepository = lugarRepository;
         this.vehiculoRepository = vehiculoRepository;
         this.usuarioRepository = usuarioRepository;
         this.tipoEstadiaRepository = tipoEstadiaRepository;
+        this.precioRepository = precioRepository;
+        this.suscripcionService = suscripcionService;
     }
-
-    // REGLAS DE NEGOCIO (CASOS DE USO)
-    // ================================
     
-    public void registrarNuevaReserva(Reserva nuevaReserva) {
-        // Regla 1: Verificar que el vehículo exista
-        if (vehiculoRepository.buscarPorPatente(nuevaReserva.getVehiculo().getPatente()) == null) {
-            throw new IllegalArgumentException("No se puede reservar: El vehículo no está registrado en el sistema.");
+    public Reserva generarReserva(String patente, Integer numeroUsuario, Integer idCochera, Integer idTipoEstadia, LocalDateTime fechaDesde, LocalDateTime fechaHastaTentativa) {
+        
+        Lugar lugarDisponible = lugarRepository.obtenerPrimerLugarLibre(idCochera, fechaDesde, fechaHastaTentativa);
+        if (lugarDisponible == null) {
+            throw new IllegalArgumentException("No hay cupo disponible en la cochera para ese rango horario.");
         }
 
-        // Regla 2: Verificar que el usuario exista
-        if (usuarioRepository.buscarPorNumero(nuevaReserva.getUsuario().getNumero()) == null) {
-            throw new IllegalArgumentException("No se puede reservar: El usuario no existe.");
+        Vehiculo vehiculo = vehiculoRepository
+                .buscarPorPatente(patente)
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "El vehículo no se encuentra registrado."
+                ));
+
+        Usuario usuario = usuarioRepository.buscarPorNumero(numeroUsuario);
+        if (usuario == null) {
+            throw new IllegalArgumentException("El usuario no existe.");
         }
 
-        // Regla 3: Verificar que el Tipo de Estadía exista
-        if (tipoEstadiaRepository.buscarPorNumero(nuevaReserva.getTipoEstadia().getNumero()) == null) {
-            throw new IllegalArgumentException("No se puede reservar: El tipo de estadía no es válido.");
+        TipoEstadia tipoEstadia = tipoEstadiaRepository.buscarPorNumero(idTipoEstadia);
+        if (tipoEstadia == null) {
+            throw new IllegalArgumentException("El tipo de estadía seleccionado no es válido.");
         }
 
-        // Regla 4: Validar que la fecha no sea en el pasado (damos 1 minuto de margen por el tiempo de ejecución)
-        if (nuevaReserva.getFechaDesde().isBefore(LocalDateTime.now().minusMinutes(1))) {
-            throw new IllegalArgumentException("La reserva no puede iniciar en el pasado.");
-        }
+        BigDecimal montoFinal = calcularMontoConBeneficios(numeroUsuario, vehiculo);
 
-        // Regla 5: Configurar la tolerancia de 20 minutos
-        LocalDateTime limiteTolerancia = nuevaReserva.getFechaDesde().plusMinutes(20);
-        nuevaReserva.setFechaHastaTentativa(limiteTolerancia);
+        ReservaId id = new ReservaId(patente, numeroUsuario, idTipoEstadia, fechaDesde);
 
-        // Si sobrevive a todas las validaciones, el Servicio autoriza al Repositorio a guardar
+        Reserva nuevaReserva = new Reserva(
+            vehiculo, 
+            usuario, 
+            tipoEstadia, 
+            fechaHastaTentativa, 
+            null, 
+            EstadoReserva.PENDIENTE, 
+            montoFinal, 
+            null, 
+            lugarDisponible
+        );
+        
+        nuevaReserva.setId(id);
         reservaRepository.guardar(nuevaReserva);
         
-        System.out.println("Reserva validada y registrada vía Servicio. Límite de llegada: " + limiteTolerancia);
+        return nuevaReserva;
+    }
+
+    public void registrarIngreso(ReservaId idReserva) {
+        Reserva reserva = reservaRepository.buscarPorClave(idReserva);
+
+        if (reserva == null) {
+            throw new IllegalArgumentException("La reserva no existe.");
+        }
+
+        if (reserva.getEstado() != EstadoReserva.PENDIENTE && reserva.getEstado() != EstadoReserva.SALIDA_PARCIAL) {
+            throw new IllegalArgumentException("El vehículo no está habilitado para ingresar. Estado actual: " + reserva.getEstado());
+        }
+
+        reserva.setEstado(EstadoReserva.EN_CURSO);
+        reservaRepository.actualizar(reserva);
+    }
+
+    public void registrarSalida(ReservaId idReserva, boolean esSalidaDefinitiva) {
+        Reserva reserva = reservaRepository.buscarPorClave(idReserva);
+
+        if (reserva == null) {
+            throw new IllegalArgumentException("La reserva no existe.");
+        }
+
+        if (reserva.getEstado() != EstadoReserva.EN_CURSO) {
+            throw new IllegalArgumentException("El vehículo no se encuentra físicamente en la cochera.");
+        }
+
+        if (reserva.getTipoEstadia().getDescripcion().equalsIgnoreCase("Por Hora")) {
+            esSalidaDefinitiva = true;
+        }
+
+        if (esSalidaDefinitiva) {
+            reserva.setEstado(EstadoReserva.FINALIZADA);
+            reserva.setFechaHastaReal(LocalDateTime.now());
+        } else {
+            reserva.setEstado(EstadoReserva.SALIDA_PARCIAL);
+        }
+
+        reservaRepository.actualizar(reserva);
+    }
+
+    private BigDecimal calcularMontoConBeneficios(Integer numeroUsuario, Vehiculo vehiculo) {
+        BigDecimal precioBase = precioRepository.obtenerPrecioVigente(vehiculo.getTipoVehiculo().getNumero());
+        
+        if (precioBase == null) {
+            throw new IllegalArgumentException("No hay un cuadro tarifario vigente para este tipo de vehículo.");
+        }
+
+        Suscripcion suscripcionActiva = suscripcionService.obtenerActivaPorUsuario(numeroUsuario);
+
+        if (suscripcionActiva != null) {
+            String plan = suscripcionActiva.getTipoPlan().getNombre().toUpperCase();
+            
+            if (plan.equals("PREMIUM")) {
+                return BigDecimal.ZERO; 
+            } else if (plan.equals("MEDIUM")) {
+                return precioBase.multiply(new BigDecimal("0.80"));
+            }
+        }
+
+        return precioBase;
     }
 }

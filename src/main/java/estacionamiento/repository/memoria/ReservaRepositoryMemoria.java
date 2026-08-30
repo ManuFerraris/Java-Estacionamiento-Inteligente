@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import estacionamiento.domain.Reserva;
+import estacionamiento.domain.claves.ReservaId;
 import estacionamiento.repository.ReservaRepository;
 
 public class ReservaRepositoryMemoria implements ReservaRepository {
@@ -81,4 +82,22 @@ public class ReservaRepositoryMemoria implements ReservaRepository {
             System.out.println("No se encontró la Reserva para eliminar.");
         }
     }
+
+	@Override
+	public void eliminar(ReservaId claveCompuesta) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void actualizar(Reserva reservaNuevosDatos) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public Reserva buscarPorClave(ReservaId claveCompuesta) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

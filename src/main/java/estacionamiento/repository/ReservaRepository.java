@@ -1,6 +1,8 @@
 package estacionamiento.repository;
 import java.util.List;
 import estacionamiento.domain.Reserva;
+import estacionamiento.domain.claves.ReservaId;
+
 import java.time.LocalDateTime;
 
 public interface ReservaRepository {
@@ -9,4 +11,7 @@ public interface ReservaRepository {
     List<Reserva> obtenerTodos();
     void actualizar(String patente, int numeroUsu, int numeroTE, LocalDateTime fechaDesde, Reserva reserva);
     void eliminar(String patente, int numeroUsu, int numeroTE, LocalDateTime fechaDesde);
+	void eliminar(ReservaId claveCompuesta);
+	void actualizar(Reserva reservaNuevosDatos);
+	Reserva buscarPorClave(ReservaId claveCompuesta);
 }
