@@ -85,5 +85,4 @@ public class PagoSuscripcionRepositoryMySQL implements PagoSuscripcionRepository
             em.close();
         }
     }
-
 }

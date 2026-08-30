@@ -69,4 +69,11 @@ public class PagoSuscripcionService {
         
         return pago;
     }
+    
+    public List<PagoSuscripcion> obtenerPendientesPorUsuario(int numUsuario) {
+        return pagoRepository.obtenerTodos().stream()
+                .filter(pago -> pago.getId().getSuscripcionId().getNumero() == numUsuario)
+                .filter(pago -> pago.getEstado() == EstadoPago.PENDIENTE)
+                .toList();
+    }
 }

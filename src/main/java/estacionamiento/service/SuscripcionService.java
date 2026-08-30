@@ -111,4 +111,8 @@ public class SuscripcionService {
     public List<Suscripcion> obtenerTodas() {
         return suscripcionRepository.obtenerTodas();
     }
+    
+    public Suscripcion obtenerActivaPorUsuario(int numeroUsuario) {
+        return suscripcionRepository.buscarActivaPorUsuario(numeroUsuario);
+    }
 }
