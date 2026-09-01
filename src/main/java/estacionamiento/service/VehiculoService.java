@@ -1,7 +1,6 @@
 package estacionamiento.service;
 
 import java.util.List;
-import java.util.Optional;
 
 import estacionamiento.domain.Vehiculo;
 import estacionamiento.repository.VehiculoRepository;
@@ -14,7 +13,7 @@ public class VehiculoService {
         this.vehiculoRepository = vehiculoRepository;
     }
 
-    public Vehiculo registrarVehiculo(Vehiculo nuevoVehiculo) {
+    public void registrarVehiculo(Vehiculo nuevoVehiculo) {
         if (nuevoVehiculo == null) {
             throw new IllegalArgumentException("No se puede registrar un vehículo nulo.");
         }
@@ -27,10 +26,9 @@ public class VehiculoService {
             throw new IllegalArgumentException("El vehículo debe tener un tipo asignado (moto, auto, utilitario, etc.).");
         }
 
-        Vehiculo vehiculoGuardado = vehiculoRepository.guardar(nuevoVehiculo);
+        vehiculoRepository.guardar(nuevoVehiculo);
         System.out.println("Servicio: Vehículo validado y procesado correctamente.");
         
-        return vehiculoGuardado;
     }
 
     public List<Vehiculo> obtenerTodosLosVehiculos() {
@@ -42,10 +40,10 @@ public class VehiculoService {
             throw new IllegalArgumentException("La patente a buscar no puede estar vacía.");
         }
 
-        Optional<Vehiculo> vehiculoOpt = vehiculoRepository.buscarPorPatente(patente);
+        Vehiculo vehiculo = vehiculoRepository.buscarPorPatente(patente);
         
-        if (vehiculoOpt.isPresent()) {
-            return vehiculoOpt.get();
+        if (vehiculo != null) {
+            return vehiculo;
         } else {
             throw new Exception("No se encontró ningún vehículo con la patente: " + patente);
         }

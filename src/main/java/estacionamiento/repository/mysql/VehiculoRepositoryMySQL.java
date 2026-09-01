@@ -1,7 +1,6 @@
 package estacionamiento.repository.mysql;
 
 import java.util.List;
-import java.util.Optional;
 import estacionamiento.domain.Vehiculo;
 import estacionamiento.repository.VehiculoRepository;
 import jakarta.persistence.EntityManager;
@@ -10,65 +9,91 @@ import jakarta.persistence.Persistence;
 
 public class VehiculoRepositoryMySQL implements VehiculoRepository {
 
-    private EntityManager em;
-    
+	private final EntityManagerFactory emf;
+
     public VehiculoRepositoryMySQL() {
-        EntityManagerFactory emf = Persistence.createEntityManagerFactory("EstacionamientoPU");
-        this.em = emf.createEntityManager();
+        this.emf = Persistence.createEntityManagerFactory("EstacionamientoPU");
     }
 
     @Override
-    public Vehiculo guardar(Vehiculo vehiculo) {
-        em.getTransaction().begin();
-        em.persist(vehiculo);
-        em.getTransaction().commit();
-        System.out.println("MySQL: Vehículo guardado correctamente (Patente: " + vehiculo.getPatente() + ").");
-        
-        return vehiculo;
+    public void guardar(Vehiculo vehiculo) {
+        EntityManager em = emf.createEntityManager();
+        try {
+            em.getTransaction().begin();
+            em.persist(vehiculo);
+            em.getTransaction().commit();
+            System.out.println("MySQL: Vehículo registrado correctamente.");
+        } catch (Exception e) {
+            if (em.getTransaction().isActive()) {
+                em.getTransaction().rollback();
+            }
+            throw e;
+        } finally {
+            em.close();
+        }
     }
 
     @Override
-    public Optional<Vehiculo> buscarPorPatente(String patente) {
-        // em.find buscará por la @Id definida en la entidad (patente)
-        Vehiculo vehiculoEncontrado = em.find(Vehiculo.class, patente);
-        return Optional.ofNullable(vehiculoEncontrado);
+    public Vehiculo buscarPorPatente(String patente) {
+        EntityManager em = emf.createEntityManager();
+        try {
+            return em.find(Vehiculo.class, patente);
+        } finally {
+            em.close();
+        }
+    }
+
+    @Override
+    public List<Vehiculo> buscarPorUsuario(Integer numeroUsuario) {
+        EntityManager em = emf.createEntityManager();
+        try {
+            String jpql = "SELECT v FROM Vehiculo v WHERE v.usuario.numero = :numeroUsuario";
+            return em.createQuery(jpql, Vehiculo.class)
+                     .setParameter("numeroUsuario", numeroUsuario)
+                     .getResultList();
+        } finally {
+            em.close();
+        }
     }
 
     @Override
     public List<Vehiculo> obtenerTodos() {
-        return em.createQuery("SELECT v FROM Vehiculo v", Vehiculo.class).getResultList();
-    }
-
-    @Override
-    public void actualizar(String patente, Vehiculo vehiculoNuevosDatos) {
-        Optional<Vehiculo> vehiculoExistenteOpt = buscarPorPatente(patente);
-        
-        if (vehiculoExistenteOpt.isPresent()) {
-            Vehiculo vehiculoExistente = vehiculoExistenteOpt.get();
-            
-            em.getTransaction().begin();
-            // Actualizamos los campos administrados por JPA
-            vehiculoExistente.setDescripcion(vehiculoNuevosDatos.getDescripcion());
-            vehiculoExistente.setTipoVehiculo(vehiculoNuevosDatos.getTipoVehiculo());
-            em.getTransaction().commit();
-            
-            System.out.println("MySQL: Vehículo actualizado correctamente.");
-        } else {
-            throw new IllegalArgumentException("MySQL: No se encontró el vehículo con patente " + patente + " para actualizar.");
+        EntityManager em = emf.createEntityManager();
+        try {
+            return em.createQuery("SELECT v FROM Vehiculo v", Vehiculo.class).getResultList();
+        } finally {
+            em.close();
         }
     }
 
     @Override
     public void eliminar(String patente) {
-        Optional<Vehiculo> vehiculoAEliminarOpt = buscarPorPatente(patente);
-        
-        if (vehiculoAEliminarOpt.isPresent()) {
+        EntityManager em = emf.createEntityManager();
+        try {
             em.getTransaction().begin();
-            em.remove(vehiculoAEliminarOpt.get());
-            em.getTransaction().commit();
-            System.out.println("MySQL: Vehículo eliminado correctamente.");
-        } else {
-            System.out.println("MySQL: No se encontró el vehículo para eliminar.");
+            Vehiculo vehiculoAEliminar = em.find(Vehiculo.class, patente);
+            
+            if (vehiculoAEliminar != null) {
+                em.remove(vehiculoAEliminar);
+                em.getTransaction().commit();
+                System.out.println("MySQL: Vehículo eliminado correctamente.");
+            } else {
+                em.getTransaction().rollback();
+                System.out.println("MySQL: El vehículo no fue encontrado.");
+            }
+        } catch (Exception e) {
+            if (em.getTransaction().isActive()) {
+                em.getTransaction().rollback();
+            }
+            throw e;
+        } finally {
+            em.close();
         }
     }
+
+	@Override
+	public void actualizar(String patente, Vehiculo vehiculo) {
+		// TODO Auto-generated method stub
+		
+	}
 }

@@ -53,11 +53,10 @@ public class ReservaService {
             throw new IllegalArgumentException("No hay cupo disponible en la cochera para ese rango horario.");
         }
 
-        Vehiculo vehiculo = vehiculoRepository
-                .buscarPorPatente(patente)
-                .orElseThrow(() -> new IllegalArgumentException(
-                        "El vehículo no se encuentra registrado."
-                ));
+        Vehiculo vehiculo = vehiculoRepository.buscarPorPatente(patente);
+        if (vehiculo == null) {
+        	throw new IllegalArgumentException( "El vehículo no se encuentra registrado.");
+        }
 
         Usuario usuario = usuarioRepository.buscarPorNumero(numeroUsuario);
         if (usuario == null) {

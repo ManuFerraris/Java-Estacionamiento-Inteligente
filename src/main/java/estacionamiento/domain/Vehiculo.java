@@ -18,6 +18,11 @@ public class Vehiculo {
     @JoinColumn(name="numero") 
     private TipoVehiculo tipoVehiculo;
     
+    // Agrego la relacion 1..N directa con el dueño.
+    @ManyToOne
+    @JoinColumn(name="numero_usuario", nullable=false) 
+    private Usuario usuario;
+    
     @OneToMany(mappedBy = "vehiculo", targetEntity = Reserva.class)
     private List<Reserva> reservas;
     
@@ -53,4 +58,12 @@ public class Vehiculo {
     public void setTipoVehiculo(TipoVehiculo tipoVehiculo) {
         this.tipoVehiculo = tipoVehiculo;
     }
+
+	public Usuario getUsuario() {
+		return usuario;
+	}
+
+	public void setUsuario(Usuario usuario) {
+		this.usuario = usuario;
+	}
 }

@@ -59,6 +59,10 @@ public class Usuario {
 	@OneToMany(mappedBy = "usuario", targetEntity = Reserva.class)
 	private List<Reserva> reservas;
 	
+	// Creol La lista de vehiculos que le pertenecen al usuario
+    @OneToMany(mappedBy = "usuario", targetEntity = Vehiculo.class)
+    private List<Vehiculo> misVehiculos;
+    
 	public Usuario() {
 	}
 
@@ -164,6 +168,28 @@ public class Usuario {
 	public void setRol(RolesUsuario rol) {
 		this.rol = rol;
 	}
-	
-	
+
+	public List<Suscripcion> getSuscripciones() {
+		return suscripciones;
+	}
+
+	public void setSuscripciones(List<Suscripcion> suscripciones) {
+		this.suscripciones = suscripciones;
+	}
+
+	public List<Reserva> getReservas() {
+		return reservas;
+	}
+
+	public void setReservas(List<Reserva> reservas) {
+		this.reservas = reservas;
+	}
+
+	public List<Vehiculo> getMisVehiculos() {
+		return misVehiculos;
+	}
+
+	public void setMisVehiculos(List<Vehiculo> misVehiculos) {
+		this.misVehiculos = misVehiculos;
+	}
 }

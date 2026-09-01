@@ -76,7 +76,7 @@
                     <div class="card border-0 shadow-sm rounded-4 h-100 hover-card">
                         <div class="card-body p-4 text-center">
                             <div class="bg-info bg-opacity-10 rounded-circle d-inline-flex p-3 mb-3">
-                                <i class="bi bi-car-front-fill fs-1 text-info"></i>
+                                <i class="bi bi-house-check fs-1 text-secondary"></i>
                             </div>
                             <h5 class="text-dark fw-bold mb-2">Mis Reservas</h5>
                             <p class="text-muted small mb-0">Gestiona estadías diarias o por hora y registra salidas parciales.</p>
@@ -95,6 +95,21 @@
                             </div>
                             <h5 class="text-dark fw-bold mb-2">Mi Perfil</h5>
                             <p class="text-muted small mb-0">Actualiza tus datos de contacto, contraseña e información personal.</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            
+             <!-- Tarjeta 4: Gestion de vehiculos del usuario-->
+            <div class="col-md-4">
+                <a href="<%= request.getContextPath() %>/mis-vehiculos-user" class="text-decoration-none">
+                    <div class="card border-0 shadow-sm rounded-4 h-100 hover-card">
+                        <div class="card-body p-4 text-center">
+                            <div class="bg-secondary bg-opacity-10 rounded-circle d-inline-flex p-3 mb-3">
+                                <i class="bi bi-car-front-fill fs-1 text-info"></i>
+                            </div>
+                            <h5 class="text-dark fw-bold mb-2">Mis vehiculos</h5>
+                            <p class="text-muted small mb-0">Aqui podras gestionar tus vehiculos.</p>
                         </div>
                     </div>
                 </a>
