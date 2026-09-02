@@ -41,8 +41,12 @@ public class Reserva {
 	private EstadoReserva estado;
 	
     @ManyToOne(fetch = FetchType.LAZY) 
-    @JoinColumn(name="numero_pago")
-	private Pago pago;
+    @JoinColumn(name="numero_pago_senia")
+	private Pago pagoSenia;
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name="numero_pago_saldo")
+    private Pago pagoSaldo;
 	
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="codigo_lugar")
@@ -55,7 +59,7 @@ public class Reserva {
 	}
 	
 	public Reserva(Vehiculo vehiculo, Usuario usuario, TipoEstadia tipoEstadia, LocalDateTime fechaHastaTentativa, 
-	            LocalDateTime fechaHastaReal, EstadoReserva estado, BigDecimal senia, Pago pago, Lugar lugar) {
+	            LocalDateTime fechaHastaReal, EstadoReserva estado, BigDecimal senia, Pago pagoSenia, Pago pagoSaldo, Lugar lugar) {
 		this.vehiculo = vehiculo;
 		this.usuario = usuario;
 		this.tipoEstadia = tipoEstadia;
@@ -64,16 +68,25 @@ public class Reserva {
 		this.fechaHastaReal = fechaHastaReal;
 		this.estado = estado;
 		this.senia = senia;
-		this.pago = pago;
+		this.pagoSenia = pagoSenia;
+		this.pagoSaldo = pagoSaldo;
 		this.lugar = lugar;
 	}
 	
-	public Pago getPago() {
-		return pago;
+	public Pago getPagoSenia() {
+		return pagoSenia;
 	}
 
-	public void setPago(Pago pago) {
-		this.pago = pago;
+	public void setPagoSenia(Pago pago) {
+		this.pagoSenia = pago;
+	}
+	
+	public Pago getPagoSaldo() {
+		return pagoSaldo;
+	}
+	
+	public void setPagoSaldo(Pago pago) {
+		this.pagoSaldo = pago;
 	}
 
 	public Lugar getLugar() {

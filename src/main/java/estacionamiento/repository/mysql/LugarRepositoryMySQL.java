@@ -116,6 +116,10 @@ public class LugarRepositoryMySQL implements LugarRepository {
     public Lugar obtenerPrimerLugarLibre(int idCochera, LocalDateTime fechaDesde, LocalDateTime fechaHasta) {
         EntityManager em = emf.createEntityManager();
         try {
+        	// Agrego el adicional de 10 minutos antes y despues para evitar que los autos
+        	// se queden estancados en la entrada.
+        	LocalDateTime inicioConBuffer = fechaDesde.minusMinutes(10);
+        	LocalDateTime finConBuffer = fechaHasta.plusMinutes(10);
             String jpql = "SELECT l FROM Lugar l WHERE l.cochera.codigo = :idCochera AND l.codigo NOT IN (" +
                           "    SELECT r.lugar.codigo FROM Reserva r " +
                           "    WHERE r.estado IN ('PENDIENTE', 'EN_CURSO', 'SALIDA_PARCIAL') " +
@@ -123,15 +127,15 @@ public class LugarRepositoryMySQL implements LugarRepository {
                           ")";
                           
             TypedQuery<Lugar> query = em.createQuery(jpql, Lugar.class);
-            query.setParameter("idCochera", idCochera); // Filtro crucial
-            query.setParameter("fechaDesde", fechaDesde);
-            query.setParameter("fechaHasta", fechaHasta);
+            query.setParameter("idCochera", idCochera); // Filtro crucial porque sino podemos filtrar por otras cocheras o todas.
+            query.setParameter("fechaDesde", inicioConBuffer);
+            query.setParameter("fechaHasta", finConBuffer);
             query.setMaxResults(1); 
 
             List<Lugar> resultados = query.getResultList();
             
             if (resultados.isEmpty()) return null;
-            return resultados.get(0);
+            return resultados.get(0); // Devolvemos el primero
             
         } finally {
             em.close();

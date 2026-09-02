@@ -14,4 +14,5 @@ public interface ReservaRepository {
 	void eliminar(ReservaId claveCompuesta);
 	void actualizar(Reserva reservaNuevosDatos);
 	Reserva buscarPorClave(ReservaId claveCompuesta);
+	public List<Reserva> buscarReservasPendientesSinPagoCompleto(LocalDateTime limiteTiempo);
 }
