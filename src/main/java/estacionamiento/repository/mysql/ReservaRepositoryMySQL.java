@@ -3,6 +3,7 @@ package estacionamiento.repository.mysql;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import estacionamiento.domain.EstadoReserva;
 import estacionamiento.domain.Reserva;
 import estacionamiento.domain.claves.ReservaId;
 import estacionamiento.repository.ReservaRepository;
@@ -116,4 +117,25 @@ public class ReservaRepositoryMySQL implements ReservaRepository {
 		// TODO Auto-generated method stub
 		
 	}
+	
+	@Override
+    public List<Reserva> buscarReservasPendientesSinPagoCompleto(LocalDateTime limiteTiempo) {
+        EntityManager em = emf.createEntityManager();
+        try {
+            // Buscamos reservas PENDIENTES, sin un pago total asociado, 
+            // que comiencen antes de la fecha límite establecida (ej: dentro de 60 min)
+            String jpql = "SELECT r FROM Reserva r " +
+                          "WHERE r.estado = :estado " +
+                          "AND r.pagoSaldo IS NULL " +
+                          "AND r.id.fechaDesde <= :limite";
+                          
+            return em.createQuery(jpql, Reserva.class)
+                     .setParameter("estado", EstadoReserva.PENDIENTE)
+                     .setParameter("limite", limiteTiempo)
+                     .getResultList();
+                     
+        } finally {
+            em.close();
+        }
+    }
 }

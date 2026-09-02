@@ -63,7 +63,7 @@ public class ReservaRepositoryMemoria implements ReservaRepository {
             reservaExistente.setEstado(reservaNuevosDatos.getEstado());
             reservaExistente.setSenia(reservaNuevosDatos.getSenia());
             reservaExistente.setLugar(reservaNuevosDatos.getLugar());
-            reservaExistente.setPago(reservaNuevosDatos.getPago());
+            reservaExistente.setPagoSenia(reservaNuevosDatos.getPagoSenia());
             
             System.out.println("Reserva actualizada con éxito para el vehículo: " + patente);
         } else {
@@ -97,6 +97,12 @@ public class ReservaRepositoryMemoria implements ReservaRepository {
 
 	@Override
 	public Reserva buscarPorClave(ReservaId claveCompuesta) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public List<Reserva> buscarReservasPendientesSinPagoCompleto(LocalDateTime limiteTiempo) {
 		// TODO Auto-generated method stub
 		return null;
 	}

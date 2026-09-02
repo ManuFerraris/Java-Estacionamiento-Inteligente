@@ -22,6 +22,7 @@ import estacionamiento.repository.mysql.TipoPlanRepositoryMySQL;
 import estacionamiento.repository.mysql.UsuarioRepositoryMySQL;
 import estacionamiento.repository.mysql.VehiculoRepositoryMySQL;
 import estacionamiento.repository.mysql.CocheraRepositoryMySQL;
+import estacionamiento.repository.mysql.PagoRepositoryMySQL;
 
 import estacionamiento.service.ReservaService;
 import estacionamiento.service.SuscripcionService;
@@ -42,13 +43,15 @@ public class MisReservasServlet extends HttpServlet {
     private TipoEstadiaRepositoryMySQL tipoEstadiaRepo;
     private ReservaRepositoryMySQL reservaRepo;
     private CocheraRepositoryMySQL cocheraRepo;
+    private PagoRepositoryMySQL pagoRepo;
 
     @Override
     public void init() throws ServletException {
         this.vehiculoRepo = new VehiculoRepositoryMySQL();
         this.tipoEstadiaRepo = new TipoEstadiaRepositoryMySQL();
         this.reservaRepo = new ReservaRepositoryMySQL();
-        this.cocheraRepo = new CocheraRepositoryMySQL(); // Instanciamos repo de cocheras
+        this.cocheraRepo = new CocheraRepositoryMySQL();
+        this.pagoRepo = new PagoRepositoryMySQL();
         
         SuscripcionService suscripcionService = new SuscripcionService(
             new SuscripcionRepositoryMySQL(), 
@@ -65,7 +68,8 @@ public class MisReservasServlet extends HttpServlet {
             new UsuarioRepositoryMySQL(), 
             this.tipoEstadiaRepo, 
             new PrecioHistoricoTVRepositoryMySQL(), 
-            suscripcionService
+            suscripcionService,
+            this.pagoRepo
         );
     }
 
