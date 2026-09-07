@@ -93,14 +93,9 @@ public class MisReservasServlet extends HttpServlet {
             request.setAttribute("misReservas", misReservas);
 
             // Extraer los vehículos
-            List<Vehiculo> misVehiculos = misReservas.stream()
-                    .map(Reserva::getVehiculo)
-                    .distinct()
-                    .collect(Collectors.toList());
+            List<Vehiculo> misVehiculos = vehiculoRepo.buscarPorUsuario(cliente.getNumero());
             
-            if (misVehiculos.isEmpty()) {
-                misVehiculos = vehiculoRepo.obtenerTodos();
-            }
+            System.out.println("Vehículos reales del usuario " + cliente.getNombre() + ": " + misVehiculos.size());
             request.setAttribute("misVehiculos", misVehiculos);
 
             request.getRequestDispatcher("/WEB-INF/views/misReservas.jsp").forward(request, response);

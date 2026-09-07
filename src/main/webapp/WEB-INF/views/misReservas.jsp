@@ -15,6 +15,10 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://sdk.mercadopago.com/js/v2"></script>
+    <script>
+	  const mp = new MercadoPago("APP_USR-4486421f-b421-4468-9924-c25cc93e679e");
+	</script>
     <style>
         .estado-badge { width: 110px; text-align: center; }
     </style>
@@ -66,26 +70,37 @@
 							</div>
 
                             <!-- Selección de Vehículo -->
-                            <div class="mb-3">
-                                <label class="form-label text-muted small fw-bold">Vehículo</label>
-                                <select class="form-select" name="patente" required>
-                                    <option value="" disabled selected>Selecciona tu vehículo...</option>
-                                    <% 
-                                        List<Vehiculo> misVehiculos = (List<Vehiculo>) request.getAttribute("misVehiculos");
-                                        if (misVehiculos != null && !misVehiculos.isEmpty()) {
-                                            for(Vehiculo v : misVehiculos) {
-                                    %>
-                                        <option value="<%= v.getPatente() %>"><%= v.getPatente() %> - <%= v.getDescripcion() %></option>
-                                    <% 
-                                            }
-                                        } else { 
-                                    %>
-                                        <!-- Mockup manual por si la lista viene vacía mientras conectan la BD -->
-                                        <option value="AD456TR">AD456TR - Ford Taunus (Auto)</option>
-                                        <option value="A012BCD">A012BCD - Honda XR (Moto)</option>
-                                    <% } %>
-                                </select>
-                            </div>
+							<div class="mb-3">
+							    <label class="form-label text-muted small fw-bold">Vehículo</label>
+							    <% 
+							        List<Vehiculo> misVehiculos = (List<Vehiculo>) request.getAttribute("misVehiculos");
+							        if (misVehiculos != null && !misVehiculos.isEmpty()) {
+							    %>
+							        <select class="form-select" name="patente" required>
+							            <option value="" disabled selected>Selecciona tu vehículo...</option>
+							            <% for(Vehiculo v : misVehiculos) { %>
+							                <!-- Asegurate de que getDescripcion() exista, sino usá getMarca() + getModelo() -->
+							                <option value="<%= v.getPatente() %>"><%= v.getPatente() %> - <%= v.getDescripcion() %></option>
+							            <% } %>
+							        </select>
+							    <% } else { %>
+							        <!-- Mensaje cuando el usuario no tiene autos cargados -->
+							        <div class="alert alert-warning py-2 mb-0 border-0">
+							            <i class="bi bi-exclamation-circle me-1"></i> No tienes vehículos cargados. 
+							            <a href="${pageContext.request.contextPath}/mis-vehiculos-user" class="alert-link">Ve a Mis Vehículos y carga uno</a> para poder reservar.
+							        </div>
+							        <!-- Deshabilitamos el botón de reservar para evitar errores 500 -->
+							        <script>
+							            document.addEventListener("DOMContentLoaded", function() {
+							                let btnReservar = document.querySelector("button[type='submit']");
+							                if(btnReservar) {
+							                    btnReservar.disabled = true;
+							                    btnReservar.innerText = "Falta cargar un vehículo";
+							                }
+							            });
+							        </script>
+							    <% } %>
+							</div>
 
                             <!-- Selección de Estadía -->
                             <div class="mb-3">
