@@ -5,5 +5,6 @@ public enum TipoPago {
     TRANSFERENCIA,
     DEBITO,
     CREDITO,
-    A_DEFINIR
+    A_DEFINIR,
+    BONIFICADO
 }

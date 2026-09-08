@@ -37,7 +37,7 @@ public class Reserva {
 	private LocalDateTime fechaHastaReal;
 	
     @Enumerated(EnumType.STRING)
-    @Column(name="estado", nullable=false)
+    @Column(name="estado", columnDefinition = "VARCHAR(30)", nullable=false)
 	private EstadoReserva estado;
 	
     @ManyToOne(fetch = FetchType.LAZY) 
@@ -48,7 +48,7 @@ public class Reserva {
     @JoinColumn(name="numero_pago_saldo")
     private Pago pagoSaldo;
 	
-    @OneToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="codigo_lugar")
 	private Lugar lugar;
 	

@@ -1,16 +1,20 @@
 package estacionamiento.servlet;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import estacionamiento.domain.Reserva;
 import estacionamiento.domain.TipoEstadia;
+import estacionamiento.domain.TipoPago;
 import estacionamiento.domain.Usuario;
 import estacionamiento.domain.Vehiculo;
 import estacionamiento.domain.Cochera;
-
+import estacionamiento.domain.EstadoPago;
+import estacionamiento.domain.EstadoReserva;
+import estacionamiento.domain.Pago;
 import estacionamiento.repository.mysql.LugarRepositoryMySQL;
 import estacionamiento.repository.mysql.PagoSuscripcionRepositoryMySQL;
 import estacionamiento.repository.mysql.PrecioHistoricoTPRepositoryMySQL;
@@ -26,6 +30,8 @@ import estacionamiento.repository.mysql.PagoRepositoryMySQL;
 
 import estacionamiento.service.ReservaService;
 import estacionamiento.service.SuscripcionService;
+import estacionamiento.service.MercadoPagoService;
+import estacionamiento.service.PagoService;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -44,6 +50,8 @@ public class MisReservasServlet extends HttpServlet {
     private ReservaRepositoryMySQL reservaRepo;
     private CocheraRepositoryMySQL cocheraRepo;
     private PagoRepositoryMySQL pagoRepo;
+    private PagoService pagoService;
+    private MercadoPagoService mpService;
 
     @Override
     public void init() throws ServletException {
@@ -52,6 +60,7 @@ public class MisReservasServlet extends HttpServlet {
         this.reservaRepo = new ReservaRepositoryMySQL();
         this.cocheraRepo = new CocheraRepositoryMySQL();
         this.pagoRepo = new PagoRepositoryMySQL();
+        this.mpService = new MercadoPagoService();
         
         SuscripcionService suscripcionService = new SuscripcionService(
             new SuscripcionRepositoryMySQL(), 
@@ -71,6 +80,8 @@ public class MisReservasServlet extends HttpServlet {
             suscripcionService,
             this.pagoRepo
         );
+        
+        this.pagoService = new PagoService(this.pagoRepo);
     }
 
     @Override
@@ -122,17 +133,67 @@ public class MisReservasServlet extends HttpServlet {
                 throw new IllegalArgumentException("La fecha y hora de salida debe ser posterior a la de ingreso.");
             }
 
-            reservaService.generarReserva(patente, cliente.getNumero(), idCochera, idTipoEstadia, fechaDesde, fechaHasta);
+            // Primero creo la reserva:
+            Reserva reserva = reservaService.generarReserva(patente, cliente.getNumero(), idCochera, idTipoEstadia, fechaDesde, fechaHasta);
             
-            request.getSession().setAttribute("exito", "¡Reserva confirmada! Tienes tu lugar asegurado en la cochera seleccionada.");
+            // Segundo creo el pago:
+            Pago nuevoPago = new Pago();
+            nuevoPago.setMonto(reserva.getSenia());
+            
+            // Validamos el caso PREMIUM ($0) ANTES de registrar el pago
+            boolean esPremium = nuevoPago.getMonto().compareTo(BigDecimal.ZERO) == 0;
+            
+            if (esPremium) {
+                nuevoPago.setEstado(EstadoPago.APROBADO);
+                // El PagoService exige que un pago APROBADO tenga TipoPago.
+                // Creo el BONIFICADO para diferenciar porque pago 0.
+                nuevoPago.setTipoPago(TipoPago.BONIFICADO); 
+            } else {
+                nuevoPago.setEstado(EstadoPago.PENDIENTE);
+            }
 
-        } catch (IllegalArgumentException e) {
-            request.getSession().setAttribute("error", e.getMessage());
+            // Finalmente lo guardamos:
+            pagoService.registrarPago(nuevoPago);
+            
+            // Tercero, asigno el pago en pagoSenia de reserva y lo guardo
+            reserva.setPagoSenia(nuevoPago);
+            reservaService.actualizarReserva(reserva);
+            
+            // Cuarto valido el caso PREMIUM ($0)
+            if (esPremium) {
+            	request.getSession().setAttribute("exito", "¡Reserva confirmada! (Beneficio Premium aplicado 100% Bonificado).");
+                response.sendRedirect(request.getContextPath() + "/mis-reservas-user");
+                return; // Cortamos con la ejecucion aca porque solamente se puede redirigir una vez en el servlet y no DOS o mas.
+            }
+            
+            // Quinto, ahora si llamo al servicio de MP en caso de que tenga que pagar porque no tiene el plan "Premium".
+            MercadoPagoService mpService = new MercadoPagoService();
+            String urlCheckout = mpService.crearPreferencia(
+            		"Seña Reserva Cochera - " + reserva.getVehiculo().getPatente(), 
+            	    nuevoPago.getMonto(), 
+            	    nuevoPago.getNumero(),
+            	    cliente.getMail()
+            );
+            
+            // Finalmente redirijo al ciudadano directo a la pantalla de mercado pago.
+            // Esta pantalla la provee la API de MP.
+            response.sendRedirect(urlCheckout);
+            return; // Nuevamente, cortamos el flujo de redireccion.
+            
+        } catch (com.mercadopago.exceptions.MPApiException mpEx) {
+            System.err.println("=== ERROR DE MERCADO PAGO ===");
+            System.err.println("Status Code: " + mpEx.getApiResponse().getStatusCode());
+            System.err.println("Response: " + mpEx.getApiResponse().getContent());
+            System.err.println("=============================");
+            
+            request.getSession().setAttribute("error", "Error en la pasarela de pagos. Contacte al administrador.");
+            response.sendRedirect(request.getContextPath() + "/mis-reservas-user");
+            return;
         } catch (Exception e) {
             request.getSession().setAttribute("error", "Ocurrió un error inesperado al procesar la reserva.");
             e.printStackTrace();
+            response.sendRedirect(request.getContextPath() + "/mis-reservas-user");
+            return;
         }
-        
-        response.sendRedirect(request.getContextPath() + "/mis-reservas-user");
     }
 }

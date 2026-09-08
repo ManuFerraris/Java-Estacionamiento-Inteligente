@@ -5,9 +5,9 @@ import estacionamiento.domain.Pago;
 
 public interface PagoRepository {
 	void guardar(Pago pago);
-    Pago buscarPorClave(int numero);
+    Pago buscarPorClave(Integer numero);
     List<Pago> obtenerTodos();
-    void actualizar(int numero, Pago pago);
-    void eliminar(int numero);
+    void actualizar(Integer numero, Pago pago);
+    void eliminar(Integer numero);
 
 }

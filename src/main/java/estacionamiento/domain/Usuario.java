@@ -50,7 +50,7 @@ public class Usuario {
 	private String contrasenia;
 	
 	@Enumerated(EnumType.STRING) 
-	@Column(name="rol", nullable=false)
+	@Column(name="rol", columnDefinition = "VARCHAR(30)", nullable=false)
 	private RolesUsuario rol;
 	
 	@OneToMany(mappedBy = "usuario", targetEntity = Suscripcion.class)

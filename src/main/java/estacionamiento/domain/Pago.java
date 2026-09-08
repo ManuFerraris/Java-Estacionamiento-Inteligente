@@ -19,7 +19,7 @@ public class Pago {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "numero")
-	private int numero;
+	private Integer numero;
 	
 	@Column(name = "fecha_hora", nullable = false)
 	private LocalDateTime fechaHora;
@@ -29,11 +29,11 @@ public class Pago {
 	
 	
     @Enumerated(EnumType.STRING) // @Enumerated guarda el Enum como un texto plano en la base de datos en lugar de un número.
-    @Column(name = "tipo_pago", nullable = false)
+    @Column(name = "tipo_pago", columnDefinition = "VARCHAR(30)", nullable = true)
 	private TipoPago tipoPago;
     
     @Enumerated(EnumType.STRING)
-    @Column(name = "estado", nullable = false)
+    @Column(name = "estado", columnDefinition = "VARCHAR(30)", nullable = false)
 	private EstadoPago estado;
 	
 	public Pago() {}
@@ -46,11 +46,11 @@ public class Pago {
 		this.estado = est;
 	}
 
-	public int getNumero() {
+	public Integer getNumero() {
 		return numero;
 	}
 
-	public void setNumero(int numero) {
+	public void setNumero(Integer numero) {
 		this.numero = numero;
 	}
 

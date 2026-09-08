@@ -17,7 +17,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://sdk.mercadopago.com/js/v2"></script>
     <script>
-	  const mp = new MercadoPago("APP_USR-4486421f-b421-4468-9924-c25cc93e679e");
+	  const mp = new MercadoPago("APP_USR-ccf26b17-befc-49e1-8564-9c3e6d9711ea");
 	</script>
     <style>
         .estado-badge { width: 110px; text-align: center; }

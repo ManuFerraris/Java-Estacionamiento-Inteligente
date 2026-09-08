@@ -28,7 +28,7 @@ public class Suscripcion {
 	private LocalDateTime fechaHasta;
 	
 	@Enumerated(EnumType.STRING) 
-	@Column(name="estado", nullable=false)
+	@Column(name="estado", columnDefinition = "VARCHAR(30)", nullable=false)
 	private EstadoSuscripcion estado;
 	
 	public Suscripcion() {}
