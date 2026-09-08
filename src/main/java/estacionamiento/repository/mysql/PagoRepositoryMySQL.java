@@ -9,68 +9,83 @@ import jakarta.persistence.Persistence;
 
 public class PagoRepositoryMySQL implements PagoRepository {
 	
-	// El EntityManager es nuestro canal de comunicación directo con Hibernate/MySQL
-    private EntityManager em;
+    private EntityManagerFactory emf;
     
     public PagoRepositoryMySQL() {
-        // "EstacionamientoPU" debe coincidir EXACTAMENTE con el nombre que pusimos en el persistence.xml
-        EntityManagerFactory emf = Persistence.createEntityManagerFactory("EstacionamientoPU");
-        this.em = emf.createEntityManager();
+        this.emf = Persistence.createEntityManagerFactory("EstacionamientoPU");
     }
     
     @Override
     public void guardar(Pago pago) {
-        // Toda operación de escritura en BD requiere abrir y cerrar una transacción (begin y commit).
-        em.getTransaction().begin();
-        
-        // El método persist() es lo mismo que hacer un INSERT INTO en SQL.
-        em.persist(pago);
-        
-        em.getTransaction().commit();
-        System.out.println("MySQL: Pago insertado correctamente en la base de datos.");
-    }
-    
-    @Override
-    public Pago buscarPorClave(int numero) {
-        // El método find() es como hacer un SELECT * FROM pagos WHERE numero_pago = ?
-        return em.find(Pago.class, numero);
-    }
-    
-    @Override
-    public List<Pago> obtenerTodos() {
-        // Aca usamos JPQL (Java Persistence Query Language)
-        // No consultamos a la tabla 'pagos', consultamos a la clase 'Pago'
-        return em.createQuery("SELECT p FROM Pago p", Pago.class).getResultList();
-    }
-    
-    @Override
-    public void actualizar(int numero, Pago pagoNuevosDatos) {
-        Pago pagoExistente = buscarPorClave(numero);
-        
-        if (pagoExistente != null) {
+        EntityManager em = emf.createEntityManager();
+        try {
             em.getTransaction().begin();
-            // Al estar dentro de una transacción, los setters modifican la BD automáticamente
-            pagoExistente.setMonto(pagoNuevosDatos.getMonto());
-            pagoExistente.setEstado(pagoNuevosDatos.getEstado());
+            
+            // Si el ID es nulo o 0, significa que es un PAGO NUEVO.
+            if (pago.getNumero() == null || pago.getNumero() == 0) {
+                em.persist(pago); // Persist inserta y nos DEVUELVE el ID generado por MySQL
+            } else {
+                // Si ya tiene ID, es una actualización
+                em.merge(pago);
+            }
+            
             em.getTransaction().commit();
-            System.out.println("MySQL: Pago actualizado correctamente.");
-        } else {
-            throw new IllegalArgumentException("MySQL: No se encontró el pago para actualizar.");
+            System.out.println("MySQL: Pago guardado correctamente. ID generado: " + pago.getNumero());
+            
+        } catch (Exception e) {
+            if (em.getTransaction().isActive()) {
+                em.getTransaction().rollback();
+            }
+            throw e;
+        } finally {
+            em.close();
         }
     }
     
     @Override
-    public void eliminar(int numero) {
-        Pago pagoAEliminar = buscarPorClave(numero);
-        
-        if (pagoAEliminar != null) {
-            em.getTransaction().begin();
-            // El método remove() equivale a DELETE FROM
-            em.remove(pagoAEliminar);
-            em.getTransaction().commit();
-            System.out.println("MySQL: Pago eliminado correctamente.");
-        } else {
-            System.out.println("MySQL: No se encontró el pago para eliminar.");
+    public Pago buscarPorClave(Integer numero) {
+        EntityManager em = emf.createEntityManager();
+        try {
+            return em.find(Pago.class, numero);
+        } finally {
+            em.close();
+        }
+    }
+    
+    @Override
+    public List<Pago> obtenerTodos() {
+        EntityManager em = emf.createEntityManager();
+        try {
+            return em.createQuery("SELECT p FROM Pago p", Pago.class).getResultList();
+        } finally {
+            em.close();
+        }
+    }
+    
+    @Override
+    public void actualizar(Integer numero, Pago pagoNuevosDatos) {
+        // En JPA moderno, actualizar es simplemente hacer un merge del objeto con el mismo ID
+        guardar(pagoNuevosDatos); 
+    }
+    
+    @Override
+    public void eliminar(Integer numero) {
+        EntityManager em = emf.createEntityManager();
+        try {
+            Pago pagoAEliminar = em.find(Pago.class, numero);
+            if (pagoAEliminar != null) {
+                em.getTransaction().begin();
+                em.remove(pagoAEliminar);
+                em.getTransaction().commit();
+                System.out.println("MySQL: Pago eliminado correctamente.");
+            }
+        } catch (Exception e) {
+            if (em.getTransaction().isActive()) {
+                em.getTransaction().rollback();
+            }
+            throw e;
+        } finally {
+            em.close();
         }
     }
 }

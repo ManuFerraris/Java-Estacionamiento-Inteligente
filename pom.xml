@@ -89,6 +89,13 @@
 		    <artifactId>jbcrypt</artifactId>
 		    <version>0.4</version>
 		</dependency>
+		
+		<!-- SDK de MercadoPago -->
+		<dependency>
+		    <groupId>com.mercadopago</groupId>
+		    <artifactId>sdk-java</artifactId>
+		    <version>2.1.23</version> <!-- Usamos la versión 2.x que es la más moderna -->
+		</dependency>
 
     </dependencies>
     

@@ -4,16 +4,20 @@ import java.math.BigDecimal;
 import estacionamiento.domain.PrecioHistoricoTV;
 import estacionamiento.repository.PrecioHistoricoTVRepository;
 import estacionamiento.repository.TipoVehiculoRepository;
+import estacionamiento.repository.mysql.PrecioHistoricoTVRepositoryMySQL;
 
 public class PrecioHistoricoTVService {
 
     private final PrecioHistoricoTVRepository precioHistoricoRepository;
     private final TipoVehiculoRepository tipoVehiculoRepository;
+    private final PrecioHistoricoTVRepositoryMySQL tvMySql;
 
     public PrecioHistoricoTVService(PrecioHistoricoTVRepository precioHistoricoRepository, 
-                                    TipoVehiculoRepository tipoVehiculoRepository) {
+                                    TipoVehiculoRepository tipoVehiculoRepository,
+                                    PrecioHistoricoTVRepositoryMySQL tvMySql) {
         this.precioHistoricoRepository = precioHistoricoRepository;
         this.tipoVehiculoRepository = tipoVehiculoRepository;
+        this.tvMySql = tvMySql;
     }
 
     public void registrarPrecioHistorico(PrecioHistoricoTV nuevoPrecio) {
@@ -57,4 +61,10 @@ public class PrecioHistoricoTVService {
         
         System.out.println("Servicio: Nueva tarifa validada y registrada correctamente en el historial.");
     }
+
+    public BigDecimal obtenerPrecioVigente(Integer numeroTV) {
+    	BigDecimal precio = tvMySql.obtenerPrecioVigente(numeroTV);
+    	return precio;
+    }
+    
 }

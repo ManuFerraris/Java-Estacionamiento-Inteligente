@@ -18,7 +18,7 @@ public class PagoRepositoryMemoria implements PagoRepository{
     }
 
     @Override
-    public Pago buscarPorClave(int numero) {
+    public Pago buscarPorClave(Integer numero) {
         for (Pago p : this.baseDeDatosMemoria) {
             
             if (p.getNumero() == numero) {
@@ -41,7 +41,7 @@ public class PagoRepositoryMemoria implements PagoRepository{
     }
 
     @Override
-    public void actualizar(int numero, Pago pagoNuevosDatos) {
+    public void actualizar(Integer numero, Pago pagoNuevosDatos) {
         Pago pagoExistente = buscarPorClave(numero);
 
         if (pagoExistente != null) {
@@ -59,7 +59,7 @@ public class PagoRepositoryMemoria implements PagoRepository{
     }
 
     @Override
-    public void eliminar(int numero) {
+    public void eliminar(Integer numero) {
         Pago pagoAEliminar = buscarPorClave(numero);
 
         if (pagoAEliminar != null) {

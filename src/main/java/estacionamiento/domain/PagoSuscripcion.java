@@ -31,11 +31,11 @@ public class PagoSuscripcion {
 	private BigDecimal monto;
 	
 	@Enumerated(EnumType.STRING)
-	@Column(name="tipo_pago", nullable=true)
+	@Column(name="tipo_pago", columnDefinition = "VARCHAR(30)", nullable=true)
 	private TipoPago tipoPago;
 	
 	@Enumerated(EnumType.STRING)
-	@Column(name="estado", nullable=false)
+	@Column(name="estado", columnDefinition = "VARCHAR(30)", nullable=false)
 	private EstadoPago estado;
 	
 public PagoSuscripcion() {}

@@ -98,6 +98,21 @@ public class ReservaService {
         return nuevaReserva;
     }
 
+    public void actualizarReserva(Reserva reservaActualizada) {
+        if (reservaActualizada == null || reservaActualizada.getId() == null) {
+            throw new IllegalArgumentException("La reserva o su identificador principal no pueden ser nulos.");
+        }
+        
+        // Regla de negocio de protección:
+        if (reservaActualizada.getEstado() == EstadoReserva.CANCELADA || 
+            reservaActualizada.getEstado() == EstadoReserva.FINALIZADA) {
+            throw new IllegalArgumentException("No se pueden alterar los datos de una reserva inactiva o finalizada.");
+        }
+
+        reservaRepository.actualizar(reservaActualizada);
+        System.out.println("Servicio: Reserva actualizada para la patente " + reservaActualizada.getVehiculo().getPatente());
+    }
+    
     public void registrarIngreso(ReservaId idReserva) {
         Reserva reserva = reservaRepository.buscarPorClave(idReserva);
 
