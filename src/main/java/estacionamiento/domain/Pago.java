@@ -35,6 +35,9 @@ public class Pago {
     @Enumerated(EnumType.STRING)
     @Column(name = "estado", columnDefinition = "VARCHAR(30)", nullable = false)
 	private EstadoPago estado;
+    
+    @Column(name = "id_mercado_pago", columnDefinition = "VARCHAR(255)", nullable = true)
+    private String idTransaccionMp;
 	
 	public Pago() {}
 	
@@ -85,4 +88,13 @@ public class Pago {
 	public void setEstado(EstadoPago estado) {
 		this.estado = estado;
 	}
+
+	public String getIdTransaccionMp() {
+		return idTransaccionMp;
+	}
+
+	public void setIdTransaccionMp(String idTransaccionMp) {
+		this.idTransaccionMp = idTransaccionMp;
+	}
+	
 }
