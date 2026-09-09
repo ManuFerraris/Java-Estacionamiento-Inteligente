@@ -26,26 +26,37 @@ public class PrecioHistoricoTV {
 	
 	public PrecioHistoricoTV(TipoVehiculo tipoVehiculo, LocalDateTime fechaDesde, BigDecimal precio) {
 		this.tipoVehiculo = tipoVehiculo;
-		//this.fechaDesde = fechaDesde;
 		this.precio = precio;
+		//this.fechaDesde = fechaDesde;
+		int numero = (tipoVehiculo != null) ? tipoVehiculo.getNumero() : 0;
+		this.id = new PrecioHistoricoTVId(numero, fechaDesde);
 	}
-	
 	public TipoVehiculo getTipoVehiculo() {
 		return tipoVehiculo;
 	}
 
 	public void setTipoVehiculo(TipoVehiculo tipoVehiculo) {
-		this.tipoVehiculo = tipoVehiculo;
-	}
+	    this.tipoVehiculo = tipoVehiculo;
 
-	/*public LocalDateTime getFechaDesde() {
-		return fechaDesde;
+	    if (this.id == null) {
+	        this.id = new PrecioHistoricoTVId();
+	    }
+
+	    if (tipoVehiculo != null) {
+	        this.id.setNumeroTipoVehiculo(tipoVehiculo.getNumero());
+	    }
+	}
+	public LocalDateTime getFechaDesde() {
+	    return (id != null) ? id.getFechaDesde() : null;
 	}
 
 	public void setFechaDesde(LocalDateTime fechaDesde) {
-		this.fechaDesde = fechaDesde;
+	    if (this.id == null) {
+	        this.id = new PrecioHistoricoTVId();
+	    }
+
+	    this.id.setFechaDesde(fechaDesde);
 	}
-	*/
 
 	public BigDecimal getPrecio() {
 		return precio;
