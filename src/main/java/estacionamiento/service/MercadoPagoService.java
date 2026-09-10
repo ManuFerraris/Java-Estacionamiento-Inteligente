@@ -31,9 +31,9 @@ public class MercadoPagoService {
                 .build();
 
         PreferenceBackUrlsRequest backUrls = PreferenceBackUrlsRequest.builder()
-                .success("http://localhost:8080/backend-estacionamiento/api/pago-exito")
-                .pending("http://localhost:8080/backend-estacionamiento/api/pago-pendiente")
-                .failure("http://localhost:8080/backend-estacionamiento/api/pago-fallo")
+                .success("localhost:8080/backend-estacionamiento/api/pago-exito")
+                .pending("localhost:8080/backend-estacionamiento/api/pago-pendiente")
+                .failure("localhost:8080/backend-estacionamiento/api/pago-fallo")
                 .build();
 
         // 2. Comprador de prueba oficial (Bypass de auto-compra)
@@ -45,8 +45,9 @@ public class MercadoPagoService {
                 .items(Collections.singletonList(itemRequest))
                 .backUrls(backUrls) 
                 .payer(payerRequest)
-                //.autoReturn("approved")
-                .externalReference(idPagoLocal.toString()) 
+                .autoReturn("approved")
+                .externalReference(idPagoLocal.toString())
+                .notificationUrl("https://canteen-washhouse-clever.ngrok-free.dev/backend-estacionamiento/api/webhook-mp")
                 .build();
 
         // 3. EL BYPASS ARQUITECTÓNICO: MPRequestOptions

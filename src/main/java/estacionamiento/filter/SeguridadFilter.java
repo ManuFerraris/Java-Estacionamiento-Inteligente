@@ -36,6 +36,12 @@ public class SeguridadFilter implements Filter {
         String contextPath = req.getContextPath();
         String path = uri.substring(contextPath.length());
 
+        // Validacion para el Webhook y el tunel entre Mi PC, Ngrok y MP.
+        if (uri.contains("/api/webhook-mp") || uri.contains("/login")) {
+            chain.doFilter(request, response);
+            return; // Cortamos com la ejecución del filtro acá
+        }
+        
         // 1. Dejamos pasar recursos estáticos de diseño sin preguntar
         if (path.startsWith("/assets") || path.startsWith("/css") || path.startsWith("/js") || path.contains(".css")) {
             chain.doFilter(request, response);
