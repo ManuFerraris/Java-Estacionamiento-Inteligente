@@ -5,8 +5,6 @@ import java.util.List;
 
 import estacionamiento.domain.EstadoPago;
 import estacionamiento.domain.PagoSuscripcion;
-import estacionamiento.domain.claves.PagoSuscripcionId;
-import estacionamiento.domain.claves.SuscripcionId;
 import estacionamiento.domain.TipoPago;
 import estacionamiento.repository.PagoSuscripcionRepository;
 
@@ -18,8 +16,8 @@ public class PagoSuscripcionService {
         this.pagoRepository = pagoRepository;
     }
 
-    public void registrarCobro(int numUsuario, int codPlan, LocalDateTime fechaSub, LocalDateTime fechaEmi, TipoPago tipoPago) {
-        PagoSuscripcion pago = buscarComprobanteValidado(numUsuario, codPlan, fechaSub, fechaEmi);
+    public void registrarCobro(Integer idPagoSuscripcion, TipoPago tipoPago) {
+        PagoSuscripcion pago = buscarComprobanteValidado(idPagoSuscripcion);
 
         if (pago.getEstado() != EstadoPago.PENDIENTE) {
             throw new IllegalArgumentException("Solo se pueden cobrar comprobantes en estado PENDIENTE.");
@@ -35,11 +33,11 @@ public class PagoSuscripcionService {
         pago.setFechaHoraPago(LocalDateTime.now());
 
         pagoRepository.actualizar(pago);
-        System.out.println("Servicio: Pago cobrado vía " + tipoPago);
+        System.out.println("Servicio: Pago " + idPagoSuscripcion + " cobrado vía " + tipoPago);
     }
 
-    public void anularComprobante(int numUsuario, int codPlan, LocalDateTime fechaSub, LocalDateTime fechaEmi) {
-        PagoSuscripcion pago = buscarComprobanteValidado(numUsuario, codPlan, fechaSub, fechaEmi);
+    public void anularComprobante(Integer idPagoSuscripcion) {
+        PagoSuscripcion pago = buscarComprobanteValidado(idPagoSuscripcion);
 
         if (pago.getEstado() != EstadoPago.PENDIENTE) {
             throw new IllegalArgumentException("No se puede anular un comprobante que ya está procesado o cancelado.");
@@ -47,22 +45,16 @@ public class PagoSuscripcionService {
 
         pago.setEstado(EstadoPago.CANCELADO);
         pagoRepository.actualizar(pago);
-        System.out.println("Servicio: Comprobante anulado.");
+        System.out.println("Servicio: Comprobante " + idPagoSuscripcion + " anulado.");
     }
 
     public List<PagoSuscripcion> obtenerTodos() {
         return pagoRepository.obtenerTodos();
     }
     
-    private PagoSuscripcion buscarComprobanteValidado(int numUsuario, int codPlan, LocalDateTime fechaSub, LocalDateTime fechaEmi) {
-        // 1. Reconstruimos el ID de la entidad fuerte
-        SuscripcionId subId = new SuscripcionId(numUsuario, codPlan, fechaSub);
+    public PagoSuscripcion buscarComprobanteValidado(Integer idPagoSuscripcion) {
         
-        // 2. Lo inyectamos en el ID de la entidad débil
-        PagoSuscripcionId pagoId = new PagoSuscripcionId(subId, fechaEmi);
-        
-        PagoSuscripcion pago = pagoRepository.buscarPorClave(pagoId);
-        
+        PagoSuscripcion pago = pagoRepository.buscarPorClave(idPagoSuscripcion);
         if (pago == null) {
             throw new IllegalArgumentException("El comprobante de pago solicitado no existe.");
         }
@@ -72,8 +64,25 @@ public class PagoSuscripcionService {
     
     public List<PagoSuscripcion> obtenerPendientesPorUsuario(int numUsuario) {
         return pagoRepository.obtenerTodos().stream()
-                .filter(pago -> pago.getId().getSuscripcionId().getNumero() == numUsuario)
+                .filter(pago -> pago.getSuscripcion().getUsuario().getNumero() == numUsuario)
                 .filter(pago -> pago.getEstado() == EstadoPago.PENDIENTE)
                 .toList();
+    }
+    
+    public void registrarCobroMercadoPago(Integer idPagoSuscripcion, String idTransaccionMp) {
+    	System.out.println("   -> [SERVICIO] Entrando a actualizar comprobante ID: " + idPagoSuscripcion);
+    	PagoSuscripcion pago = buscarComprobanteValidado(idPagoSuscripcion);
+    	System.out.println("   -> [SERVICIO] Comprobante encontrado. Estado actual: " + pago.getEstado());
+    	
+    	if(pago.getEstado() == EstadoPago.PENDIENTE) {
+    		pago.setEstado(EstadoPago.APROBADO);
+    		pago.setTipoPago(TipoPago.MERCADO_PAGO);
+    		pago.setFechaHoraPago(LocalDateTime.now());
+    		pago.setIdTransaccionMp(idTransaccionMp);System.out.println("   -> [SERVICIO] Ejecutando repositorio.actualizar(pago)...");
+            pagoRepository.actualizar(pago);
+            System.out.println("   -> [SERVICIO] ¡ACTUALIZACIÓN EXITOSA EN MYSQL!");
+        } else {
+            System.out.println("   -> [SERVICIO] Omitido: El comprobante no estaba PENDIENTE.");
+        }
     }
 }

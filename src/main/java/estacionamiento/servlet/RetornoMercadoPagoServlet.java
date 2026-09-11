@@ -1,7 +1,6 @@
 package estacionamiento.servlet;
 
 import java.io.IOException;
-import estacionamiento.domain.EstadoPago;
 import estacionamiento.service.PagoService;
 import estacionamiento.repository.mysql.PagoRepositoryMySQL;
 
@@ -23,42 +22,38 @@ public class RetornoMercadoPagoServlet extends HttpServlet {
 	}
 	
 	@Override
-	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		
-		String paymentId = request.getParameter("payment_id");
-        String status = request.getParameter("status");
-        String externalReference = request.getParameter("external_reference"); //Seria nuestro idPagoLocal
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         
-        String uri = request.getRequestURI(); // Obtengo la ruta que disparo el servlet
-        
-        try {
-            if (externalReference != null && !externalReference.isEmpty()) {
-                Integer idPagoLocal = Integer.parseInt(externalReference);
-                
-                // Actualizamos la base de datos según el status
-                if ("approved".equals(status) || uri.contains("pago-exito")) {
-                	
-                    pagoService.actualizarEstado(idPagoLocal, EstadoPago.APROBADO, paymentId);
-                    request.getSession().setAttribute("exito", "¡Pago acreditado! Tu reserva está confirmada. Comprobante MP: " + paymentId);
-                
-                } else if ("pending".equals(status) || uri.contains("pago-pendiente")) {
-                	
-                    pagoService.actualizarEstado(idPagoLocal, EstadoPago.PENDIENTE, paymentId);
-                    request.getSession().setAttribute("alerta", "Tu pago está pendiente de acreditación (ej. Rapipago/Pago Fácil).");
-                    
-                } else {
-                    
-                    pagoService.actualizarEstado(idPagoLocal, EstadoPago.RECHAZADO, paymentId);
-                    request.getSession().setAttribute("error", "El pago fue rechazado. Por favor, intentá con otra tarjeta.");
-                }
-            }
+        String externalReference = request.getParameter("external_reference");
+        String status = request.getParameter("collection_status"); // "approved", "pending", "rejected"
 
-        } catch (Exception e) {
-            e.printStackTrace();
-            request.getSession().setAttribute("error", "Ocurrió un error al procesar el retorno del pago.");
+        if (externalReference != null) {
+            
+            // SUSCRIPCIÓN
+            if (externalReference.startsWith("SUSC_")) {
+                if ("approved".equals(status)) {
+                    request.getSession().setAttribute("exito", "¡Pago de suscripción aprobado y acreditado!");
+                } else {
+                    request.getSession().setAttribute("error", "El pago de la suscripción está pendiente o fue rechazado.");
+                }
+                
+                response.sendRedirect(request.getContextPath() + "/mis-suscripciones-user");
+                return; 
+            } 
+            
+            // RESERVA DE COCHERA
+            else if (externalReference.startsWith("RES_") || externalReference.matches("\\d+")) {
+                if ("approved".equals(status)) {
+                    request.getSession().setAttribute("exito", "¡Reserva pagada con éxito!");
+                } else {
+                    request.getSession().setAttribute("error", "El pago de la reserva falló.");
+                }
+                
+                response.sendRedirect(request.getContextPath() + "/mis-reservas-user");
+                return;
+            }
         }
 
-        // 3. Finalmente, redirigimos al usuario a su panel de reservas para que vea el resultado
-        response.sendRedirect(request.getContextPath() + "/mis-reservas-user");
+        response.sendRedirect(request.getContextPath() + "/index.jsp");
     }
 }

@@ -75,16 +75,17 @@
                             List<PagoSuscripcion> pendientes = (List<PagoSuscripcion>) request.getAttribute("pagosPendientes");
                             if (pendientes != null && !pendientes.isEmpty()) {
                                 for(PagoSuscripcion p : pendientes) {
+                                    // Mejoramos la vista para mostrar el nombre del plan en vez del código
+                                    String nombrePlan = p.getSuscripcion().getTipoPlan().getNombre();
                         %>
                             <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-3">
                                 <div>
-                                    <h6 class="mb-0 fw-bold">Plan <%= p.getId().getSuscripcionId().getCodigo() %></h6>
+                                    <h6 class="mb-0 fw-bold"><%= nombrePlan %></h6>
                                     <small class="text-muted">$ <%= p.getMonto() %></small>
                                 </div>
+                                <!-- Botón simplificado, solo lleva el idPagoSuscripcion -->
                                 <button type="button" class="btn btn-warning btn-sm fw-bold text-dark" 
-                                        data-codplan="<%= p.getId().getSuscripcionId().getCodigo() %>"
-                                        data-fechasub="<%= p.getId().getSuscripcionId().getFechaDesde() %>"
-                                        data-fechaemi="<%= p.getId().getFechaHoraEmision() %>"
+                                        data-idpago="<%= p.getId() %>"
                                         onclick="prepararPago(this)">
                                     Pagar
                                 </button>
@@ -100,7 +101,7 @@
                 </div>
             </div>
 
-            <!-- COLUMNA DERECHA: Catálogo de Planes -->
+            <!-- COLUMNA DERECHA: Catálogo de Planes (Sin cambios, ya funcionaba perfecto) -->
             <div class="col-lg-8">
                 <div class="card border-0 shadow-sm rounded-4">
                     <div class="card-body p-4">
@@ -116,13 +117,11 @@
                                 <div class="card h-100 border bg-white shadow-sm hover-card">
                                     <div class="card-body p-4 d-flex flex-column">
                                         
-                                        <!-- Cabecera del Plan -->
                                         <div class="text-center mb-3">
                                             <h5 class="fw-bold text-primary mb-1"><%= plan.getNombre() %></h5>
                                             <p class="text-muted small mb-0"><%= plan.getDetalle() %></p>
                                         </div>
                                         
-                                        <!-- Caja de Beneficios / Características -->
                                         <div class="bg-light rounded-3 p-3 flex-grow-1 mb-4">
                                             <span class="d-block small fw-bold text-secondary mb-2">Beneficios incluidos:</span>
                                             <ul class="list-unstyled small mb-0 text-start">
@@ -145,7 +144,6 @@
                                             </ul>
                                         </div>
                                         
-                                        <!-- Botón de Contratación -->
                                         <form action="<%= request.getContextPath() %>/mis-suscripciones-user" method="POST" class="mt-auto">
                                             <input type="hidden" name="accion" value="contratar">
                                             <input type="hidden" name="codigoPlan" value="<%= plan.getCodigo() %>">
@@ -185,9 +183,8 @@
                     <form action="<%= request.getContextPath() %>/mis-suscripciones-user" method="POST">
                         <input type="hidden" name="accion" value="pagar">
                         
-                        <input type="hidden" name="codPlan" id="modalCodPlan" value="">
-                        <input type="hidden" name="fechaSub" id="modalFechaSub" value="">
-                        <input type="hidden" name="fechaEmi" id="modalFechaEmi" value="">
+                        <!-- Aquí reemplazamos los 3 inputs viejos por nuestro ID único -->
+                        <input type="hidden" name="idPagoSuscripcion" id="modalIdPago" value="">
                         
                         <div class="mb-3">
                             <label class="form-label text-muted small fw-bold">Método de Pago</label>
@@ -227,10 +224,9 @@
     </div>
 
     <script>
+        // La función de preparación ahora es muchísimo más limpia
         function prepararPago(btn) {
-            document.getElementById('modalCodPlan').value = btn.getAttribute('data-codplan');
-            document.getElementById('modalFechaSub').value = btn.getAttribute('data-fechasub');
-            document.getElementById('modalFechaEmi').value = btn.getAttribute('data-fechaemi');
+            document.getElementById('modalIdPago').value = btn.getAttribute('data-idpago');
             
             var myModal = new bootstrap.Modal(document.getElementById('modalPago'));
             myModal.show();

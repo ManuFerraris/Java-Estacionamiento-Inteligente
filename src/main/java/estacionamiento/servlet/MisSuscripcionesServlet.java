@@ -1,11 +1,9 @@
 package estacionamiento.servlet;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
 import java.util.List;
 
 import estacionamiento.domain.Usuario;
-import estacionamiento.domain.TipoPago;
 import estacionamiento.domain.Suscripcion;
 import estacionamiento.domain.PagoSuscripcion;
 import estacionamiento.domain.TipoPlan;
@@ -19,6 +17,7 @@ import estacionamiento.repository.mysql.PagoSuscripcionRepositoryMySQL;
 import estacionamiento.service.SuscripcionService;
 import estacionamiento.service.PagoSuscripcionService;
 import estacionamiento.service.TipoPlanService;
+import estacionamiento.service.MercadoPagoService;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -34,6 +33,7 @@ public class MisSuscripcionesServlet extends HttpServlet {
     private SuscripcionService suscripcionService;
     private TipoPlanService tipoPlanService;
     private PagoSuscripcionService pagoService;
+    private MercadoPagoService mpService;
 
     @Override
     public void init() throws ServletException {
@@ -46,6 +46,7 @@ public class MisSuscripcionesServlet extends HttpServlet {
         );
         this.tipoPlanService = new TipoPlanService(new TipoPlanRepositoryMySQL());
         this.pagoService = new PagoSuscripcionService(new PagoSuscripcionRepositoryMySQL());
+        this.mpService = new MercadoPagoService();
     }
 
     @Override
@@ -79,19 +80,21 @@ public class MisSuscripcionesServlet extends HttpServlet {
             if ("contratar".equals(accion)) {
                 int codigoPlan = Integer.parseInt(request.getParameter("codigoPlan"));
                 
-                // Llama exactamente a tu método. Cancela la anterior, da de alta y genera la factura
+                // Llama exactamente al método. Cancela la anterior, da de alta y genera la factura
                 suscripcionService.registrarOActualizarSuscripcion(cliente.getNumero(), codigoPlan);
                 request.getSession().setAttribute("exito", "¡Plan procesado con éxito! Realiza el pago para activarlo.");
             
             } else if ("pagar".equals(accion)) {
-                int codPlan = Integer.parseInt(request.getParameter("codPlan"));
-                LocalDateTime fechaSub = LocalDateTime.parse(request.getParameter("fechaSub"));
-                LocalDateTime fechaEmi = LocalDateTime.parse(request.getParameter("fechaEmi"));
-                TipoPago tipoPago = TipoPago.valueOf(request.getParameter("tipoPago"));
+            	Integer idPagoSuscripcion = Integer.parseInt(request.getParameter("idPagoSuscripcion"));
+            	// Buscamos el comprobante en la base de datos
+                PagoSuscripcion pago = pagoService.buscarComprobanteValidado(idPagoSuscripcion);
                 
-                // Procesamos el cobro
-                pagoService.registrarCobro(cliente.getNumero(), codPlan, fechaSub, fechaEmi, tipoPago);
-                request.getSession().setAttribute("exito", "¡Pago procesado correctamente! Tu suscripción está al día.");
+                // Generamos el link
+                String linkMercadoPago = mpService.crearPreferenciaSuscripcion(pago);
+                
+                // Redirijo al ciudadano a pagar
+                response.sendRedirect(linkMercadoPago);
+                return;
             }
 
         } catch (IllegalArgumentException e) {

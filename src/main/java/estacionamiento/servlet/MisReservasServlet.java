@@ -13,7 +13,6 @@ import estacionamiento.domain.Usuario;
 import estacionamiento.domain.Vehiculo;
 import estacionamiento.domain.Cochera;
 import estacionamiento.domain.EstadoPago;
-import estacionamiento.domain.EstadoReserva;
 import estacionamiento.domain.Pago;
 import estacionamiento.repository.mysql.LugarRepositoryMySQL;
 import estacionamiento.repository.mysql.PagoSuscripcionRepositoryMySQL;
@@ -51,7 +50,6 @@ public class MisReservasServlet extends HttpServlet {
     private CocheraRepositoryMySQL cocheraRepo;
     private PagoRepositoryMySQL pagoRepo;
     private PagoService pagoService;
-    private MercadoPagoService mpService;
 
     @Override
     public void init() throws ServletException {
@@ -60,7 +58,6 @@ public class MisReservasServlet extends HttpServlet {
         this.reservaRepo = new ReservaRepositoryMySQL();
         this.cocheraRepo = new CocheraRepositoryMySQL();
         this.pagoRepo = new PagoRepositoryMySQL();
-        this.mpService = new MercadoPagoService();
         
         SuscripcionService suscripcionService = new SuscripcionService(
             new SuscripcionRepositoryMySQL(), 

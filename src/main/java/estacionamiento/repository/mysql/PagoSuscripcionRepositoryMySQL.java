@@ -3,7 +3,6 @@ package estacionamiento.repository.mysql;
 import java.util.List;
 
 import estacionamiento.domain.PagoSuscripcion;
-import estacionamiento.domain.claves.PagoSuscripcionId;
 import estacionamiento.repository.PagoSuscripcionRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
@@ -25,13 +24,13 @@ public class PagoSuscripcionRepositoryMySQL implements PagoSuscripcionRepository
         try {
             tx.begin();
             System.out.println("\n--- DEBUG REPOSITORIO: ANTES DEL MERGE ---");
-            System.out.println("Suscripción ID (Num): " + pago.getId().getSuscripcionId().getNumero());
-            System.out.println("Suscripción ID (Cod): " + pago.getId().getSuscripcionId().getCodigo());
+            System.out.println("Suscripción Tipo de plan (Codigo): " + pago.getSuscripcion().getTipoPlan().getCodigo());
+            System.out.println("Suscripción Usuario (Numero): " + pago.getSuscripcion().getUsuario().getNumero());
             System.out.println("Monto: " + pago.getMonto());
             System.out.println("Estado: " + pago.getEstado());
             System.out.println("Tipo Pago: " + pago.getTipoPago());
             
-            em.merge(pago);
+            em.persist(pago);
             tx.commit();
             
             System.out.println("--- DEBUG REPOSITORIO: COMMIT EXITOSO ---\n");
@@ -65,7 +64,7 @@ public class PagoSuscripcionRepositoryMySQL implements PagoSuscripcionRepository
     }
 
     @Override
-    public PagoSuscripcion buscarPorClave(PagoSuscripcionId id) {
+    public PagoSuscripcion buscarPorClave(Integer id) {
         EntityManager em = emf.createEntityManager();
         try {
             return em.find(PagoSuscripcion.class, id);
@@ -79,7 +78,7 @@ public class PagoSuscripcionRepositoryMySQL implements PagoSuscripcionRepository
         EntityManager em = emf.createEntityManager();
         try {
             return em.createQuery(
-                "SELECT p FROM PagoSuscripcion p ORDER BY p.id.fechaHoraEmision DESC", PagoSuscripcion.class)
+                "SELECT p FROM PagoSuscripcion p ORDER BY p.fechaHoraEmision DESC", PagoSuscripcion.class)
                 .getResultList();
         } finally {
             em.close();

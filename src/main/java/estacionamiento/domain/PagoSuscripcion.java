@@ -3,18 +3,18 @@ package estacionamiento.domain;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.math.BigDecimal;
-import estacionamiento.domain.claves.PagoSuscripcionId;
-import estacionamiento.domain.claves.SuscripcionId;
 
 @Entity
 @Table(name="pago_suscripcion")
 public class PagoSuscripcion {
 	
-	@EmbeddedId
-	private PagoSuscripcionId id;
+	// Nueva clave primaria simple y autoincremental
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name="id_pago_suscripcion")
+    private Integer idPagoSuscripcion;
 	
-	@ManyToOne
-	@MapsId("suscripcionId") // Se vincula al atributo 'suscripcionId' dentro de PagoSuscripcionId
+	@ManyToOne(optional = false)
 	@JoinColumns({
 		@JoinColumn(name="numero", referencedColumnName="numero", nullable=false),
 		@JoinColumn(name="codigo", referencedColumnName="codigo", nullable=false),
@@ -22,7 +22,8 @@ public class PagoSuscripcion {
 	})
 	private Suscripcion suscripcion;
 
-	// private LocalDateTime fechaHoraEmision
+	@Column(name="fecha_hora_emision", nullable=false)
+	private LocalDateTime fechaHoraEmision;
 
 	@Column(name="fecha_hora_pago")
 	private LocalDateTime fechaHoraPago;
@@ -38,28 +39,43 @@ public class PagoSuscripcion {
 	@Column(name="estado", columnDefinition = "VARCHAR(30)", nullable=false)
 	private EstadoPago estado;
 	
-public PagoSuscripcion() {}
+    @Column(name = "id_mercado_pago", columnDefinition = "VARCHAR(255)", nullable = true)
+    private String idTransaccionMp;
 	
-    public PagoSuscripcion(Suscripcion suscripcion, LocalDateTime fechaHoraEmision, LocalDateTime fechaHoraPago, 
+    public PagoSuscripcion() {
+    }
+	
+	// Constructor completo para Queries nativas o posibles DTOs
+    public PagoSuscripcion(Integer idPagoSusc, Suscripcion suscripcion,
+    		LocalDateTime fechaHoraEmision, LocalDateTime fechaHoraPago, 
     		BigDecimal monto, TipoPago tipoPago, EstadoPago estado) {
-        this.suscripcion = suscripcion;
-        //this.fechaHoraEmision = fechaHoraEmision;
+    	this.idPagoSuscripcion = idPagoSusc;
+    	this.suscripcion = suscripcion;
+        this.fechaHoraEmision = fechaHoraEmision;
         this.fechaHoraPago = fechaHoraPago;
         this.monto = monto;
         this.tipoPago = tipoPago;
         this.estado = estado;
-        
-        // Se extiende el ID de la suscripción para inicializar el ID compuesto
-     	SuscripcionId sId = (suscripcion != null && suscripcion.getId() != null) ? suscripcion.getId() : new SuscripcionId();
-     	this.id = new PagoSuscripcionId(sId, fechaHoraEmision);
+    }
+    
+    // Constructor sin ID para crear pagos nuevos 
+    public PagoSuscripcion(Suscripcion suscripcion, LocalDateTime fechaHoraEmision,
+    		LocalDateTime fechaHoraPago, BigDecimal monto,
+    		TipoPago tipoPago, EstadoPago estado) {
+    	this.suscripcion = suscripcion;
+        this.fechaHoraEmision = fechaHoraEmision;
+        this.fechaHoraPago = fechaHoraPago;
+        this.monto = monto;
+        this.tipoPago = tipoPago;
+        this.estado = estado;
     }
 
-    public PagoSuscripcionId getId() {
-		return id;
+    public Integer getId() {
+		return idPagoSuscripcion;
 	}
 
-	public void setId(PagoSuscripcionId id) {
-		this.id = id;
+	public void setId(Integer idPagoSuscripcion) {
+		this.idPagoSuscripcion = idPagoSuscripcion;
 	}
 
 	public Suscripcion getSuscripcion() {
@@ -68,25 +84,14 @@ public PagoSuscripcion() {}
 
 	public void setSuscripcion(Suscripcion suscripcion) {
 		this.suscripcion = suscripcion;
-		if (this.id == null) {
-			this.id = new PagoSuscripcionId();
-		}
-		if (suscripcion != null) {
-			this.id.setSuscripcionId(suscripcion.getId());
-		}
 	}
 
-	// Delegamos el getter al ID
 	public LocalDateTime getFechaHoraEmision() {
-		return (id != null) ? id.getFechaHoraEmision() : null;
+		return fechaHoraEmision;
 	}
 
-	// Delegamos el setter al ID
 	public void setFechaHoraEmision(LocalDateTime fechaHoraEmision) {
-		if (this.id == null) {
-			this.id = new PagoSuscripcionId();
-		}
-		this.id.setFechaHoraEmision(fechaHoraEmision);
+		this.fechaHoraEmision = fechaHoraEmision;
 	}
 
 	public LocalDateTime getFechaHoraPago() {
@@ -119,5 +124,13 @@ public PagoSuscripcion() {}
 
 	public void setEstado(EstadoPago estado) {
 		this.estado = estado;
+	}
+
+	public String getIdTransaccionMp() {
+		return idTransaccionMp;
+	}
+
+	public void setIdTransaccionMp(String idTransaccionMp) {
+		this.idTransaccionMp = idTransaccionMp;
 	}
 }

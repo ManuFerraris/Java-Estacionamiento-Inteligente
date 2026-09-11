@@ -78,7 +78,7 @@ public class SuscripcionService {
             ahora,                      // fechaEmision
             null,                       // fechaPago (Aún no pagó)
             precioVigente.getPrecio(),  // Monto extraído del historial vigente
-            TipoPago.A_DEFINIR,                       // TipoPago nulo porque aún no va a la caja
+            TipoPago.A_DEFINIR,         // TipoPago nulo porque aún no va a la caja
             EstadoPago.PENDIENTE
         );
         
@@ -87,6 +87,7 @@ public class SuscripcionService {
         
         pagoRepository.guardar(comprobante);
         System.out.println("--- DEBUG SERVICE: FIN CREACIÓN DE PAGO ---\n");
+        System.out.println("ID Generado en Base de Datos: " + comprobante.getId());
         System.out.println("Servicio: Suscripción creada y comprobante PENDIENTE generado automáticamente.");
     }
 

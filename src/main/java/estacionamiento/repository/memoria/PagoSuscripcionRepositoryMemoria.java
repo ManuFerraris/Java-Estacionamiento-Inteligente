@@ -3,7 +3,6 @@ package estacionamiento.repository.memoria;
 import java.util.ArrayList;
 import java.util.List;
 import estacionamiento.domain.PagoSuscripcion;
-import estacionamiento.domain.claves.PagoSuscripcionId;
 import estacionamiento.repository.PagoSuscripcionRepository;
 
 
@@ -21,10 +20,9 @@ public class PagoSuscripcionRepositoryMemoria implements PagoSuscripcionReposito
     }
 
     @Override
-    public PagoSuscripcion buscarPorClave(PagoSuscripcionId id) {
+    public PagoSuscripcion buscarPorClave(Integer id) {
         for (PagoSuscripcion ps : this.baseDeDatosMemoria) {
-            // La magia de tener un @Embeddable con su método equals() bien definido
-            if (ps.getId().equals(id)) {
+            if (ps.getId() == id) {
                 return ps;
             }
         }
