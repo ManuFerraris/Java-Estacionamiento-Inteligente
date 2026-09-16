@@ -10,7 +10,7 @@ public class TipoVehiculo {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "numero")
-	private int numero;
+	private Integer numero;
 	
 	@Column(name = "nombre")
 	private String nombre;
@@ -22,16 +22,16 @@ public class TipoVehiculo {
 	public TipoVehiculo() {
 	}
 
-	public TipoVehiculo(int numero, String nombre) {
+	public TipoVehiculo(Integer numero, String nombre) {
 		this.nombre = nombre;
 		this.numero = numero;
 	}
 
-	public int getNumero() {
+	public Integer getNumero() {
 		return numero;
 	}
 
-	public void setNumero(int numero) {
+	public void setNumero(Integer numero) {
 		this.numero = numero;
 	}
 

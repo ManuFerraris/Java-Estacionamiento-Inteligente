@@ -28,7 +28,7 @@ public class PrecioHistoricoTV {
 		this.tipoVehiculo = tipoVehiculo;
 		this.precio = precio;
 		//this.fechaDesde = fechaDesde;
-		int numero = (tipoVehiculo != null) ? tipoVehiculo.getNumero() : 0;
+		Integer numero = (tipoVehiculo != null) ? tipoVehiculo.getNumero() : 0;
 		this.id = new PrecioHistoricoTVId(numero, fechaDesde);
 	}
 	public TipoVehiculo getTipoVehiculo() {
