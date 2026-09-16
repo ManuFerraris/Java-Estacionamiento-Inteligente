@@ -78,6 +78,16 @@
                         </a>
                     </li>
                     <li class="nav-item">
+
+					    <a class="nav-link <%= uriActual.endsWith("/tiposVehiculo-oficina") ? "active text-white fw-bold" : "" %>" 
+					       href="<%= request.getContextPath() %>/tiposVehiculo-oficina">
+					
+					        <i class="bi bi-car-front-fill me-1"></i>Tipos de Vehículo
+					
+					    </a>
+					
+					</li>
+                    <li class="nav-item">
                         <a class="nav-link <%= uriActual.endsWith("/beneficios-oficina") ? "active text-white fw-bold" : "" %>" 
                            href="<%= request.getContextPath() %>/beneficios-oficina">
                             <i class="bi bi-emoji-grin me-1"></i>Gestion Beneficios
