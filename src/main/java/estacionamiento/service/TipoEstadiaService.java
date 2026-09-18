@@ -1,5 +1,6 @@
 package estacionamiento.service;
 
+import java.util.List;
 import estacionamiento.domain.TipoEstadia;
 import estacionamiento.repository.TipoEstadiaRepository;
 
@@ -11,6 +12,7 @@ public class TipoEstadiaService {
         this.tipoEstadiaRepository = tipoEstadiaRepository;
     }
 
+    // 1. Método de Alta con tus validaciones intactas
     public void registrarTipoEstadia(TipoEstadia nuevoTipoEstadia) {
         if (nuevoTipoEstadia == null) {
             throw new IllegalArgumentException("No se puede registrar un tipo de estadía nulo.");
@@ -29,4 +31,9 @@ public class TipoEstadiaService {
 
         System.out.println("Servicio: Tipo de estadía validado y procesado correctamente.");
     }
+    
+    // 2. Método de Lectura (Necesario para los <select> del Servlet)
+    public List<TipoEstadia> obtenerTodos() {
+        return tipoEstadiaRepository.obtenerTodos();
+    }    
 }

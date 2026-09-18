@@ -87,7 +87,7 @@ public class LugarRepositoryMySQL implements LugarRepository {
     }
     
     @Override
-    public void eliminar(int codigo) {
+    public void darDeBajaLugar(int codigo) {
         EntityManager em = emf.createEntityManager();
         try {
             em.getTransaction().begin();
