@@ -133,4 +133,12 @@ public class PagoSuscripcion {
 	public void setIdTransaccionMp(String idTransaccionMp) {
 		this.idTransaccionMp = idTransaccionMp;
 	}
+
+	@Override
+	public String toString() {
+		return "PagoSuscripcion [idPagoSuscripcion=" + idPagoSuscripcion + ", suscripcion=" + suscripcion
+				+ ", fechaHoraEmision=" + fechaHoraEmision + ", fechaHoraPago=" + fechaHoraPago + ", monto=" + monto
+				+ ", tipoPago=" + tipoPago + ", estado=" + estado + ", idTransaccionMp=" + idTransaccionMp + "]";
+	}
+	
 }

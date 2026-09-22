@@ -78,11 +78,16 @@ public class PagoSuscripcionService {
     		pago.setEstado(EstadoPago.APROBADO);
     		pago.setTipoPago(TipoPago.MERCADO_PAGO);
     		pago.setFechaHoraPago(LocalDateTime.now());
-    		pago.setIdTransaccionMp(idTransaccionMp);System.out.println("   -> [SERVICIO] Ejecutando repositorio.actualizar(pago)...");
+    		pago.setIdTransaccionMp(idTransaccionMp);
+    		System.out.println("   -> [SERVICIO] Ejecutando repositorio.actualizar(pago)...");
             pagoRepository.actualizar(pago);
             System.out.println("   -> [SERVICIO] ¡ACTUALIZACIÓN EXITOSA EN MYSQL!");
+            System.out.println("Datos del pago actualizado:"
+            		+ "\n" + "IdPagoSuscripcion: " + idPagoSuscripcion
+            		+ "\n" + "IdTransaccionMP: " + idTransaccionMp);
         } else {
             System.out.println("   -> [SERVICIO] Omitido: El comprobante no estaba PENDIENTE.");
+            System.out.println("Estado del pago: " + pago.getEstado());
         }
     }
 }

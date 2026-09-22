@@ -27,6 +27,7 @@ public class ReservaRepositoryMySQL implements ReservaRepository {
             em.merge(reserva);
             em.getTransaction().commit();
             System.out.println("MySQL: Reserva registrada correctamente en la base de datos.");
+            System.out.println("Reserva guardada: "+ reserva+"\n");
         } catch (Exception e) {
             if (em.getTransaction().isActive()) {
                 em.getTransaction().rollback();
@@ -65,6 +66,7 @@ public class ReservaRepositoryMySQL implements ReservaRepository {
             em.merge(reservaNuevosDatos);
             em.getTransaction().commit();
             System.out.println("MySQL: Reserva actualizada correctamente.");
+            System.out.println("Datos de la reserva actualizada: " + reservaNuevosDatos + "\n");
         } catch (Exception e) {
             if (em.getTransaction().isActive()) {
                 em.getTransaction().rollback();

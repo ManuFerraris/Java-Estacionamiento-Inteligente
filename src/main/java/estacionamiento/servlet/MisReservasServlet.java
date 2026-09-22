@@ -171,6 +171,7 @@ public class MisReservasServlet extends HttpServlet {
             	    nuevoPago.getNumero(),
             	    cliente.getMail()
             );
+            System.out.println("Estructura mpService creada: "+mpService);
             
             // Finalmente redirijo al ciudadano directo a la pantalla de mercado pago.
             // Esta pantalla la provee la API de MP.

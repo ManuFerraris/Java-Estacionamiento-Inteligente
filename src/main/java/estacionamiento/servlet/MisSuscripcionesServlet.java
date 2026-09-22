@@ -93,6 +93,7 @@ public class MisSuscripcionesServlet extends HttpServlet {
                 String linkMercadoPago = mpService.crearPreferenciaSuscripcion(pago);
                 
                 // Redirijo al ciudadano a pagar
+                System.out.println("Link de mercado pago generado en nustro mpService: " + linkMercadoPago);
                 response.sendRedirect(linkMercadoPago);
                 return;
             }

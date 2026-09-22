@@ -34,8 +34,10 @@ public class PagoSuscripcionRepositoryMySQL implements PagoSuscripcionRepository
             tx.commit();
             
             System.out.println("--- DEBUG REPOSITORIO: COMMIT EXITOSO ---\n");
+            System.out.println("Datos del pago de suscripion guardado: " + pago.toString());
         } catch (Exception e) {
         	System.err.println("\n--- DEBUG REPOSITORIO: EXPLOTÓ LA TRANSACCIÓN ---");
+        	System.out.println("Ocurrio un error al guardar el pago de la suscripcion.");
             System.err.println("Mensaje de Exception: " + e.getMessage());
             if (e.getCause() != null) {
                 System.err.println("Causa Raíz: " + e.getCause().getMessage());
@@ -52,10 +54,13 @@ public class PagoSuscripcionRepositoryMySQL implements PagoSuscripcionRepository
         EntityManager em = emf.createEntityManager();
         EntityTransaction tx = em.getTransaction();
         try {
+        	System.out.println("Pago de suscripcion por actualizar...");
             tx.begin();
             em.merge(pago);
             tx.commit();
+            System.out.println("Datos del pago actualizado: " + pago.toString());
         } catch (Exception e) {
+        	System.out.println("Ocurrio un error al actualizar el pago de la suscripcion");
             if (tx != null && tx.isActive()) tx.rollback();
             throw e;
         } finally {

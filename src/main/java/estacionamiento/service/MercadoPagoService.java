@@ -22,9 +22,16 @@ public class MercadoPagoService {
 
     public String crearPreferencia(String titulo, BigDecimal monto, Integer idPagoLocal, String emailCliente) throws MPException, MPApiException {
         
+    	System.out.println("[MercadoPagoService] Parametros recibidos: " 
+    			+ "Titulo: "+ titulo +"\n" 
+    			+ "Monto: "+ monto +"\n"
+    			+ "Id Pago Local: " + idPagoLocal +"\n"
+    			+ "Email Cliente: " + emailCliente + "\n");
         // Si la seña calculada es menor a 15 ARS, forzamos un valor para evitar el rechazo del PolicyAgent.
         BigDecimal montoSeguro = (monto.compareTo(new BigDecimal("15.00")) < 0) ? new BigDecimal("150.00") : monto;
-
+        
+        System.out.println("Monto recibido/calculado: " + montoSeguro);
+        
         PreferenceItemRequest itemRequest = PreferenceItemRequest.builder()
                 .title(titulo)
                 .quantity(1)
@@ -40,7 +47,7 @@ public class MercadoPagoService {
 
         // 2. Comprador de prueba oficial (Bypass de auto-compra)
         PreferencePayerRequest payerRequest = PreferencePayerRequest.builder()
-                .email("test_user_2000603192@testuser.com") 
+                .email("test_user_3682619193@testuser.com") 
                 .build();
 
         String referenciaExterna = "RES_" + idPagoLocal;
@@ -88,7 +95,7 @@ public class MercadoPagoService {
                 .build();
         
         PreferencePayerRequest payerRequest = PreferencePayerRequest.builder()
-                .email("test_user_2000603192@testuser.com") 
+                .email("test_user_3682619193@testuser.com") 
                 .build();
 
         // 3. Identificador Polimórfico (Acá está la magia)
@@ -108,8 +115,11 @@ public class MercadoPagoService {
                 .build();
 
         PreferenceClient client = new PreferenceClient();
+        
+        System.out.println("Preferencia de SUSCRIPCION a enviar: " + preferenceRequest + "\n" + preferenceRequest);
         Preference preference = client.create(preferenceRequest, options);
-
+        System.out.println("Preferencia final de SUSCRIPCION: " + preference);
+        
         return preference.getSandboxInitPoint(); 
     }
 }
