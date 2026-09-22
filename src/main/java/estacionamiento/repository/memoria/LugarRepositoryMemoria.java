@@ -66,7 +66,7 @@ public class LugarRepositoryMemoria implements LugarRepository {
     }
 
     @Override
-    public void eliminar(int codigo) {
+    public void darDeBajaLugar(int codigo) {
         Lugar lugarAEliminar = buscarPorClave(codigo);
 
         if (lugarAEliminar != null) {

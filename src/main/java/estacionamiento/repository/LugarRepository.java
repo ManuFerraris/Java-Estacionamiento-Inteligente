@@ -8,7 +8,7 @@ public interface LugarRepository {
     Lugar guardar(Lugar lugar);
     Lugar buscarPorClave(int codigo); 
     List<Lugar> obtenerTodos();
-    void actualizar(int codigo, Lugar lugar);
-    void eliminar(int codigo);
+    void actualizar(int codigoEditar, Lugar lugar);
+    void darDeBajaLugar(int codigo);
     Lugar obtenerPrimerLugarLibre(int idCochera, LocalDateTime fechaDesde, LocalDateTime fechaHasta);
 }
