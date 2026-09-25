@@ -177,4 +177,13 @@ public class Reserva {
 	public void setSenia(BigDecimal senia) {
 		this.senia = senia;
 	}
+
+	@Override
+	public String toString() {
+		return "Reserva [id=" + id + ", vehiculo=" + vehiculo + ", usuario=" + usuario + ", tipoEstadia=" + tipoEstadia
+				+ ", fechaHastaTentativa=" + fechaHastaTentativa + ", fechaHastaReal=" + fechaHastaReal + ", estado="
+				+ estado + ", pagoSenia=" + pagoSenia + ", pagoSaldo=" + pagoSaldo + ", lugar=" + lugar + ", senia="
+				+ senia + "]";
+	}
+	
 }

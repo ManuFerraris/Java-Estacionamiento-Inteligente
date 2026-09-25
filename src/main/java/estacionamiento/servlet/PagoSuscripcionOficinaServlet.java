@@ -1,7 +1,6 @@
 package estacionamiento.servlet;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
 import java.util.List;
 
 import estacionamiento.domain.PagoSuscripcion;
@@ -49,21 +48,17 @@ public class PagoSuscripcionOficinaServlet extends HttpServlet {
         try {
             String accion = request.getParameter("accion");
             
-            // Claves compartidas para ambas acciones
-            int numUsuario = Integer.parseInt(request.getParameter("numeroUsuario"));
-            int codPlan = Integer.parseInt(request.getParameter("codigoPlan"));
-            LocalDateTime fechaDesdeSub = LocalDateTime.parse(request.getParameter("fechaDesdeSuscripcion"));
-            LocalDateTime fechaHoraEmision = LocalDateTime.parse(request.getParameter("fechaHoraEmision"));
+            Integer idPagoSuscripcion = Integer.parseInt(request.getParameter("idPagoSuscripcion"));
 
             switch (accion) {
                 case "cobrar":
                     TipoPago tipoPago = TipoPago.valueOf(request.getParameter("tipoPago"));
-                    pagoService.registrarCobro(numUsuario, codPlan, fechaDesdeSub, fechaHoraEmision, tipoPago);
+                    pagoService.registrarCobro(idPagoSuscripcion, tipoPago);
                     request.getSession().setAttribute("exito", "Pago registrado exitosamente en el sistema.");
                     break;
 
                 case "anular":
-                    pagoService.anularComprobante(numUsuario, codPlan, fechaDesdeSub, fechaHoraEmision);
+                    pagoService.anularComprobante(idPagoSuscripcion);
                     request.getSession().setAttribute("exito", "El comprobante fue anulado.");
                     break;
             }

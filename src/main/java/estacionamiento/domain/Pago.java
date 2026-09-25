@@ -89,6 +89,12 @@ public class Pago {
 		this.estado = estado;
 	}
 
+	@Override
+	public String toString() {
+		return "Pago [numero=" + numero + ", fechaHora=" + fechaHora + ", monto=" + monto + ", tipoPago=" + tipoPago
+				+ ", estado=" + estado + ", idTransaccionMp=" + idTransaccionMp + "]";
+	}
+
 	public String getIdTransaccionMp() {
 		return idTransaccionMp;
 	}

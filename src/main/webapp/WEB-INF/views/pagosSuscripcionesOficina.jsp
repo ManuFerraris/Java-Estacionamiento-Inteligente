@@ -31,11 +31,8 @@
                         <form action="<%= request.getContextPath() %>/pagos-suscripciones-oficina" method="POST" id="formCobro">
                             <input type="hidden" name="accion" value="cobrar">
                             
-                            <!-- La cuádruple clave compuesta -->
-                            <input type="hidden" name="numeroUsuario" id="numeroUsuarioHidden">
-                            <input type="hidden" name="codigoPlan" id="codigoPlanHidden">
-                            <input type="hidden" name="fechaDesdeSuscripcion" id="fechaDesdeSuscripcionHidden">
-                            <input type="hidden" name="fechaHoraEmision" id="fechaHoraEmisionHidden">
+                            <!-- Clave autoincremental única -->
+                            <input type="hidden" name="idPagoSuscripcion" id="idPagoSuscripcionHidden">
                             
                             <div class="alert alert-info d-none" id="infoCobroBox">
                                 <strong>Cobrando a:</strong> <span id="lblCliente"></span><br>
@@ -91,21 +88,17 @@
                             <tbody class="align-middle">
                                 <%
                                     List<PagoSuscripcion> lista = (List<PagoSuscripcion>) request.getAttribute("listaPagos");
-                                    DateTimeFormatter formatoISO = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
                                     DateTimeFormatter formatoVisual = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
                                     
                                     if (lista != null && !lista.isEmpty()) {
                                         for (PagoSuscripcion p : lista) {
-                                            // Extraemos las 4 claves para los botones
-                                            int numUsuario = p.getSuscripcion().getId().getNumero();
-                                            int codPlan = p.getSuscripcion().getId().getCodigo();
-                                            String fechaSubISO = p.getSuscripcion().getId().getFechaDesde().format(formatoISO);
-                                            String fechaEmiISO = p.getId().getFechaHoraEmision().format(formatoISO);
+                                            // Extraemos la clave autoincremental
+                                            Integer idPago = p.getId();
                                             
                                             // Datos visuales
                                             String nombreCliente = p.getSuscripcion().getUsuario().getNombre() + " " + p.getSuscripcion().getUsuario().getApellido();
                                             String nombrePlan = p.getSuscripcion().getTipoPlan().getNombre();
-                                            String fechaEmiVisual = p.getId().getFechaHoraEmision().format(formatoVisual);
+                                            String fechaEmiVisual = p.getFechaHoraEmision().format(formatoVisual);
                                             
                                             // Variable para el filtro de JS
                                             String claseEstado = p.getEstado() == EstadoPago.PENDIENTE ? "fila-pendiente" : "fila-historico";
@@ -120,7 +113,7 @@
                                                 <td>
                                                     <% if (p.getEstado() == EstadoPago.PENDIENTE) { %>
                                                         <span class="badge bg-warning text-dark"><i class="bi bi-clock-history me-1"></i>Pendiente</span>
-                                                    <% } else if (p.getEstado() == EstadoPago.PAGADO) { %>
+                                                    <% } else if (p.getEstado() == EstadoPago.PAGADO || p.getEstado() == EstadoPago.APROBADO) { %>
                                                         <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Pagado</span>
                                                         <small class="d-block text-muted mt-1" style="font-size: 0.70rem;">(<%= p.getTipoPago() %>)</small>
                                                     <% } else if (p.getEstado() == EstadoPago.VENCIDO) { %>
@@ -132,20 +125,18 @@
                                                 <td>
                                                     <div class="d-flex justify-content-center gap-2">
                                                         <% if (p.getEstado() == EstadoPago.PENDIENTE) { %>
-                                                            <!-- Botón Iniciar Cobro (Pasa datos a la caja izquierda) -->
+                                                            <!-- Botón Iniciar Cobro -->
                                                             <button type="button" class="btn btn-success btn-sm" 
                                                                     title="Registrar Cobro"
-                                                                    onclick="prepararCobro('<%= numUsuario %>', '<%= codPlan %>', '<%= fechaSubISO %>', '<%= fechaEmiISO %>', '<%= nombreCliente.replace("'", "\\'") %>', '<%= nombrePlan.replace("'", "\\'") %>', '<%= p.getMonto() %>')">
+                                                                    onclick="prepararCobro('<%= idPago %>', '<%= nombreCliente.replace("'", "\\'") %>', '<%= nombrePlan.replace("'", "\\'") %>', '<%= p.getMonto() %>')">
                                                                 <i class="bi bi-currency-dollar"></i> Cobrar
                                                             </button>
                                                             
                                                             <!-- Botón Anular (Baja lógica del comprobante) -->
                                                             <form action="<%= request.getContextPath() %>/pagos-suscripciones-oficina" method="POST" class="m-0">
                                                                 <input type="hidden" name="accion" value="anular">
-                                                                <input type="hidden" name="numeroUsuario" value="<%= numUsuario %>">
-                                                                <input type="hidden" name="codigoPlan" value="<%= codPlan %>">
-                                                                <input type="hidden" name="fechaDesdeSuscripcion" value="<%= fechaSubISO %>">
-                                                                <input type="hidden" name="fechaHoraEmision" value="<%= fechaEmiISO %>">
+                                                                <!-- Solo mandamos el ID único -->
+                                                                <input type="hidden" name="idPagoSuscripcion" value="<%= idPago %>">
                                                                 
                                                                 <button type="submit" class="btn btn-outline-danger btn-sm" 
                                                                         title="Anular Comprobante"
@@ -186,12 +177,10 @@
     %>
     
     <script>
-        function prepararCobro(numUsu, codPlan, fechaSub, fechaEmi, cliente, plan, monto) {
-            // Llenar inputs ocultos con la clave cuádruple
-            document.getElementById('numeroUsuarioHidden').value = numUsu;
-            document.getElementById('codigoPlanHidden').value = codPlan;
-            document.getElementById('fechaDesdeSuscripcionHidden').value = fechaSub;
-            document.getElementById('fechaHoraEmisionHidden').value = fechaEmi;
+        // La función JS ahora solo recibe el ID autoincremental
+        function prepararCobro(idPago, cliente, plan, monto) {
+            // Llenar el input oculto
+            document.getElementById('idPagoSuscripcionHidden').value = idPago;
             
             // Mostrar info en la caja azul
             document.getElementById('lblCliente').innerText = cliente;
@@ -210,10 +199,7 @@
         }
         
         function cancelarCobro() {
-            document.getElementById('numeroUsuarioHidden').value = '';
-            document.getElementById('codigoPlanHidden').value = '';
-            document.getElementById('fechaDesdeSuscripcionHidden').value = '';
-            document.getElementById('fechaHoraEmisionHidden').value = '';
+            document.getElementById('idPagoSuscripcionHidden').value = '';
             
             document.getElementById('infoCobroBox').classList.add('d-none');
             
@@ -222,7 +208,6 @@
             document.getElementById('btnCancelar').classList.add('d-none');
         }
 
-        // Script para filtrar solo los pagos PENDIENTES
         let mostrandoSoloPendientes = false;
         function togglePendientes() {
             mostrandoSoloPendientes = !mostrandoSoloPendientes;

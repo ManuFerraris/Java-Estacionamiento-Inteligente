@@ -31,7 +31,7 @@ public class PagoRepositoryMySQL implements PagoRepository {
             
             em.getTransaction().commit();
             System.out.println("MySQL: Pago guardado correctamente. ID generado: " + pago.getNumero());
-            
+            System.out.println("Datos del pago: "+pago);
         } catch (Exception e) {
             if (em.getTransaction().isActive()) {
                 em.getTransaction().rollback();
@@ -66,6 +66,9 @@ public class PagoRepositoryMySQL implements PagoRepository {
     public void actualizar(Integer numero, Pago pagoNuevosDatos) {
         // En JPA moderno, actualizar es simplemente hacer un merge del objeto con el mismo ID
         guardar(pagoNuevosDatos); 
+        System.out.println("Actualizando pago..."+"\n"
+        		+ "Numero del pago recibido: " + numero +"\n"
+        		+ "Datos del pago: " + pagoNuevosDatos + "\n");
     }
     
     @Override
