@@ -2,11 +2,10 @@ package estacionamiento.repository;
 
 import java.util.List;
 import estacionamiento.domain.PagoSuscripcion;
-import estacionamiento.domain.claves.PagoSuscripcionId;
 
 public interface PagoSuscripcionRepository {
     void guardar(PagoSuscripcion pago);
     void actualizar(PagoSuscripcion pago);
-    PagoSuscripcion buscarPorClave(PagoSuscripcionId id);
+    PagoSuscripcion buscarPorClave(Integer id);
     List<PagoSuscripcion> obtenerTodos();
 }

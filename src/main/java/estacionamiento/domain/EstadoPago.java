@@ -6,5 +6,6 @@ public enum EstadoPago {
 	APROBADO,   // Momento en que MP lo aprueba.
     PAGADO,     // Cuando ya se registró el pago (fechaHoraPago)
     VENCIDO,    // Si se pasó la fecha límite sin pagar
-    CANCELADO   // Si se anuló la suscripción o el comprobante
+    CANCELADO,   // Si se anuló la suscripción o el comprobante
+    RECHAZADO
 }

@@ -17,7 +17,7 @@
     // Solo mostramos el navbar si hay alguien logueado
     if (usuarioSesion != null) {
 %>
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm mb-4">
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
     <div class="container-fluid px-4">
         
         <!-- Logo y Nombre Inteligente -->
@@ -58,7 +58,18 @@
                            href="<%= request.getContextPath() %>/pagos-suscripciones-oficina">
                             <i class="bi bi-cash-coin me-1"></i>Caja / Pagos
                         </a>
+                    <li class="nav-item">
+                        <a class="nav-link <%= uriActual.endsWith("/LugarServlet") ? "active text-white fw-bold" : "" %>" 
+                           href="<%= request.getContextPath() %>/LugarServlet">
+                            <i class="bi bi-grid-3x3 me-1"></i>Lugares
+                        </a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link <%= uriActual.endsWith("/tipoEstadia") ? "active text-white fw-bold" : "" %>" 
+                           href="<%= request.getContextPath() %>/tipoEstadia">
+                            <i class="bi bi-clock-history me-1"></i>Tipo Estadía
+                        </a>
+                    </li>                   
                     <li class="nav-item">
                         <a class="nav-link <%= uriActual.endsWith("/cocheras-oficina") ? "active text-white fw-bold" : "" %>" 
                            href="<%= request.getContextPath() %>/cocheras-oficina">

@@ -64,4 +64,18 @@ public class PagoService {
     public Pago buscarPago(int id) {
         return pagoRepository.buscarPorClave(id);
     }
+    
+    public void actualizarEstado(Integer idPagoLocal, EstadoPago estado, String paymentId) {
+    	Pago pagoAActualizar = buscarPago(idPagoLocal);
+    	if(pagoAActualizar == null) {
+    		throw new IllegalArgumentException("No se ha encontrado el pago a actualizar.");
+    	}
+    	pagoAActualizar.setEstado(estado);
+    	
+    	if (paymentId != null && !paymentId.trim().isEmpty() && !paymentId.equals("null")) {
+    	    pagoAActualizar.setIdTransaccionMp(paymentId);
+    	}
+    	pagoRepository.actualizar(idPagoLocal, pagoAActualizar);
+    	
+    }
 }

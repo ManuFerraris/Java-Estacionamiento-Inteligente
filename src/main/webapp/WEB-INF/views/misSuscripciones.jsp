@@ -75,19 +75,21 @@
                             List<PagoSuscripcion> pendientes = (List<PagoSuscripcion>) request.getAttribute("pagosPendientes");
                             if (pendientes != null && !pendientes.isEmpty()) {
                                 for(PagoSuscripcion p : pendientes) {
+                                    String nombrePlan = p.getSuscripcion().getTipoPlan().getNombre();
                         %>
                             <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-3">
                                 <div>
-                                    <h6 class="mb-0 fw-bold">Plan <%= p.getId().getSuscripcionId().getCodigo() %></h6>
+                                    <h6 class="mb-0 fw-bold"><%= nombrePlan %></h6>
                                     <small class="text-muted">$ <%= p.getMonto() %></small>
                                 </div>
-                                <button type="button" class="btn btn-warning btn-sm fw-bold text-dark" 
-                                        data-codplan="<%= p.getId().getSuscripcionId().getCodigo() %>"
-                                        data-fechasub="<%= p.getId().getSuscripcionId().getFechaDesde() %>"
-                                        data-fechaemi="<%= p.getId().getFechaHoraEmision() %>"
-                                        onclick="prepararPago(this)">
-                                    Pagar
-                                </button>
+                                <!-- El botón ahora envía directamente el formulario hacia Mercado Pago -->
+                                <form action="<%= request.getContextPath() %>/mis-suscripciones-user" method="POST" class="m-0">
+                                    <input type="hidden" name="accion" value="pagar">
+                                    <input type="hidden" name="idPagoSuscripcion" value="<%= p.getId() %>">
+                                    <button type="submit" class="btn btn-warning btn-sm fw-bold text-dark">
+                                        <i class="bi bi-wallet2 me-1"></i>Pagar
+                                    </button>
+                                </form>
                             </div>
                         <% 
                                 }
@@ -116,13 +118,11 @@
                                 <div class="card h-100 border bg-white shadow-sm hover-card">
                                     <div class="card-body p-4 d-flex flex-column">
                                         
-                                        <!-- Cabecera del Plan -->
                                         <div class="text-center mb-3">
                                             <h5 class="fw-bold text-primary mb-1"><%= plan.getNombre() %></h5>
                                             <p class="text-muted small mb-0"><%= plan.getDetalle() %></p>
                                         </div>
                                         
-                                        <!-- Caja de Beneficios / Características -->
                                         <div class="bg-light rounded-3 p-3 flex-grow-1 mb-4">
                                             <span class="d-block small fw-bold text-secondary mb-2">Beneficios incluidos:</span>
                                             <ul class="list-unstyled small mb-0 text-start">
@@ -145,7 +145,6 @@
                                             </ul>
                                         </div>
                                         
-                                        <!-- Botón de Contratación -->
                                         <form action="<%= request.getContextPath() %>/mis-suscripciones-user" method="POST" class="mt-auto">
                                             <input type="hidden" name="accion" value="contratar">
                                             <input type="hidden" name="codigoPlan" value="<%= plan.getCodigo() %>">
@@ -173,69 +172,7 @@
         </div>
     </div>
 
-    <!-- MODAL DE PAGO -->
-    <div class="modal fade" id="modalPago" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content rounded-4 border-0 shadow">
-                <div class="modal-header bg-light border-0">
-                    <h5 class="modal-title fw-bold"><i class="bi bi-credit-card-fill me-2 text-primary"></i>Checkout Seguro</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body p-4">
-                    <form action="<%= request.getContextPath() %>/mis-suscripciones-user" method="POST">
-                        <input type="hidden" name="accion" value="pagar">
-                        
-                        <input type="hidden" name="codPlan" id="modalCodPlan" value="">
-                        <input type="hidden" name="fechaSub" id="modalFechaSub" value="">
-                        <input type="hidden" name="fechaEmi" id="modalFechaEmi" value="">
-                        
-                        <div class="mb-3">
-                            <label class="form-label text-muted small fw-bold">Método de Pago</label>
-                            <select class="form-select" name="tipoPago" required>
-                                <option value="" disabled selected>Selecciona tu tarjeta...</option>
-                                <% for (TipoPago tp : TipoPago.values()) { 
-                                      if (tp == TipoPago.CREDITO || tp == TipoPago.DEBITO) { 
-                                %>
-                                    <option value="<%= tp.name() %>"><%= tp.name() %></option>
-                                <% }} %>
-                            </select>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label class="form-label text-muted small fw-bold">Número de Tarjeta (Simulado)</label>
-                            <input type="text" class="form-control" placeholder="**** **** **** ****" required>
-                        </div>
-                        
-                        <div class="row">
-                            <div class="col-6 mb-4">
-                                <label class="form-label text-muted small fw-bold">Vencimiento</label>
-                                <input type="text" class="form-control" placeholder="MM/AA" required>
-                            </div>
-                            <div class="col-6 mb-4">
-                                <label class="form-label text-muted small fw-bold">CVV</label>
-                                <input type="text" class="form-control" placeholder="123" required>
-                            </div>
-                        </div>
-                        
-                        <button type="submit" class="btn btn-success w-100 py-2 fw-bold fs-5">
-                            <i class="bi bi-lock-fill me-2"></i>Pagar Ahora
-                        </button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <script>
-        function prepararPago(btn) {
-            document.getElementById('modalCodPlan').value = btn.getAttribute('data-codplan');
-            document.getElementById('modalFechaSub').value = btn.getAttribute('data-fechasub');
-            document.getElementById('modalFechaEmi').value = btn.getAttribute('data-fechaemi');
-            
-            var myModal = new bootstrap.Modal(document.getElementById('modalPago'));
-            myModal.show();
-        }
-
         <% if (error != null) { %>
             Swal.fire({ icon: 'error', title: 'Oops...', text: '<%= error %>' });
             <% session.removeAttribute("error"); %>

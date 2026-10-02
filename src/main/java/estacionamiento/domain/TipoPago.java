@@ -6,5 +6,6 @@ public enum TipoPago {
     DEBITO,
     CREDITO,
     A_DEFINIR,
-    BONIFICADO
+    BONIFICADO,
+    MERCADO_PAGO
 }
