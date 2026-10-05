@@ -136,6 +136,21 @@
                         </div>
                     </a>
                 </div>
+                
+                <!-- NUEVA TARJETA: Gestion de Precios Para los Tipos de Vehiculos -->
+                <div class="col-md-4">
+				    <a href="<%= request.getContextPath() %>/preciosHistoricosTV-oficina" class="text-decoration-none">
+				        <div class="card border-0 shadow-sm rounded-4 h-100 hover-card">
+				            <div class="card-body p-4 text-center">
+				                <div class="bg-primary bg-opacity-10 rounded-circle d-inline-flex p-3 mb-3">
+				                    <i class="bi bi-tags-fill fs-1 text-primary"></i>
+				                </div>
+				                <h5 class="text-dark fw-bold mb-2">Historial de Precios</h5>
+				                <p class="text-muted small mb-0">Administra y actualiza las tarifas vigentes por tipo de vehículo.</p>
+				            </div>
+				        </div>
+				    </a>
+				</div>
 
             <%-- VISTA EXCLUSIVA PARA CLIENTES --%>
             <% } else { %>

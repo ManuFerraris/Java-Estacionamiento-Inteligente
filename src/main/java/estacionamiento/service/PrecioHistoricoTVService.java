@@ -1,70 +1,66 @@
 package estacionamiento.service;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.List;
+
 import estacionamiento.domain.PrecioHistoricoTV;
+import estacionamiento.domain.TipoVehiculo;
 import estacionamiento.repository.PrecioHistoricoTVRepository;
 import estacionamiento.repository.TipoVehiculoRepository;
-import estacionamiento.repository.mysql.PrecioHistoricoTVRepositoryMySQL;
 
 public class PrecioHistoricoTVService {
-
-    private final PrecioHistoricoTVRepository precioHistoricoRepository;
-    private final TipoVehiculoRepository tipoVehiculoRepository;
-    private final PrecioHistoricoTVRepositoryMySQL tvMySql;
-
-    public PrecioHistoricoTVService(PrecioHistoricoTVRepository precioHistoricoRepository, 
-                                    TipoVehiculoRepository tipoVehiculoRepository,
-                                    PrecioHistoricoTVRepositoryMySQL tvMySql) {
-        this.precioHistoricoRepository = precioHistoricoRepository;
-        this.tipoVehiculoRepository = tipoVehiculoRepository;
-        this.tvMySql = tvMySql;
-    }
-
-    public void registrarPrecioHistorico(PrecioHistoricoTV nuevoPrecio) {
-        
-        // Integridad básica del objeto
-        if (nuevoPrecio == null) {
-            throw new IllegalArgumentException("El registro de precio histórico no puede ser nulo.");
-        }
-
-        // La fecha de vigencia es obligatoria
-        /*
-        if (nuevoPrecio.getFechaDesde() == null) {
-            throw new IllegalArgumentException("La fecha de inicio de vigencia es obligatoria.");
-        }
-        */
-
-        // El precio debe ser un número positivo (Usando BigDecimal correctamente)
-        if (nuevoPrecio.getPrecio() == null || nuevoPrecio.getPrecio().compareTo(BigDecimal.ZERO) <= 0) {
-            throw new IllegalArgumentException("El precio configurado debe ser mayor a cero.");
-        }
-
-        int numTV = nuevoPrecio.getTipoVehiculo().getNumero();
-
-        // =====================================================================
-        // TODO: @Marilu - Descomenta esta validación cuando termines tu parte.
-        /*
-        if (tipoVehiculoRepository.buscarPorCodigo(codTV) == null) {
-            throw new IllegalArgumentException("No se puede asignar el precio: El tipo de vehículo no existe.");
-        }
-        */
-        // =====================================================================
-
-        // Evitar duplicados exactos en el historial
-        /*
-        if (precioHistoricoRepository.buscarPorClave(numTV, nuevoPrecio.getFechaDesde()) != null) {
-            throw new IllegalArgumentException("Ya existe una tarifa configurada para este vehículo en esa fecha exacta.");
-        }
-        */
-
-        precioHistoricoRepository.guardar(nuevoPrecio);
-        
-        System.out.println("Servicio: Nueva tarifa validada y registrada correctamente en el historial.");
-    }
-
-    public BigDecimal obtenerPrecioVigente(Integer numeroTV) {
-    	BigDecimal precio = tvMySql.obtenerPrecioVigente(numeroTV);
-    	return precio;
-    }
     
+    private PrecioHistoricoTVRepository precioRepo;
+    private TipoVehiculoRepository tipoVehiculoRepo;
+
+    public PrecioHistoricoTVService( PrecioHistoricoTVRepository phTVRepo, TipoVehiculoRepository tvRepo) {
+        this.precioRepo = phTVRepo;
+        this.tipoVehiculoRepo = tvRepo;
+    }
+
+    public List<PrecioHistoricoTV> obtenerTodosOrdenadosPorFechaDesc() {
+        return precioRepo.obtenerTodos();
+    }
+
+    public void registrarNuevoPrecio(Integer numeroTipoVehiculo, BigDecimal precioValor) {
+        if (precioValor == null || precioValor.compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("El precio no puede ser negativo.");
+        }
+
+        TipoVehiculo tv = tipoVehiculoRepo.buscarPorClave(numeroTipoVehiculo);
+        if (tv == null) {
+            throw new IllegalArgumentException("El tipo de vehículo seleccionado no existe.");
+        }
+
+        PrecioHistoricoTV nuevoPrecio = new PrecioHistoricoTV();
+        nuevoPrecio.setTipoVehiculo(tv);
+        nuevoPrecio.setPrecio(precioValor);
+        nuevoPrecio.getId().setFechaDesde(LocalDateTime.now());
+        nuevoPrecio.getId().setNumeroTipoVehiculo(numeroTipoVehiculo);
+        precioRepo.guardar(nuevoPrecio);
+    }
+
+    public void actualizarPrecio(Integer numeroTipoVehiculo, LocalDateTime fechaDesde, BigDecimal nuevoPrecio) {
+        if (nuevoPrecio == null || nuevoPrecio.compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("El precio no puede ser negativo.");
+        }
+
+        PrecioHistoricoTV precioHistorico = precioRepo.buscarPorClave(numeroTipoVehiculo, fechaDesde);
+        if (precioHistorico == null) {
+            throw new IllegalArgumentException("El registro histórico que intentas editar no existe.");
+        }
+
+        precioHistorico.setPrecio(nuevoPrecio);
+        precioRepo.actualizar(precioHistorico); 
+    }
+
+    public void eliminarPrecioFisico(Integer numeroTipoVehiculo, LocalDateTime fechaDesde) {
+        PrecioHistoricoTV precioHistorico = precioRepo.buscarPorClave(numeroTipoVehiculo, fechaDesde);
+        if (precioHistorico == null) {
+            throw new IllegalArgumentException("El registro ya no existe en la base de datos.");
+        }
+
+        precioRepo.eliminar(precioHistorico);
+    }
 }

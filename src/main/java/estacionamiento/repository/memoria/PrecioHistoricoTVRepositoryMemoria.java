@@ -47,30 +47,16 @@ public class PrecioHistoricoTVRepositoryMemoria implements PrecioHistoricoTVRepo
     }
 
     @Override
-    public void actualizar(int numeroTV, LocalDateTime fechaDesde, PrecioHistoricoTV precioNuevosDatos) {
-        PrecioHistoricoTV precioExistente = buscarPorClave(numeroTV, fechaDesde);
-
-        if (precioExistente != null) {
-            // Importante: No modificamos ni el TipoVehiculo ni la FechaDesde porque son la identidad del registro.
-            // Solo actualizamos el valor del precio.
-            precioExistente.setPrecio(precioNuevosDatos.getPrecio());
-            
-            System.out.println("Precio histórico actualizado con éxito a: $" + precioExistente.getPrecio());
-        } else {
-            throw new IllegalArgumentException("No se puede actualizar. No se encontró el precio histórico.");
-        }
+    public void actualizar(PrecioHistoricoTV precioHistoricoTV) {
+        // Normalmente como es una entidad debil de precios no hacemos actualizaciones sobre la misma
+    	// creamos o eliminamos.
     }
 
     @Override
-    public void eliminar(int numeroTV, LocalDateTime fechaDesde) {
-        PrecioHistoricoTV precioAEliminar = buscarPorClave(numeroTV, fechaDesde);
-
-        if (precioAEliminar != null) {
-            this.baseDeDatosMemoria.remove(precioAEliminar);
-            System.out.println("Precio histórico eliminado con éxito.");
-        } else {
-            System.out.println("No se encontró el precio histórico para eliminar.");
-        }
+    public void eliminar(PrecioHistoricoTV precioHistoricoTV) {
+    	this.baseDeDatosMemoria.remove(precioHistoricoTV);
+    	System.out.println("Precio histórico eliminado con éxito.");
+    	System.out.println("No se encontró el precio histórico para eliminar.");
     }
 
 	@Override
