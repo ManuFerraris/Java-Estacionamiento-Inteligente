@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import estacionamiento.domain.PrecioHistoricoTV;
+import estacionamiento.domain.TipoVehiculo;
 import estacionamiento.domain.claves.PrecioHistoricoTVId; 
 import estacionamiento.repository.PrecioHistoricoTVRepository;
 
@@ -36,7 +37,7 @@ public class PrecioHistoricoTVRepositoryMySQL implements PrecioHistoricoTVReposi
     public List<PrecioHistoricoTV> obtenerTodos() {
         EntityManager em = emf.createEntityManager();
         try {
-            return em.createQuery("SELECT ph FROM PrecioHistoricoTV ph", PrecioHistoricoTV.class).getResultList();
+            return em.createQuery("SELECT ph FROM PrecioHistoricoTV ph ORDER BY ph.id.fechaDesde DESC", PrecioHistoricoTV.class).getResultList();
         } finally {
             em.close();
         }
@@ -47,7 +48,16 @@ public class PrecioHistoricoTVRepositoryMySQL implements PrecioHistoricoTVReposi
         EntityManager em = emf.createEntityManager();
         try {
             em.getTransaction().begin();
+            
+            TipoVehiculo tvDesconectado = precioHistoricoTV.getTipoVehiculo();
+            if (tvDesconectado != null) {
+                TipoVehiculo tvReenganchado = em.merge(tvDesconectado);
+                // Le volvemos a setear el objeto, ahora sí gestionado por Hibernate
+                precioHistoricoTV.setTipoVehiculo(tvReenganchado);
+            }
+            
             em.persist(precioHistoricoTV);
+            
             em.getTransaction().commit();
             System.out.println("MySQL: PrecioHistoricoTV registrado correctamente en la base de datos.");
         } catch (Exception e) {
@@ -61,23 +71,13 @@ public class PrecioHistoricoTVRepositoryMySQL implements PrecioHistoricoTVReposi
     }
 	
     @Override
-    public void actualizar(int codigoTV, LocalDateTime fechaDesde, PrecioHistoricoTV phTVNuevosDatos) {
-        EntityManager em = emf.createEntityManager();
+    public void actualizar(PrecioHistoricoTV precioHistoricoTV) {
+    	EntityManager em = emf.createEntityManager();
         try {
             em.getTransaction().begin();
-            
-            PrecioHistoricoTVId claveCompuesta = new PrecioHistoricoTVId(codigoTV, fechaDesde);
-            PrecioHistoricoTV phTVExistente = em.find(PrecioHistoricoTV.class, claveCompuesta);
-            
-            if (phTVExistente != null) {
-                // Actualizamos el precio, porque la clave primaria no se puede modificar
-                phTVExistente.setPrecio(phTVNuevosDatos.getPrecio());
-                em.getTransaction().commit();
-                System.out.println("MySQL: Precio histórico de vehículo actualizado correctamente.");
-            } else {
-                em.getTransaction().rollback();
-                throw new IllegalArgumentException("MySQL: No se encontró histórico para actualizar.");
-            }
+            em.merge(precioHistoricoTV);
+            em.getTransaction().commit();
+            System.out.println("MySQL: Precio histórico de vehículo actualizado mediante merge.");
         } catch (Exception e) {
             if (em.getTransaction().isActive()) {
                 em.getTransaction().rollback();
@@ -89,22 +89,16 @@ public class PrecioHistoricoTVRepositoryMySQL implements PrecioHistoricoTVReposi
     }
 	
     @Override
-    public void eliminar(int codigoTV, LocalDateTime fechaDesde) {
+    public void eliminar(PrecioHistoricoTV precioHistoricoTV) {
         EntityManager em = emf.createEntityManager();
         try {
             em.getTransaction().begin();
             
-            PrecioHistoricoTVId claveCompuesta = new PrecioHistoricoTVId(codigoTV, fechaDesde);
-            PrecioHistoricoTV historioAEliminar = em.find(PrecioHistoricoTV.class, claveCompuesta);
+            PrecioHistoricoTV entidadGestionada = em.merge(precioHistoricoTV);
+            em.remove(entidadGestionada);
             
-            if (historioAEliminar != null) {
-                em.remove(historioAEliminar);
-                em.getTransaction().commit();
-                System.out.println("MySQL: Histórico eliminado correctamente.");
-            } else {
-                em.getTransaction().rollback();
-                System.out.println("MySQL: El histórico no fue encontrado para ser eliminado.");
-            }
+            em.getTransaction().commit();
+            System.out.println("MySQL: Histórico eliminado físicamente con éxito.");
         } catch (Exception e) {
             if (em.getTransaction().isActive()) {
                 em.getTransaction().rollback();
@@ -119,16 +113,12 @@ public class PrecioHistoricoTVRepositoryMySQL implements PrecioHistoricoTVReposi
     public BigDecimal obtenerPrecioVigente(int numeroTipoVehiculo) {
         EntityManager em = emf.createEntityManager();
         try {
-            // Como fechaDesde vive adentro de la clave compuesta (@EmbeddedId), 
-            // en la consulta JPQL accedemos a ella a través de 'id.fechaDesde'
             String jpql = "SELECT p.precio FROM PrecioHistoricoTV p " +
                           "WHERE p.tipoVehiculo.numero = :numeroTV " +
                           "ORDER BY p.id.fechaDesde DESC";
                           
             TypedQuery<BigDecimal> query = em.createQuery(jpql, BigDecimal.class);
             query.setParameter("numeroTV", numeroTipoVehiculo);
-            
-            // Limitamos a 1 para traer únicamente el precio más actual
             query.setMaxResults(1); 
 
             List<BigDecimal> resultados = query.getResultList();

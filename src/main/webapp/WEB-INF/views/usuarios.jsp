@@ -197,8 +197,13 @@
     </div>
 
     <% 
-        String error = (String) request.getAttribute("error");
-        String exito = (String) request.getAttribute("exito");
+	 	// 1. Leemos los mensajes desde la sesión (no desde el request)
+	    String error = (String) session.getAttribute("error");
+	    String exito = (String) session.getAttribute("exito");
+	    
+	    // 2. Limpiamos la sesión inmediatamente para que el mensaje se muestre UNA sola vez
+	    if (error != null) session.removeAttribute("error");
+	    if (exito != null) session.removeAttribute("exito");
     %>
     
     <script>
