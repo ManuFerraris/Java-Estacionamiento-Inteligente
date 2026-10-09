@@ -12,4 +12,6 @@ public interface SuscripcionRepository {
     void actualizar(Suscripcion suscripcion);
     void eliminar(int codigoTP, int numeroUsuario, LocalDateTime fechaDesde);
     Suscripcion buscarActivaPorUsuario(int numeroUsuario);
+    List<Suscripcion> filtrarPadron(String estadoSub, String estadoPago);
+
 }

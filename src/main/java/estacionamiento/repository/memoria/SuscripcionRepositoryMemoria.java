@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import estacionamiento.domain.EstadoSuscripcion;
+import estacionamiento.domain.EstadoPago;
 import estacionamiento.domain.Suscripcion;
 import estacionamiento.domain.claves.SuscripcionId;
 import estacionamiento.repository.SuscripcionRepository;
@@ -25,7 +26,6 @@ public class SuscripcionRepositoryMemoria implements SuscripcionRepository {
     @Override
     public Suscripcion buscarPorClave(SuscripcionId id) {
         for (Suscripcion s : this.baseDeDatosMemoria) {
-            // Aprovechamos tu excelente método equals() en SuscripcionId
             if (s.getId().equals(id)) {
                 return s;
             }
@@ -46,9 +46,6 @@ public class SuscripcionRepositoryMemoria implements SuscripcionRepository {
 
     @Override
     public void actualizar(Suscripcion suscripcion) {
-        // En colecciones de memoria, si el Servicio modificó el objeto, 
-        // ya está actualizado aquí por referencia de memoria. 
-        // Solo verificamos que realmente exista para imitar el comportamiento de la base de datos.
         Suscripcion existente = buscarPorClave(suscripcion.getId());
 
         if (existente != null) {
@@ -58,19 +55,48 @@ public class SuscripcionRepositoryMemoria implements SuscripcionRepository {
         }
     }
 
-    // ¡Este es el método vital para la regla de negocio del "Upgrade"!
     @Override
     public Suscripcion buscarActivaPorUsuario(int numeroUsuario) {
         for (Suscripcion s : this.baseDeDatosMemoria) {
             if (s.getId().getNumero() == numeroUsuario && s.getEstado() == EstadoSuscripcion.ACTIVA) {
-                return s; // Retorna la única suscripción activa que encuentre
+                return s; 
             }
         }
-        return null; // Retorna null si el usuario no tiene ninguna activa
+        return null; 
     }
 
-	@Override
-	public void eliminar(int codigoTP, int numeroUsuario, LocalDateTime fechaDesde) {
-		// Aqui si lo podemos implementar, total cuanto mucho hacemos tests y todo en memoria.		
-	}
+    @Override
+    public void eliminar(int codigoTP, int numeroUsuario, LocalDateTime fechaDesde) {
+        // Implementación pendiente
+    }
+	
+    @Override
+    public List<Suscripcion> filtrarPadron(String estadoSub, String estadoPago) {
+        List<Suscripcion> filtradas = new ArrayList<>();
+
+        for (Suscripcion sub : this.baseDeDatosMemoria) { 
+            boolean coincideEstado = true;
+            boolean coincidePago = true;
+
+            if (estadoSub != null && !estadoSub.isEmpty()) {
+                EstadoSuscripcion filtroS = EstadoSuscripcion.valueOf(estadoSub);
+                if (sub.getEstado() != filtroS) {
+                    coincideEstado = false;
+                }
+            }
+
+            if (estadoPago != null && !estadoPago.isEmpty()) {
+                EstadoPago filtroP = EstadoPago.valueOf(estadoPago);
+                if (sub.getUltimoPago() != filtroP) {
+                    coincidePago = false;
+                }
+            }
+
+            if (coincideEstado && coincidePago) {
+                filtradas.add(sub);
+            }
+        }
+
+        return filtradas;
+    }
 }

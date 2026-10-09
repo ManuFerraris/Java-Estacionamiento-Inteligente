@@ -12,6 +12,7 @@ import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.EntityTransaction;
 import jakarta.persistence.NoResultException;
 import jakarta.persistence.Persistence;
+import jakarta.persistence.TypedQuery;
 
 public class SuscripcionRepositoryMySQL implements SuscripcionRepository {
 
@@ -95,4 +96,36 @@ public class SuscripcionRepositoryMySQL implements SuscripcionRepository {
 	public void eliminar(int codigoTP, int numeroUsuario, LocalDateTime fechaDesde) {
 		// Como para auditoria no lo vamos a usar, simplemente lo nombramos aqui para mantener consistencia.
 	}
+	
+	@Override
+    public List<Suscripcion> filtrarPadron(String estadoSub, String estadoPago) {
+        // 1. Abrimos la conexión al igual que en tus otros métodos
+        EntityManager em = emf.createEntityManager();
+        
+        try {
+            StringBuilder jpql = new StringBuilder("SELECT s FROM Suscripcion s WHERE 1=1");
+
+            if (estadoSub != null && !estadoSub.isEmpty()) {
+                jpql.append(" AND s.estado = :estadoSub");
+            }
+            if (estadoPago != null && !estadoPago.isEmpty()) {
+                jpql.append(" AND s.ultimoPago = :estadoPago");
+            }
+
+            TypedQuery<Suscripcion> query = em.createQuery(jpql.toString(), Suscripcion.class);
+
+            if (estadoSub != null && !estadoSub.isEmpty()) {
+                query.setParameter("estadoSub", estacionamiento.domain.EstadoSuscripcion.valueOf(estadoSub));
+            }
+            if (estadoPago != null && !estadoPago.isEmpty()) {
+                query.setParameter("estadoPago", estacionamiento.domain.EstadoPago.valueOf(estadoPago));
+            }
+
+            return query.getResultList();
+            
+        } finally {
+            // 2. Cerramos la conexión para evitar fugas de memoria
+            em.close();
+        }
+    }
 }

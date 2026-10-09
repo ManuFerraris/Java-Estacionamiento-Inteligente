@@ -62,7 +62,7 @@
         <!-- Las tarjetas se acomodarán automáticamente en filas gracias al sistema de grillas de Bootstrap -->
         <div class="row g-4 mb-5">
             
-            <%-- VISTA EXCLUSIVA PARA ADMINISTRADORES / TRABAJADORES --%>
+            <%-- VISTA PARA ADMINISTRADORES Y TRABAJADORES --%>
             <% if ("ADMIN".equalsIgnoreCase(rolUsuario) || "TRABAJADOR".equalsIgnoreCase(rolUsuario)) { %>
                 
                 <div class="col-md-4">
@@ -107,7 +107,6 @@
                     </a>
                 </div>
 
-                <!-- NUEVA TARJETA: Lugares y Asignación de Estadías -->
                 <div class="col-md-4">
                     <a href="<%= request.getContextPath() %>/LugarServlet" class="text-decoration-none">
                         <div class="card border-0 shadow-sm rounded-4 h-100 hover-card">
@@ -122,7 +121,6 @@
                     </a>
                 </div>
 
-                <!-- NUEVA TARJETA: Configuración de Tipos de Estadía -->
                 <div class="col-md-4">
                     <a href="<%= request.getContextPath() %>/tipoEstadia" class="text-decoration-none">
                         <div class="card border-0 shadow-sm rounded-4 h-100 hover-card">
@@ -137,7 +135,6 @@
                     </a>
                 </div>
                 
-                <!-- NUEVA TARJETA: Gestion de Precios Para los Tipos de Vehiculos -->
                 <div class="col-md-4">
 				    <a href="<%= request.getContextPath() %>/preciosHistoricosTV-oficina" class="text-decoration-none">
 				        <div class="card border-0 shadow-sm rounded-4 h-100 hover-card">
@@ -151,6 +148,23 @@
 				        </div>
 				    </a>
 				</div>
+
+                <%-- NUEVA TARJETA: EXCLUSIVA PARA ADMINISTRADOR --%>
+                <% if ("ADMIN".equalsIgnoreCase(rolUsuario)) { %>
+                <div class="col-md-4">
+                    <a href="<%= request.getContextPath() %>/padron-morosidad" class="text-decoration-none">
+                        <div class="card border-0 shadow-sm rounded-4 h-100 hover-card">
+                            <div class="card-body p-4 text-center">
+                                <div class="bg-dark bg-opacity-10 rounded-circle d-inline-flex p-3 mb-3">
+                                    <i class="bi bi-shield-exclamation fs-1 text-dark"></i>
+                                </div>
+                                <h5 class="text-dark fw-bold mb-2">Suscripciones y Control</h5>
+                                <p class="text-muted small mb-0">Detección de deudores y bloqueos operativos de acceso.</p>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <% } %>
 
             <%-- VISTA EXCLUSIVA PARA CLIENTES --%>
             <% } else { %>

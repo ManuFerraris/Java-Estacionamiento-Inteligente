@@ -54,6 +54,12 @@
                         </a>
                     </li>
                     <li class="nav-item">
+                        <a class="nav-link <%= uriActual.endsWith("/padron-morosidad") ? "active text-white fw-bold" : "" %>" 
+                           href="<%= request.getContextPath() %>/padron-morosidad">
+                            <i class="bi bi-shield-exclamation me-2"></i>Padron Suscripciones y Control Morosidad
+                        </a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link <%= uriActual.endsWith("/pagos-suscripciones-oficina") ? "active text-white fw-bold" : "" %>" 
                            href="<%= request.getContextPath() %>/pagos-suscripciones-oficina">
                             <i class="bi bi-cash-coin me-1"></i>Caja / Pagos
@@ -104,6 +110,9 @@
                             <i class="bi bi-emoji-grin me-1"></i>Gestion Beneficios
                         </a>
                     </li>
+                    
+
+                    
                 <% } %>
                 
                 <%-- ENLACES PARA EL CIUDADANO (CLIENTE) --%>

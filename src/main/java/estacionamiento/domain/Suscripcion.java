@@ -31,6 +31,10 @@ public class Suscripcion {
 	@Column(name="estado", columnDefinition = "VARCHAR(30)", nullable=false)
 	private EstadoSuscripcion estado;
 	
+	@Enumerated(EnumType.STRING)
+	@Column(name="ultimo_pago", columnDefinition = "VARCHAR(30")
+	private EstadoPago ultimoPago;
+	
 	public Suscripcion() {}
 	
 	public Suscripcion(TipoPlan tipoPlan, Usuario usuario, LocalDateTime fechaDesde, LocalDateTime fechaHasta) {
@@ -110,5 +114,12 @@ public class Suscripcion {
 		this.estado = estado;
 	}
 	
+	public EstadoPago getUltimoPago() {
+		return ultimoPago;
+	}
+
+	public void setUltimoPago(EstadoPago ultimoPago) {
+		this.ultimoPago = ultimoPago;
+	}
 	
 }
