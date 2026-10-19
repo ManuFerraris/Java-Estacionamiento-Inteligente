@@ -10,4 +10,5 @@ public interface UsuarioRepository {
     void actualizar(Integer numero, Usuario usuario);
     void eliminar(Integer numero);
     Usuario buscarPorNombreUsuario(String nombreUsuario);
+    Usuario buscarUsuarioConReservas(Integer idUsuario);
 }

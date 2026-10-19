@@ -5,6 +5,7 @@ import org.mindrot.jbcrypt.BCrypt;
 import java.util.List;
 import java.time.LocalDate;
 
+import estacionamiento.domain.Reserva;
 import estacionamiento.domain.RolesUsuario;
 import estacionamiento.domain.Usuario;
 import estacionamiento.repository.UsuarioRepository;
@@ -196,4 +197,10 @@ public class UsuarioService {
         
         System.out.println("Servicio: Nuevo CLIENTE registrado exitosamente desde la web pública.");
     }
+
+	// Metodo secundario o de ayuda para obtener las reservas pero desde el usuario (no lo usaos por ahora).
+	public List<Reserva> obtenerMisReservas(Integer idUsuario) throws Exception {
+		Usuario usuarioRefrescado = usuarioRepository.buscarUsuarioConReservas(idUsuario);
+		return usuarioRefrescado.getReservas();
+	}
 }
