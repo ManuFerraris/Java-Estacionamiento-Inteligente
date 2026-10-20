@@ -75,4 +75,10 @@ public class UsuarioRepositoryMemoria implements UsuarioRepository {
 		// TODO Auto-generated method stub
 		return null;
 	 }
+
+	 @Override
+	 public Usuario buscarUsuarioConReservas(Integer idUsuario) {
+		// TODO Auto-generated method stub
+		return null;
+	 }
 }

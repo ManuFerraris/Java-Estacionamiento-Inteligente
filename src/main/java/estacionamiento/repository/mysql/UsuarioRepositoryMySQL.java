@@ -125,5 +125,18 @@ public class UsuarioRepositoryMySQL implements UsuarioRepository{
             em.close();
         }
 	}
+	
+	@Override
+	public Usuario buscarUsuarioConReservas(Integer idUsuario) {
+		EntityManager em = emf.createEntityManager();
+		try {
+			String jpql = "SELECT u FROM Usuario u LEFT JOIN FETCH u.reservas WHERE u.numero = :id";
+			return em.createQuery(jpql, Usuario.class)
+					.setParameter("id", idUsuario)
+					.getSingleResult();
+		}finally {
+			em.close();
+		}
+	}
 
 }
