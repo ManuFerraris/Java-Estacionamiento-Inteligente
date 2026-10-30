@@ -106,6 +106,18 @@
                     </li>
                 <% } %>
                 
+                <%-- ENLACES EXCLUSIVOS PARA ADMINISTRADOR (No visibles para Trabajador ni Cliente) --%>
+				<% if (usuarioSesion.getRol() == RolesUsuario.ADMIN) { %>
+				    <li class="nav-item ms-lg-3 border-start border-secondary ps-lg-3">
+				        <a class="nav-link text-warning <%= uriActual.endsWith("/reportes-oficina") ? "active fw-bold" : "" %>" 
+				           href="<%= request.getContextPath() %>/reportes-oficina">
+				            <i class="bi bi-bar-chart-line-fill me-1"></i>Centro de Reportes
+				        </a>
+				    </li>
+				    
+				    <!-- chicas acá podemos sumar lo que es /auditoria, /configuracion-sistema, y otras cosas que se nos ocurran. -->
+				<% } %>
+                
                 <%-- ENLACES PARA EL CIUDADANO (CLIENTE) --%>
                 <% if (usuarioSesion.getRol() == RolesUsuario.CLIENTE) { %>
                     <li class="nav-item">
