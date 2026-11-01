@@ -39,10 +39,33 @@ public class ReservaRepositoryMySQL implements ReservaRepository {
     }
 
     @Override
-    public Reserva buscarPorClave(ReservaId claveCompuesta) {
-        EntityManager em = emf.createEntityManager();
+    public Reserva buscarPorClave(ReservaId id) {
+        EntityManager em = emf.createEntityManager(); 
         try {
-            return em.find(Reserva.class, claveCompuesta);
+            String fechaTexto = id.getFechaDesde().toString().replace("T", " ") + "%";
+            String sql = "SELECT * FROM reserva WHERE patente = :patente " +
+                         "AND numero_usuario = :usuario " +
+                         "AND numero_tipo_estadia = :tipo " +
+                         "AND fecha_desde LIKE :fecha";
+
+            Reserva reservaEncontrada = (Reserva) em.createNativeQuery(sql, Reserva.class)
+                .setParameter("patente", id.getPatenteVehiculo())
+                .setParameter("usuario", id.getNumeroUsuario())
+                .setParameter("tipo", id.getNumeroTipoEstadia())
+                .setParameter("fecha", fechaTexto)
+                .getSingleResult();
+            
+            // INICIALIZACIÓN FORZADA (ANTI-LAZY)
+            // Como la conexión sigue abierta, le pedimos un dato al Pago 
+            // para que Hibernate lo traiga a la memoria real y no sea un Proxy fantasma.
+            if (reservaEncontrada.getPagoSaldo() != null) {
+                reservaEncontrada.getPagoSaldo().getEstado();
+            }
+
+            return reservaEncontrada;
+            
+        } catch (jakarta.persistence.NoResultException e) {
+            return null; 
         } finally {
             em.close();
         }
@@ -66,7 +89,7 @@ public class ReservaRepositoryMySQL implements ReservaRepository {
             em.merge(reservaNuevosDatos);
             em.getTransaction().commit();
             System.out.println("MySQL: Reserva actualizada correctamente.");
-            System.out.println("Datos de la reserva actualizada: " + reservaNuevosDatos + "\n");
+            //System.out.println("Datos de la reserva actualizada: " + reservaNuevosDatos + "\n");
         } catch (Exception e) {
             if (em.getTransaction().isActive()) {
                 em.getTransaction().rollback();
@@ -103,24 +126,6 @@ public class ReservaRepositoryMySQL implements ReservaRepository {
     }
 
 	@Override
-	public Reserva buscarPorClave(String patente, int numeroUsu, int numeroTE, LocalDateTime fechaDesde) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public void actualizar(String patente, int numeroUsu, int numeroTE, LocalDateTime fechaDesde, Reserva reserva) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void eliminar(String patente, int numeroUsu, int numeroTE, LocalDateTime fechaDesde) {
-		// TODO Auto-generated method stub
-		
-	}
-	
-	@Override
     public List<Reserva> buscarReservasPendientesSinPagoCompleto(LocalDateTime limiteTiempo) {
         EntityManager em = emf.createEntityManager();
         try {
@@ -136,6 +141,18 @@ public class ReservaRepositoryMySQL implements ReservaRepository {
                      .setParameter("limite", limiteTiempo)
                      .getResultList();
                      
+        } finally {
+            em.close();
+        }
+    }
+	
+	public List<Reserva> buscarPorUsuario(Integer numeroUsuario) {
+        EntityManager em = emf.createEntityManager();
+        try {
+            String jpql = "SELECT r FROM Reserva r WHERE r.id.numeroUsuario = :id ORDER BY r.id.fechaDesde DESC";
+            return em.createQuery(jpql, Reserva.class)
+                     .setParameter("id", numeroUsuario)
+                     .getResultList();
         } finally {
             em.close();
         }

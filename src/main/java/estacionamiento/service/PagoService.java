@@ -57,7 +57,7 @@ public class PagoService {
 
         // Interesante, si tuviéramos lógica extra, como enviar factura por mail al aprobarse, iría aca.
 
-        pagoRepository.actualizar(numeroPago, pagoActualizado);
+        pagoRepository.actualizar(pagoActualizado);
         System.out.println("Servicio: Pago ID " + numeroPago + " actualizado al estado " + pagoActualizado.getEstado());
     }
 	
@@ -75,7 +75,7 @@ public class PagoService {
     	if (paymentId != null && !paymentId.trim().isEmpty() && !paymentId.equals("null")) {
     	    pagoAActualizar.setIdTransaccionMp(paymentId);
     	}
-    	pagoRepository.actualizar(idPagoLocal, pagoAActualizar);
+    	pagoRepository.actualizar(pagoAActualizar);
     	
     }
 }

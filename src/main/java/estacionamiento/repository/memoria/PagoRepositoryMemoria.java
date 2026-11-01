@@ -41,15 +41,15 @@ public class PagoRepositoryMemoria implements PagoRepository{
     }
 
     @Override
-    public void actualizar(Integer numero, Pago pagoNuevosDatos) {
-        Pago pagoExistente = buscarPorClave(numero);
+    public void actualizar(Pago pagoNuevosDatos) {
+        Pago pagoExistente = pagoNuevosDatos;
 
         if (pagoExistente != null) {
         	pagoExistente.setFechaHora(pagoNuevosDatos.getFechaHora());
             pagoExistente.setMonto(pagoNuevosDatos.getMonto());
             pagoExistente.setEstado(pagoNuevosDatos.getEstado());
             pagoExistente.setTipoPago(pagoNuevosDatos.getTipoPago());
-            System.out.println("Pago actualizado con exito, numero: " + numero + " "
+            System.out.println("Pago actualizado con exito, numero: " + pagoNuevosDatos.getNumero() + " "
             		+ pagoNuevosDatos.getTipoPago() + " "
             		+ pagoNuevosDatos.getEstado() + " "
             );

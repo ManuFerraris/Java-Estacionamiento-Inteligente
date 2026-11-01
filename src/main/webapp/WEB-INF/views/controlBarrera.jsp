@@ -41,6 +41,16 @@
                     <span class="fs-5 modo-inactivo ms-3" id="labelSalida">SALIDA</span>
                 </div>
                 
+                <!-- Switch Secundario - Solo visible en Salida -->
+				<div class="d-flex justify-content-center mb-4 d-none" id="contenedorSalidaTemporal">
+				    <div class="form-check">
+				        <input class="form-check-input border-secondary" type="checkbox" id="checkSalidaTemporal">
+				        <label class="form-check-label text-secondary fw-bold" for="checkSalidaTemporal">
+				            <i class="bi bi-arrow-repeat me-1"></i> Es una salida temporal (Vuelve luego)
+				        </label>
+				    </div>
+				</div>
+                
                 <!-- Input del Lector QR -->
                 <input type="text" id="lectorQR" class="form-control form-control-lg text-center mx-auto shadow-sm" 
                        placeholder="[ Esperando escaneo QR... ]" autofocus autocomplete="off" style="max-width: 400px;">
@@ -57,6 +67,7 @@
 
     <script>
         const switchModo = document.getElementById('switchModo');
+        const contenedorSalidaTemporal = document.getElementById("contenedorSalidaTemporal");
         const labelEntrada = document.getElementById('labelEntrada');
         const labelSalida = document.getElementById('labelSalida');
         
@@ -66,8 +77,11 @@
                 // Modo Salida
                 labelSalida.classList.replace('modo-inactivo', 'modo-activo');
                 labelEntrada.classList.replace('modo-activo', 'modo-inactivo');
+                contenedorSalidaTemporal.classList.remove("d-none");
             } else {
                 // Modo Entrada
+                contenedorSalidaTemporal.classList.add("d-none");
+                document.getElementById("checkSalidaTemporal").checked = false;
                 labelEntrada.classList.replace('modo-inactivo', 'modo-activo');
                 labelSalida.classList.replace('modo-activo', 'modo-inactivo');
             }
@@ -75,29 +89,41 @@
             document.getElementById('lectorQR').focus();
         });
 
-        // Evento de lectura del QR
+     // Evento de lectura del QR
         document.getElementById("lectorQR").addEventListener("change", function(e) {
             let datosQR = e.target.value.split('|');
             
-            if (datosQR.length >= 3) {
-                // Evaluamos el switch para saber qué acción mandar al Servlet
+            // Verificamos tener los 4 datos: Patente | Usuario | TipoEstadia | FechaDesde
+            if (datosQR.length >= 4) {
                 let operacionSeleccionada = switchModo.checked ? 'SALIDA' : 'INGRESO';
-                procesarBarrera(operacionSeleccionada, datosQR[0], datosQR[1], datosQR[2]);
+                
+                // Mapeamos los datos del array a variables claras
+                let patenteEscaneada = datosQR[0];
+                let usuarioEscaneado = datosQR[1];
+                let tipoEstadiaEscaneado = datosQR[2];
+                let fechaDesdeEscaneada = datosQR[3];
+                
+                // Llamamos a la API con los 4 datos correctamente
+                procesarBarrera(operacionSeleccionada, patenteEscaneada, usuarioEscaneado, tipoEstadiaEscaneado, fechaDesdeEscaneada);
             } else {
                 document.getElementById("resultadoEscaneo").innerHTML = 
-                    `<div class="alert alert-warning py-3"><i class="bi bi-exclamation-triangle-fill me-2"></i>QR inválido.</div>`;
+                    `<div class="alert alert-warning py-3"><i class="bi bi-exclamation-triangle-fill me-2"></i>QR inválido o incompleto.</div>`;
             }
             
             e.target.value = "";
             e.target.focus(); 
         });
 
-        function procesarBarrera(operacion, patente, usuario, fechaDesde) {
+        // Modificamos la firma para que coincida exactamente
+        function procesarBarrera(operacion, patente, usuario, tipoEstadia, fechaDesde) {
+        	
             document.getElementById("resultadoEscaneo").innerHTML = 
                 `<div class="spinner-border text-primary" role="status"></div>
-                 <p class="mt-2 text-primary fw-bold">Validando patente ${patente}...</p>`;
+                 <p class="mt-2 text-primary fw-bold">Procesando vehículo ${patente}...</p>`;
 
-            // Hacemos el POST mandando el nuevo parámetro 'operacion'
+            let esTemporal = document.getElementById("checkSalidaTemporal").checked;
+            let esDefinitiva = !esTemporal; // Si NO es temporal, es definitiva
+            
             fetch('<%= request.getContextPath() %>/api/control-barrera', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -105,7 +131,9 @@
                     'operacion': operacion,
                     'patente': patente,
                     'numeroUsuario': usuario,
-                    'fechaDesde': fechaDesde
+                    'numeroTipoEstadia': tipoEstadia, // ¡Este era el que faltaba en el frontend!
+                    'fechaDesde': fechaDesde,
+                    'esDefinitiva': esDefinitiva
                 })
             })
             .then(response => {
@@ -116,35 +144,45 @@
                 const div = document.getElementById("resultadoEscaneo");
                 
                 if (res.status === 200) {
-                    div.innerHTML = `
+                	div.innerHTML = `
                         <div class="alert alert-success border-success text-success p-4 rounded-4 shadow-sm">
                             <i class="bi bi-check-circle-fill d-block mb-2" style="font-size: 2.5rem;"></i>
                             <h4 class="fw-bold mb-1">ACCESO CONCEDIDO</h4>
-                            <p class="mb-0">${res.data.mensaje}</p>
+                            <p class="mb-0">` + res.data.mensaje + `</p>
                         </div>`;
                 } else if (res.status === 402) {
-                    div.innerHTML = `
+                    // Ahora el botón verde sabe exactamente quiénes son estas 4 variables
+                	div.innerHTML = `
                         <div class="alert alert-danger border-danger p-4 rounded-4 shadow-sm">
                             <i class="bi bi-exclamation-octagon-fill text-danger d-block mb-2" style="font-size: 2.5rem;"></i>
-                            <h4 class="fw-bold text-danger mb-2">TIEMPO EXCEDIDO</h4>
+                            <h4 class="fw-bold text-danger mb-2">PAGO REQUERIDO</h4>
                             <div class="bg-white text-dark py-2 px-3 rounded-3 d-inline-block border border-danger mb-2">
-                                <span class="fw-bold fs-5">Monto a cobrar: $${res.data.monto}</span>
+                                <span class="fw-bold fs-5">Monto a cobrar: $` + res.data.monto + `</span>
                             </div>
-                            <p class="small mb-0 text-danger-emphasis">${res.data.mensaje}</p>
+                            <p class="small mb-3 text-danger-emphasis">` + res.data.mensaje + `</p>
+                            <button class="btn btn-success btn-lg w-100 fw-bold shadow-sm" 
+                                onclick="procesarCobroManual('` + patente + `', '` + usuario + `', '` + tipoEstadia + `', '` + fechaDesde + `')">
+                            <i class="bi bi-cash-coin me-2"></i>COBRAR $` + res.data.monto + ` Y ABRIR BARRERA
+                        </button>
                         </div>`;
                 } else {
-                    div.innerHTML = `
+                	div.innerHTML = `
                         <div class="alert alert-warning p-4 rounded-4 shadow-sm">
                             <i class="bi bi-x-circle-fill d-block mb-2 text-warning" style="font-size: 2.5rem;"></i>
                             <h5 class="fw-bold text-dark mb-0">Operación Denegada</h5>
-                            <p class="text-dark small mt-2">${res.data.error}</p>
+                            <p class="text-dark fw-bold mt-3 mb-0">` + (res.data.error || "Error desconocido en la validación.") + `</p>
                         </div>`;
                 }
             })
             .catch(error => {
                 document.getElementById("resultadoEscaneo").innerHTML = 
-                    `<div class="alert alert-dark">No se pudo conectar con el servidor.</div>`;
+                    `<div class="alert alert-dark">Error de conexión: ${error}</div>`;
             });
+        }
+
+        // Función puente para el botón verde
+        function procesarCobroManual(patente, usuario, tipoEstadia, fechaDesde) {
+            procesarBarrera('COBRAR_MULTA', patente, usuario, tipoEstadia, fechaDesde);
         }
     </script>
 </body>

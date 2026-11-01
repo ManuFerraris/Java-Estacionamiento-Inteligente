@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import estacionamiento.domain.Reserva;
 import estacionamiento.domain.TipoEstadia;
@@ -95,9 +94,7 @@ public class MisReservasServlet extends HttpServlet {
             request.setAttribute("tiposEstadia", tiposEstadia);
 
             // Cargar el historial de reservas filtrando por usuario
-            List<Reserva> misReservas = reservaRepo.obtenerTodos().stream()
-                    .filter(r -> r.getUsuario().getNumero().equals(cliente.getNumero()))
-                    .collect(Collectors.toList());
+            List<Reserva> misReservas = reservaService.obtenerReservasPorUsuario(cliente.getNumero());
             request.setAttribute("misReservas", misReservas);
 
             // Extraer los vehículos

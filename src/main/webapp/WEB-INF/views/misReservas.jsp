@@ -16,6 +16,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://sdk.mercadopago.com/js/v2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
     <script>
 	  const mp = new MercadoPago("APP_USR-ccf26b17-befc-49e1-8564-9c3e6d9711ea");
 	</script>
@@ -172,13 +173,19 @@
                                                 else if (r.getEstado() == EstadoReserva.EN_CURSO) colorBadge = "bg-primary";
                                                 else if (r.getEstado() == EstadoReserva.SALIDA_PARCIAL) colorBadge = "bg-info text-dark";
                                                 else if (r.getEstado() == EstadoReserva.CANCELADA) colorBadge = "bg-danger";
+                                                else if (r.getEstado() == EstadoReserva.NO_PRESENTADO) colorBadge = "bg-dark text-white";
                                     %>
                                     <tr>
+                                        <!-- 1. Columna: Fecha Ingreso -->
                                         <td>
                                             <div class="fw-bold"><%= r.getId().getFechaDesde().format(dtf) %></div>
                                             <div class="small text-muted"><%= r.getTipoEstadia().getDescripcion() %></div>
                                         </td>
+                                        
+                                        <!-- 2. Columna: Patente -->
                                         <td class="fw-bold"><%= r.getVehiculo().getPatente() %></td>
+                                        
+                                        <!-- 3. Columna: Lugar Asignado -->
                                         <td>
                                             <% if (r.getLugar() != null) { %>
                                                 <span class="badge bg-light text-dark border"><i class="bi bi-p-square-fill me-1 text-primary"></i>Lugar <%= r.getLugar().getCodigo() %></span>
@@ -186,14 +193,29 @@
                                                 <span class="text-muted small">N/A</span>
                                             <% } %>
                                         </td>
+                                        
+                                        <!-- 4. Columna: Estado -->
                                         <td>
                                             <span class="badge <%= colorBadge %> estado-badge rounded-pill"><%= r.getEstado().name() %></span>
                                         </td>
+                                        
+                                        <!-- 5. Columna: Acciones (ACÁ ESTÁN LOS BOTONES REPARADOS) -->
                                         <td>
+                                            <!-- BOTÓN QR: Visible si tiene que entrar, salir o reingresar -->
+                                            <% if (r.getEstado() == EstadoReserva.PENDIENTE || r.getEstado() == EstadoReserva.EN_CURSO || r.getEstado() == EstadoReserva.SALIDA_PARCIAL) { %>
+                                                <button class="btn btn-primary btn-sm fw-bold shadow-sm me-1 mb-1" 
+                                                        onclick="generarPaseQR('<%= r.getId().getPatenteVehiculo() %>', '<%= r.getId().getNumeroUsuario() %>', '<%= r.getId().getNumeroTipoEstadia() %>', '<%= r.getId().getFechaDesde() %>')">
+                                                    <i class="bi bi-qr-code"></i> Pase
+                                                </button>
+                                            <% } %>
+
+                                            <!-- BOTÓN CANCELAR: Solo visible si aún no ingresó -->
                                             <% if (r.getEstado() == EstadoReserva.PENDIENTE) { %>
-                                                <button class="btn btn-outline-danger btn-sm" onclick="cancelarReserva('<%= r.getVehiculo().getPatente() %>')"><i class="bi bi-x-circle"></i> Cancelar</button>
+                                                <button class="btn btn-outline-danger btn-sm mb-1" onclick="cancelarReserva('<%= r.getVehiculo().getPatente() %>')"><i class="bi bi-x-circle"></i></button>
                                             <% } else if (r.getEstado() == EstadoReserva.EN_CURSO) { %>
-                                                <span class="small text-muted fst-italic">Vehículo en cochera</span>
+                                                <span class="small text-muted fst-italic d-block">Vehículo en cochera</span>
+                                            <% } else if (r.getEstado() == EstadoReserva.SALIDA_PARCIAL) { %>
+                                                <span class="small text-muted fst-italic d-block">Debe regresar</span>
                                             <% } else { %>
                                                 <span class="small text-muted">-</span>
                                             <% } %>
@@ -256,7 +278,42 @@
             Swal.fire({ icon: 'success', title: '¡Reserva Exitosa!', text: `<%= exito %>` });
             <% session.removeAttribute("exito"); %>
         <% } %>
+        
+     	// FUNCIÓN PARA DIBUJAR EL QR
+        function generarPaseQR(patente, usuario, tipoEstadia, fechaDesde) {
+            // 1. Armamos la cadena exacta que espera la terminal de la barrera
+            const cadenaQR = patente + "|" + usuario + "|" + tipoEstadia + "|" + fechaDesde;
+
+            // 2. Limpiamos el canvas por si había otro QR generado antes y dibujamos el nuevo
+            new QRious({
+                element: document.getElementById('canvasQR'),
+                value: cadenaQR,
+                size: 220,      
+                level: 'H'      
+            });
+
+            // 3. Mostramos el modal
+            const modal = new bootstrap.Modal(document.getElementById('modalQR'));
+            modal.show();
+        }
     </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+	<!-- Modal para el QR De entrada/salida/entradaParcial-->
+	<div class="modal fade" id="modalQR" tabindex="-1" aria-hidden="true">
+	    <div class="modal-dialog modal-dialog-centered modal-sm">
+	        <div class="modal-content rounded-4 shadow">
+	            <div class="modal-header border-0 pb-0">
+	                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+	            </div>
+	            <div class="modal-body text-center pb-4">
+	                <h5 class="fw-bold text-dark mb-3">Tu Pase de Acceso</h5>
+	                <!-- QRious dibuja el código dinámicamente -->
+	                <canvas id="canvasQR" class="mb-3 shadow-sm rounded-3 border p-2"></canvas>
+	                <p class="small text-muted mb-0">Acercá este código al lector de la barrera al ingresar y al salir.</p>
+	            </div>
+	        </div>
+	    </div>
+	</div>
 </body>
 </html>
