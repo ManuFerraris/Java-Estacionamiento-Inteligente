@@ -17,8 +17,11 @@ import estacionamiento.repository.mysql.TipoEstadiaRepositoryMySQL;
 import estacionamiento.repository.mysql.TipoPlanRepositoryMySQL;
 import estacionamiento.repository.mysql.UsuarioRepositoryMySQL;
 import estacionamiento.repository.mysql.VehiculoRepositoryMySQL;
+
 import estacionamiento.service.ReservaService;
 import estacionamiento.service.SuscripcionService;
+import estacionamiento.service.NotificacionService;
+
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -34,15 +37,14 @@ public class ControlBarreraServlet extends HttpServlet {
     private VehiculoRepositoryMySQL vehiculoRepo;
     private TipoEstadiaRepositoryMySQL tipoEstadiaRepo;
     private ReservaRepositoryMySQL reservaRepo;
-
     private PagoRepositoryMySQL pagoRepo;
+    private NotificacionService notiService;
 
     @Override
     public void init() throws ServletException {
     	this.vehiculoRepo = new VehiculoRepositoryMySQL();
         this.tipoEstadiaRepo = new TipoEstadiaRepositoryMySQL();
         this.reservaRepo = new ReservaRepositoryMySQL();
-
         this.pagoRepo = new PagoRepositoryMySQL();
         
         SuscripcionService suscripcionService = new SuscripcionService(
@@ -61,7 +63,8 @@ public class ControlBarreraServlet extends HttpServlet {
             this.tipoEstadiaRepo, 
             new PrecioHistoricoTVRepositoryMySQL(), 
             suscripcionService,
-            this.pagoRepo
+            this.pagoRepo,
+            this.notiService
         );
     }
 

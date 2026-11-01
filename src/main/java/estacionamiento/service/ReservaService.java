@@ -36,6 +36,7 @@ public class ReservaService {
     private final PrecioHistoricoTVRepository precioRepository;
     private final SuscripcionService suscripcionService;
     private final PagoRepository pagoRepository;
+    private final NotificacionService notificacionService;
  
     public ReservaService(
     		ReservaRepository reservaRepository, 
@@ -45,7 +46,8 @@ public class ReservaService {
             TipoEstadiaRepository tipoEstadiaRepository,
             PrecioHistoricoTVRepository precioRepository,
             SuscripcionService suscripcionService,
-            PagoRepository pagoRepository) {
+            PagoRepository pagoRepository,
+            NotificacionService notificacionService) {
     	this.reservaRepository = reservaRepository;
         this.lugarRepository = lugarRepository;
         this.vehiculoRepository = vehiculoRepository;
@@ -54,6 +56,7 @@ public class ReservaService {
         this.precioRepository = precioRepository;
         this.suscripcionService = suscripcionService;
         this.pagoRepository = pagoRepository;
+        this.notificacionService = notificacionService;
     }
     
     public Reserva generarReserva(String patente, Integer numeroUsuario, Integer idCochera, Integer idTipoEstadia, LocalDateTime fechaDesde, LocalDateTime fechaHastaTentativa) {
@@ -97,6 +100,9 @@ public class ReservaService {
         
         nuevaReserva.setId(id);
         reservaRepository.guardar(nuevaReserva);
+        
+        // Envio del mail con EmailUtil
+        notificacionService.enviarConfirmacionReserva(nuevaReserva);
         
         return nuevaReserva;
     }
@@ -266,34 +272,6 @@ public class ReservaService {
         System.out.println("ASUNTO: " + asunto);
         System.out.println("MENSAJE:\n" + cuerpo);
         System.out.println("=========================================");
-    }
-    
-    // Metodo para las reservas que son entre las 00:00hs y 06:00hs porque no hay trabajadores.
-    private void procesarLogisticaNocturna(Reserva reserva) {
-        int horaIngreso = reserva.getId().getFechaDesde().getHour();
-        int horaSalida = reserva.getFechaHastaTentativa().getHour();
-
-        // Rango nocturno: 00:00 a 06:00
-        boolean ingresoNocturno = (horaIngreso >= 0 && horaIngreso < 6);
-        boolean salidaNocturna = (horaSalida >= 0 && horaSalida < 6);
-
-        if (ingresoNocturno || salidaNocturna) {
-            String correoDestino = reserva.getUsuario().getMail();
-            
-            String asunto = "Instrucciones de Acceso Nocturno - Reserva " + reserva.getVehiculo().getPatente();
-            String cuerpo = "Hola " + reserva.getUsuario().getNombre() + ".\n\n" +
-                    "Tu reserva abarca el horario de guardia nocturna (00:00 a 06:00 hs) en la cochera " + 
-                    reserva.getLugar().getCochera().getDireccion() + ".\n\n" +
-                    "IMPORTANTE: Durante este horario, la terminal física puede encontrarse sin atención de operarios. " +
-                    "Si al llegar la barrera está cerrada, deberás ingresar el siguiente PIN de acceso en el teclado numérico " +
-                    "o presentar tu código QR en el lector automático para validar tu entrada o salida.\n\n" +
-                    "Si tienes demoras y superas tu horario de salida durante la madrugada, el recargo se generará automáticamente " +
-                    "en tu perfil y se facturará a través del sistema municipal de multas y patentes.\n\n" +
-                    "Gracias por usar MR Estacionamiento.";
-
-            System.out.println("Disparando correo nocturno asíncrono a: " + correoDestino);
-            // Aca llamamos a la clase utilitaria de JavaMail (despues veo como se hace).
-        }
     }
 
     public SalidaDTO procesarIntentoSalida(ReservaId idReserva, boolean esSalidaDefinitiva) {
