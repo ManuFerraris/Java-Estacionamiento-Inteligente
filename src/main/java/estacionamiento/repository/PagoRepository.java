@@ -7,7 +7,7 @@ public interface PagoRepository {
 	void guardar(Pago pago);
     Pago buscarPorClave(Integer numero);
     List<Pago> obtenerTodos();
-    void actualizar(Integer numero, Pago pago);
+    void actualizar(Pago pago);
     void eliminar(Integer numero);
 
 }

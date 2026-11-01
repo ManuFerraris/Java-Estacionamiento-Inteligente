@@ -21,6 +21,7 @@ public class ReservaRepositoryMemoria implements ReservaRepository {
         return this.baseDeDatosMemoria;
     }
 
+    /*
     @Override
     public Reserva buscarPorClave(String patente, int numeroUsu, int numeroTE, LocalDateTime fechaDesde) {
         for (Reserva r : this.baseDeDatosMemoria) {
@@ -82,7 +83,8 @@ public class ReservaRepositoryMemoria implements ReservaRepository {
             System.out.println("No se encontró la Reserva para eliminar.");
         }
     }
-
+     */
+    
 	@Override
 	public void eliminar(ReservaId claveCompuesta) {
 		// TODO Auto-generated method stub
@@ -105,5 +107,17 @@ public class ReservaRepositoryMemoria implements ReservaRepository {
 	public List<Reserva> buscarReservasPendientesSinPagoCompleto(LocalDateTime limiteTiempo) {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	@Override
+	public List<Reserva> buscarPorUsuario(Integer numeroUsuario) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void guardar(Reserva reserva) {
+		// TODO Auto-generated method stub
+		
 	}
 }

@@ -63,12 +63,25 @@ public class PagoRepositoryMySQL implements PagoRepository {
     }
     
     @Override
-    public void actualizar(Integer numero, Pago pagoNuevosDatos) {
-        // En JPA moderno, actualizar es simplemente hacer un merge del objeto con el mismo ID
-        guardar(pagoNuevosDatos); 
-        System.out.println("Actualizando pago..."+"\n"
-        		+ "Numero del pago recibido: " + numero +"\n"
-        		+ "Datos del pago: " + pagoNuevosDatos + "\n");
+    public void actualizar(Pago pagoNuevosDatos) {
+
+        EntityManager em = emf.createEntityManager();
+        
+        try {
+            em.getTransaction().begin();
+            
+            em.merge(pagoNuevosDatos); 
+            
+            em.getTransaction().commit();
+            System.out.println("MySQL: Pago #" + pagoNuevosDatos.getNumero() + " actualizado con éxito.");
+        } catch (Exception e) {
+            if (em.getTransaction().isActive()) {
+                em.getTransaction().rollback();
+            }
+            throw e;
+        } finally {
+            em.close();
+        }
     }
     
     @Override

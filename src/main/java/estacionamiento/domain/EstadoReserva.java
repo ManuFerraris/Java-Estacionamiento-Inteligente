@@ -6,4 +6,5 @@ public enum EstadoReserva {
     SALIDA_PARCIAL,    // Salió, pero tiene la estadía vigente (ocupa lugar)
     FINALIZADA,        // Terminó su tiempo o se fue definitivamente (libera lugar)
     CANCELADA,         // Anuló antes de ir (libera lugar)
+    NO_PRESENTADO
 }

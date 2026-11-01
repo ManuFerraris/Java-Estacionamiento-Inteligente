@@ -52,26 +52,22 @@ public class HistoricoSalidasRepositoryMemoria implements HistoricoSalidasReposi
     }
 
     @Override
-    public void actualizar(int numeroTipoEstadia, int numeroUsuario, String patente, LocalDateTime fechaDesde, LocalDateTime fechaHoraSalidaParcial, HistoricoSalidas historicoSalidasNuevo) {
+    public void actualizar(HistoricoSalidas historicoAActualizar) {
         
-        HistoricoSalidas historicoExistente = buscarPorClave(numeroTipoEstadia, numeroUsuario, patente, fechaDesde, fechaHoraSalidaParcial);
-
-        if (historicoExistente != null) {
+        if (historicoAActualizar != null) {
         	// Recuerden que no debemos actualizar campos de la clave compuesta.
-            historicoExistente.setFechaHoraRegresoParcial(historicoSalidasNuevo.getFechaHoraRegresoParcial());
-            historicoExistente.setFechaHoraRegresoReal(historicoSalidasNuevo.getFechaHoraRegresoReal());
+        	historicoAActualizar.setFechaHoraRegresoParcial(historicoAActualizar.getFechaHoraRegresoParcial());
+        	historicoAActualizar.setFechaHoraRegresoReal(historicoAActualizar.getFechaHoraRegresoReal());
 
-            System.out.println("Histórico de salidas actualizado con éxito, patente: " + patente);
+            System.out.println("Histórico de salidas actualizado con éxito, patente: " + historicoAActualizar.getReserva().getVehiculo().getPatente());
         } else {
             throw new IllegalArgumentException("No se puede actualizar. No se encontró el registro de salida.");
         }
     }
 
     @Override
-    public void eliminar(int numeroTipoEstadia, int numeroUsuario, String patente, LocalDateTime fechaDesde, LocalDateTime fechaHoraSalidaParcial) {
+    public void eliminar(HistoricoSalidas historicoAEliminar) {
         
-        HistoricoSalidas historicoAEliminar = buscarPorClave(numeroTipoEstadia, numeroUsuario, patente, fechaDesde, fechaHoraSalidaParcial);
-
         if (historicoAEliminar != null) {
             this.baseDeDatosMemoria.remove(historicoAEliminar);
             System.out.println("Histórico de salidas eliminado con éxito.");

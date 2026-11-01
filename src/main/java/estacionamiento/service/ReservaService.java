@@ -3,14 +3,17 @@ package estacionamiento.service;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.Duration;
+import java.time.ZoneId;
 import java.util.List;
 
 import estacionamiento.domain.EstadoPago;
 import estacionamiento.domain.EstadoReserva;
 import estacionamiento.domain.Reserva;
 import estacionamiento.domain.claves.ReservaId;
+import estacionamiento.dto.SalidaDTO;
 import estacionamiento.domain.Suscripcion;
 import estacionamiento.domain.TipoEstadia;
+import estacionamiento.domain.TipoPago;
 import estacionamiento.domain.Usuario;
 import estacionamiento.domain.Vehiculo;
 import estacionamiento.domain.Lugar;
@@ -127,8 +130,15 @@ public class ReservaService {
         // Validamos que no intente entrar 3 horas antes. 
         // Le damos un margen de 15 minutos de ingreso anticipado.
         LocalDateTime limiteIngresoTemprano = reserva.getId().getFechaDesde().minusMinutes(15);
-        if (LocalDateTime.now().isBefore(limiteIngresoTemprano)) {
+        if (LocalDateTime.now(ZoneId.of("America/Argentina/Buenos_Aires")).isBefore(limiteIngresoTemprano)) {
             throw new IllegalArgumentException("Es demasiado temprano para ingresar. Tu horario de reserva comienza a las " + reserva.getId().getFechaDesde().toLocalTime());
+        }
+        
+        // Validamos que la reserva no esté vencida
+        LocalDateTime ahora = LocalDateTime.now(ZoneId.of("America/Argentina/Buenos_Aires"));
+        if (ahora.isAfter(reserva.getFechaHastaTentativa())) {
+            // Podrías incluso pasar el estado a CANCELADA acá si quisieras
+            throw new IllegalArgumentException("Operación denegada. La reserva se encuentra vencida desde las " + reserva.getFechaHastaTentativa().toLocalTime());
         }
         
         reserva.setEstado(EstadoReserva.EN_CURSO);
@@ -152,7 +162,7 @@ public class ReservaService {
 
         if (esSalidaDefinitiva) {
 
-            reserva.setFechaHastaReal(LocalDateTime.now());
+            reserva.setFechaHastaReal(LocalDateTime.now(ZoneId.of("America/Argentina/Buenos_Aires")));
             
             //Calculo de tiempo extra y los costos que corresponden (debemos debatirlo)
             Duration duracion = Duration.between(reserva.getFechaHastaTentativa(), reserva.getFechaHastaReal());
@@ -173,7 +183,7 @@ public class ReservaService {
                 // Generamos la deuda (El objeto Pago queda PENDIENTE)
                 Pago deudaExtra = new Pago();
                 deudaExtra.setMonto(recargo);
-                deudaExtra.setFechaHora(LocalDateTime.now());
+                deudaExtra.setFechaHora(LocalDateTime.now(ZoneId.of("America/Argentina/Buenos_Aires")));
                 deudaExtra.setEstado(EstadoPago.PENDIENTE);
                 
                 pagoRepository.guardar(deudaExtra); // Guardamos el comprobante en nuestra BD
@@ -218,7 +228,7 @@ public class ReservaService {
     // Tarea rutinaria: Cancela las reservas impagas a punto de expirar.
     public void cancelarReservasNoPagadasPorVencer() {
         // Calculamos el límite: Ahora + 60 minutos
-        LocalDateTime limiteTolerancia = LocalDateTime.now().plusMinutes(60);
+        LocalDateTime limiteTolerancia = LocalDateTime.now(ZoneId.of("America/Argentina/Buenos_Aires")).plusMinutes(60);
         
         List<Reserva> reservasEnRiesgo = reservaRepository.buscarReservasPendientesSinPagoCompleto(limiteTolerancia);
         
@@ -286,4 +296,118 @@ public class ReservaService {
         }
     }
 
+    public SalidaDTO procesarIntentoSalida(ReservaId idReserva, boolean esSalidaDefinitiva) {
+        
+    	Reserva reserva = reservaRepository.buscarPorClave(idReserva);
+
+        if (reserva == null) {
+            throw new IllegalArgumentException("La reserva no existe.");
+        }
+        if (reserva.getEstado() != EstadoReserva.EN_CURSO) {
+            throw new IllegalArgumentException("El vehículo no se encuentra físicamente en la cochera.");
+        }
+
+        if (reserva.getTipoEstadia().getDescripcion().equalsIgnoreCase("Por Hora")) {
+            esSalidaDefinitiva = true;
+        }
+
+        LocalDateTime ahora = LocalDateTime.now(ZoneId.of("America/Argentina/Buenos_Aires"));
+        //LocalDateTime limiteSalida = reserva.getFechaHastaTentativa().plusMinutes(10);
+        
+        if (esSalidaDefinitiva) {
+            long minutosExtra = java.time.Duration.between(reserva.getFechaHastaTentativa(), ahora).toMinutes();
+
+            if (minutosExtra > 10) {
+                // Si la deuda no fue generada antes, la calculamos y guardamos
+                if (reserva.getPagoSaldo() == null || reserva.getPagoSaldo().getEstado() != EstadoPago.PENDIENTE) {
+                    BigDecimal tarifaHoraBase = precioRepository.obtenerPrecioVigente(reserva.getVehiculo().getTipoVehiculo().getNumero());
+                    BigDecimal recargo = calcularMontoExcedente(minutosExtra, tarifaHoraBase);
+                    
+                    Pago deudaExtra = new Pago();
+                    deudaExtra.setMonto(recargo);
+                    deudaExtra.setFechaHora(ahora);
+                    deudaExtra.setEstado(EstadoPago.PENDIENTE);
+                    // Pienso dejarlo en efectivo pero hay que ver como hacemos para
+                    // que acepte transferencias y MP aca tambien. Por ahora sirve.
+                    deudaExtra.setTipoPago(TipoPago.EFECTIVO);
+                    
+                    pagoRepository.guardar(deudaExtra);
+                    reserva.setPagoSaldo(deudaExtra);
+                    reservaRepository.actualizar(reserva);
+                }
+                // Sin que salga le damos la deuda (no subimos la barrera en la vida real)
+                return new SalidaDTO(false, reserva.getPagoSaldo().getMonto(), "Tiempo de cortesía excedido. Debe abonar saldo para salir.");
+            } else {
+                // Todo en orden entonces se va
+                confirmarSalidaFisica(reserva, ahora, true);
+                return new SalidaDTO(true, BigDecimal.ZERO, "Salida registrada exitosamente. ¡Buen viaje!");
+            }
+        } else {
+            // Era una salida parcial
+            confirmarSalidaFisica(reserva, ahora, false);
+            return new SalidaDTO(true, BigDecimal.ZERO, "Salida parcial registrada. Recuerde regresar.");
+        }
+    }
+
+    // MÉTODO AUXILIAR: Calcula el costo de lo excedido
+    private BigDecimal calcularMontoExcedente(long minutosExtra, BigDecimal tarifaHoraBase) {
+        if (minutosExtra < 30) {
+            return tarifaHoraBase.multiply(new BigDecimal("0.5"));
+        } else {
+            long horasACobrar = (long) Math.ceil(minutosExtra / 60.0);
+            return tarifaHoraBase.multiply(new BigDecimal(horasACobrar));
+        }
+    }
+
+    // MÉTODO AUXILIAR: Guardamos en la base de datos cuando la barrera se abre
+    private void confirmarSalidaFisica(Reserva reserva, LocalDateTime ahora, boolean esDefinitiva) {
+        if (esDefinitiva) {
+            reserva.setFechaHastaReal(ahora);
+            reserva.setEstado(EstadoReserva.FINALIZADA);
+        } else {
+            reserva.setEstado(EstadoReserva.SALIDA_PARCIAL);
+        }
+        reservaRepository.actualizar(reserva);
+    }
+
+    // NUEVO MÉTODO: El empleado confirma que recibió la plata
+    public SalidaDTO cobrarYLiberarBarrera(ReservaId idReserva) {
+        Reserva reserva = reservaRepository.buscarPorClave(idReserva);
+        
+        if (reserva == null || reserva.getPagoSaldo() == null) {
+            throw new IllegalArgumentException("No hay deuda pendiente para esta reserva.");
+        }
+
+        Pago deuda = reserva.getPagoSaldo();
+        deuda.setEstado(EstadoPago.APROBADO);
+        deuda.setFechaHora(LocalDateTime.now(ZoneId.of("America/Argentina/Buenos_Aires")));
+        pagoRepository.actualizar(deuda);
+
+        confirmarSalidaFisica(reserva, LocalDateTime.now(ZoneId.of("America/Argentina/Buenos_Aires")), true);
+        
+        return new SalidaDTO(true, BigDecimal.ZERO, "Pago registrado correctamente. Barrera abierta.");
+    }
+
+    public List<Reserva> obtenerReservasPorUsuario(Integer idUsuario) {
+        // 1. Traemos SOLO las reservas de este cliente
+        List<Reserva> misReservas = reservaRepository.buscarPorUsuario(idUsuario);
+        
+        LocalDateTime ahora = LocalDateTime.now(ZoneId.of("America/Argentina/Buenos_Aires"));
+        
+        for (Reserva r : misReservas) {
+            
+            if (r.getEstado() == EstadoReserva.PENDIENTE && ahora.isAfter(r.getFechaHastaTentativa())) {
+                r.setEstado(EstadoReserva.NO_PRESENTADO); // Se le pasó la hora
+                reservaRepository.actualizar(r);
+            }
+            
+            if (r.getEstado() == EstadoReserva.SALIDA_PARCIAL && ahora.isAfter(r.getFechaHastaTentativa())) {
+                r.setEstado(EstadoReserva.FINALIZADA); // Salió, se le venció y nunca volvió (el rata)
+                reservaRepository.actualizar(r);
+            }
+        }
+        
+        
+        return misReservas;
+    }
 }

@@ -4,8 +4,8 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.time.LocalDateTime;
 
-import estacionamiento.domain.Reserva;
 import estacionamiento.domain.claves.ReservaId;
+import estacionamiento.dto.SalidaDTO;
 import estacionamiento.repository.mysql.LugarRepositoryMySQL;
 import estacionamiento.repository.mysql.PagoRepositoryMySQL;
 import estacionamiento.repository.mysql.PagoSuscripcionRepositoryMySQL;
@@ -74,42 +74,54 @@ public class ControlBarreraServlet extends HttpServlet {
         try {
             // Capturamos el nuevo parámetro que nos dice qué hacer
             String operacion = request.getParameter("operacion"); // "INGRESO" o "SALIDA"
+            String paramDefinitiva = request.getParameter("esDefinitiva"); // Si es una salida temporal o definitiva
+            boolean esDefinitiva = paramDefinitiva == null || Boolean.parseBoolean(paramDefinitiva);
             
-            String patente = request.getParameter("patente");
-            Integer numeroUsuario = Integer.parseInt(request.getParameter("numeroUsuario"));
-            Integer numeroTipoEstadia = Integer.parseInt(request.getParameter("numeroTipoEstadia"));
-            // Asumimos que guardaste la fecha ISO en el QR para reconstruir la clave
-            LocalDateTime fechaDesde = LocalDateTime.parse(request.getParameter("fechaDesde"));
+            String patente = request.getParameter("patente").trim();
+            Integer numeroUsuario = Integer.parseInt(request.getParameter("numeroUsuario").trim());
+            Integer numeroTipoEstadia = Integer.parseInt(request.getParameter("numeroTipoEstadia").trim());
+            LocalDateTime fechaDesde = LocalDateTime.parse(request.getParameter("fechaDesde").trim());
             
-            // ATENCIÓN: Asegúrate de reconstruir el ReservaId con los campos que realmente definiste 
-            // en tu clase @EmbeddedId. Si usas idTipoEstadia, tendrás que pasarlo en el QR también.
+            // Mi DEBUG
+            System.out.println("==== MI DEBUG DE DATOS PARA BUSCAR EN MYSQL ====");
+            System.out.println("Patente: [" + patente + "]");
+            System.out.println("Usuario: [" + numeroUsuario + "]");
+            System.out.println("Tipo Estadia: [" + numeroTipoEstadia + "]");
+            System.out.println("Fecha Desde: [" + fechaDesde + "]");
+            
             ReservaId idReserva = new ReservaId(patente, numeroUsuario, numeroTipoEstadia, fechaDesde);
             
             if ("INGRESO".equals(operacion)) {
-                
                 reservaService.registrarIngreso(idReserva);
-                
                 response.setStatus(HttpServletResponse.SC_OK);
                 out.print("{\"accion\": \"ABRIR_BARRERA\", \"mensaje\": \"Ingreso autorizado. ¡Bienvenido!\"}");
                 
             } else if ("SALIDA".equals(operacion)) {
+                // Evaluamos si puede salir (pasamos true porque el QR de la puerta final asume salida definitiva)
+                SalidaDTO resultado = reservaService.procesarIntentoSalida(idReserva, esDefinitiva);
                 
-                reservaService.registrarSalida(idReserva, true);
-                Reserva reservaActualizada = reservaRepo.buscarPorClave(idReserva);
-                
-                if (reservaActualizada.getPagoSaldo() != null && "PENDIENTE".equals(reservaActualizada.getPagoSaldo().getEstado())) {
-                    response.setStatus(HttpServletResponse.SC_PAYMENT_REQUIRED);
-                    out.print("{\"accion\": \"COBRAR\", \"monto\": " + reservaActualizada.getPagoSaldo().getMonto() + ", \"mensaje\": \"Tiempo de cortesía excedido. Debe abonar saldo para salir.\"}");
+                if (!resultado.isBarreraAbierta()) {
+                    response.setStatus(HttpServletResponse.SC_PAYMENT_REQUIRED); // HTTP 402
+                    out.print("{\"accion\": \"COBRAR\", \"monto\": " + resultado.getMontoDeuda() + ", \"mensaje\": \"" + resultado.getMensaje() + "\"}");
                 } else {
                     response.setStatus(HttpServletResponse.SC_OK);
-                    out.print("{\"accion\": \"ABRIR_BARRERA\", \"mensaje\": \"Salida registrada exitosamente. ¡Buen viaje!\"}");
+                    out.print("{\"accion\": \"ABRIR_BARRERA\", \"mensaje\": \"" + resultado.getMensaje() + "\"}");
                 }
+                
+            } else if ("COBRAR_MULTA".equals(operacion)) {
+                // El municipal apretó el botón de cobro en efectivo
+                SalidaDTO resultado = reservaService.cobrarYLiberarBarrera(idReserva);
+                
+                response.setStatus(HttpServletResponse.SC_OK);
+                out.print("{\"accion\": \"ABRIR_BARRERA\", \"mensaje\": \"" + resultado.getMensaje() + "\"}");
                 
             } else {
                 throw new IllegalArgumentException("Operación de barrera no reconocida.");
             }
             
         } catch (IllegalArgumentException e) {
+            System.out.println("==== ERROR LÓGICO EN BARRERA ====");
+            e.printStackTrace();
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             out.print("{\"error\": \"" + e.getMessage() + "\"}");
         } catch (Exception e) {
