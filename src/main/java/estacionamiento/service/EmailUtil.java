@@ -25,7 +25,7 @@ public class EmailUtil {
         props.put("mail.smtp.auth", "true");
         props.put("mail.smtp.starttls.enable", "true");
         props.put("mail.smtp.host", "smtp.gmail.com");
-        props.put("mail.smtp.port", "587");
+        props.put("mail.smtp.port", "58B7");
         props.put("mail.smtp.ssl.trust", "smtp.gmail.com");
 
         // Autenticación de la sesión
@@ -44,6 +44,7 @@ public class EmailUtil {
         message.setText(cuerpo);
 
         // Disparo a la red
+        System.out.println("Mail leído: [" + CORREO_REMITENTE + "] - Clave leída: [" + PASSWORD_APP + "]");
         Transport.send(message);
     }
 }

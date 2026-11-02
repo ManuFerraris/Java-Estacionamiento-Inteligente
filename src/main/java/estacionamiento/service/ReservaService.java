@@ -36,7 +36,7 @@ public class ReservaService {
     private final PrecioHistoricoTVRepository precioRepository;
     private final SuscripcionService suscripcionService;
     private final PagoRepository pagoRepository;
-    private final NotificacionService notificacionService;
+    private NotificacionService notificacionService = new NotificacionService();
  
     public ReservaService(
     		ReservaRepository reservaRepository, 
@@ -56,7 +56,7 @@ public class ReservaService {
         this.precioRepository = precioRepository;
         this.suscripcionService = suscripcionService;
         this.pagoRepository = pagoRepository;
-        this.notificacionService = notificacionService;
+        this.notificacionService = new NotificacionService();
     }
     
     public Reserva generarReserva(String patente, Integer numeroUsuario, Integer idCochera, Integer idTipoEstadia, LocalDateTime fechaDesde, LocalDateTime fechaHastaTentativa) {

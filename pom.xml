@@ -97,11 +97,18 @@
 		    <version>2.1.23</version> <!-- Usamos la versión 2.x que es la más moderna -->
 		</dependency>
 		
-		<!-- EmailUtil para envio de mails con java-->
+		<!-- API de Jakarta Mail -->
+		<dependency>
+		    <groupId>jakarta.mail</groupId>
+		    <artifactId>jakarta.mail-api</artifactId>
+		    <version>2.1.3</version>
+		</dependency>
+		
+		<!-- Implementación / Motor (Eclipse Angus) -->
 		<dependency>
 		    <groupId>org.eclipse.angus</groupId>
-		    <artifactId>jakarta.mail</artifactId>
-		    <version>2.0.2</version>
+		    <artifactId>angus-mail</artifactId>
+		    <version>2.0.3</version>
 		</dependency>
 
     </dependencies>
