@@ -1,13 +1,11 @@
 package estacionamiento.repository.memoria;
 
-import estacionamiento.domain.Cochera;
 import estacionamiento.domain.Lugar;
 import estacionamiento.repository.LugarRepository;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 public class LugarRepositoryMemoria implements LugarRepository {
     private List<Lugar> baseDeDatosMemoria;
@@ -80,6 +78,12 @@ public class LugarRepositoryMemoria implements LugarRepository {
 
 	@Override
 	public Lugar obtenerPrimerLugarLibre(int idCochera, LocalDateTime fechaDesde, LocalDateTime fechaHasta) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Long contarLugaresLibres(int idCochera, LocalDateTime fechaDesde, LocalDateTime fechaHasta) {
 		// TODO Auto-generated method stub
 		return null;
 	}

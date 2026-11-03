@@ -1,13 +1,11 @@
 package estacionamiento.repository.memoria;
 
-import estacionamiento.domain.Cochera;
 import estacionamiento.domain.LugarTipoEstadia;
 import estacionamiento.repository.LugarTipoEstadiaRepository;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 public class LugarTipoEstadiaRepositoryMemoria implements LugarTipoEstadiaRepository {
 

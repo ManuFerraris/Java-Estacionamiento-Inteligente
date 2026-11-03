@@ -11,4 +11,5 @@ public interface LugarRepository {
     void actualizar(int codigoEditar, Lugar lugar);
     void darDeBajaLugar(int codigo);
     Lugar obtenerPrimerLugarLibre(int idCochera, LocalDateTime fechaDesde, LocalDateTime fechaHasta);
+    Long contarLugaresLibres(int idCochera, LocalDateTime fechaDesde, LocalDateTime fechaHasta);
 }

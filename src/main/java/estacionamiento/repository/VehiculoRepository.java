@@ -2,7 +2,6 @@ package estacionamiento.repository;
 
 import estacionamiento.domain.Vehiculo;
 import java.util.List;
-import java.util.Optional;
 
 public interface VehiculoRepository {
     void guardar(Vehiculo vehiculo);
