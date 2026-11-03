@@ -44,7 +44,7 @@
             
             <!-- COLUMNA IZQUIERDA: Formulario de Cotización y Reserva -->
             <div class="col-lg-4">
-                <div class="card border-0 shadow-sm rounded-4 sticky-top" style="top: 20px;">
+                <div class="card border-0 shadow-sm rounded-4" style="top: 20px;">
                     <div class="card-header bg-info text-white py-3 rounded-top-4">
                         <h5 class="mb-0 fw-bold"><i class="bi bi-calendar-plus me-2"></i>Nueva Reserva</h5>
                     </div>
@@ -106,7 +106,7 @@
                             <!-- Selección de Estadía -->
                             <div class="mb-3">
                                 <label class="form-label text-muted small fw-bold">Tipo de Estadía</label>
-                                <select class="form-select" name="idTipoEstadia" required>
+                                <select class="form-select" name="idTipoEstadia" id="selectTipoEstadia" required>
                                     <option value="" disabled selected>¿Cuánto tiempo te quedas?</option>
                                     <% 
                                         List<TipoEstadia> tipos = (List<TipoEstadia>) request.getAttribute("tiposEstadia");
@@ -121,16 +121,48 @@
                                 </select>
                             </div>
 
-                            <!-- Fechas -->
-                            <div class="mb-3">
-                                <label class="form-label text-muted small fw-bold">Ingreso (Estimado)</label>
-                                <input type="datetime-local" class="form-control" id="fechaDesde" name="fechaDesde" required>
-                            </div>
-
-                            <div class="mb-4">
-                                <label class="form-label text-muted small fw-bold">Salida (Tentativa)</label>
-                                <input type="datetime-local" class="form-control" id="fechaHasta" name="fechaHasta" required>
-                            </div>
+                            <!-- Fechas y Slots de 1 Hora -->
+							<div class="mb-3">
+							    <label class="form-label text-muted small fw-bold">Ingreso (Slots de 1 hora)</label>
+							    <div class="row g-2">
+							        <div class="col-7">
+							            <input type="date" class="form-control" id="diaDesde" required>
+							        </div>
+							        <div class="col-5">
+							            <select class="form-select" id="horaDesde" required>
+							                <% for(int h = 0; h < 24; h++) { 
+							                    String horaStr = String.format("%02d:00", h);
+							                %>
+							                    <option value="<%= horaStr %>"><%= horaStr %> hs</option>
+							                <% } %>
+							            </select>
+							        </div>
+							    </div>
+							    <!-- Este input oculto le manda al Servlet el formato exacto que ya espera -->
+							    <input type="hidden" id="fechaDesde" name="fechaDesde">
+							</div>
+							
+							<div class="mb-3">
+							    <label class="form-label text-muted small fw-bold">Salida (Tentativa)</label>
+							    <div class="row g-2">
+							        <div class="col-7">
+							            <input type="date" class="form-control" id="diaHasta" required>
+							        </div>
+							        <div class="col-5">
+							            <select class="form-select" id="horaHasta" required>
+							                <% for(int h = 0; h < 24; h++) { 
+							                    String horaStr = String.format("%02d:00", h);
+							                %>
+							                    <option value="<%= horaStr %>"><%= horaStr %> hs</option>
+							                <% } %>
+							            </select>
+							        </div>
+							    </div>
+							    <input type="hidden" id="fechaHasta" name="fechaHasta">
+							</div>
+							
+							<!-- Indicador de cupo en tiempo real -->
+							<div id="badgeDisponibilidad" class="alert d-none py-2 px-3 small fw-bold mb-3 border-0"></div>
 
                             <button type="submit" class="btn btn-info w-100 py-2 fw-bold text-white fs-5">
                                 <i class="bi bi-check-circle-fill me-2"></i>Reservar Lugar
@@ -140,6 +172,75 @@
                                 *Si cuentas con un plan <strong>Premium</strong> o <strong>Medium</strong>, los descuentos se aplicarán automáticamente.
                             </div>
                         </form>
+                    </div>
+                </div>
+                <!-- NUEVA TARJETA: Pagos Pendientes de Reservas (Señas, Saldos o Multas) -->
+                <div class="card border-0 shadow-sm rounded-4 border-start border-warning border-4 mt-4">
+                    <div class="card-body p-4">
+                        <h5 class="fw-bold text-dark mb-3">
+                            <i class="bi bi-receipt me-2 text-warning"></i>Pagos Pendientes
+                        </h5>
+                        
+                        <% 
+                            boolean tienePagosPendientes = false;
+                            List<Reserva> listaReservas = (List<Reserva>) request.getAttribute("misReservas");
+                            
+                            if (listaReservas != null) {
+                                for (Reserva res : listaReservas) {
+                                    // Solo revisamos reservas activas (no canceladas ni ausentes)
+                                    if (res.getEstado() != EstadoReserva.CANCELADA && res.getEstado() != EstadoReserva.NO_PRESENTADO) {
+                                        
+                                        // 1. ¿Tiene la SEÑA pendiente? (Ej: cerró MP sin pagar al reservar)
+                                        if (res.getPagoSenia() != null && res.getPagoSenia().getEstado() == estacionamiento.domain.EstadoPago.PENDIENTE) {
+                                            tienePagosPendientes = true;
+                                            String conceptoSenia = "Seña Reserva - " + res.getVehiculo().getPatente();
+                        %>
+                                            <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-3">
+                                                <div>
+                                                    <span class="badge bg-warning text-dark mb-1">Seña Pendiente</span>
+                                                    <h6 class="mb-0 fw-bold"><%= res.getVehiculo().getPatente() %> <small class="text-muted fw-normal">(<%= res.getId().getFechaDesde().format(dtf) %>)</small></h6>
+                                                    <small class="text-muted fw-bold">$ <%= res.getPagoSenia().getMonto() %></small>
+                                                </div>
+                                                <form action="<%= request.getContextPath() %>/mis-reservas-user" method="POST" class="m-0">
+                                                    <input type="hidden" name="accion" value="pagarPendiente">
+                                                    <input type="hidden" name="idPago" value="<%= res.getPagoSenia().getNumero() %>">
+                                                    <input type="hidden" name="concepto" value="<%= conceptoSenia %>">
+                                                    <button type="submit" class="btn btn-warning btn-sm fw-bold text-dark">
+                                                        <i class="bi bi-wallet2 me-1"></i>Pagar
+                                                    </button>
+                                                </form>
+                                            </div>
+                        <%              } 
+                                        
+                                        // 2. ¿Tiene el SALDO DE ESTADÍA o MULTA pendiente?
+                                        if (res.getPagoSaldo() != null && res.getPagoSaldo().getEstado() == estacionamiento.domain.EstadoPago.PENDIENTE) {
+                                            tienePagosPendientes = true;
+                                            String conceptoSaldo = "Saldo Estadía - " + res.getVehiculo().getPatente();
+                        %>
+                                            <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-3">
+                                                <div>
+                                                    <span class="badge bg-info text-dark mb-1">Saldo Restante / Estadía</span>
+                                                    <h6 class="mb-0 fw-bold"><%= res.getVehiculo().getPatente() %> <small class="text-muted fw-normal">(<%= res.getTipoEstadia().getDescripcion() %>)</small></h6>
+                                                    <small class="text-muted fw-bold">$ <%= res.getPagoSaldo().getMonto() %></small>
+                                                </div>
+                                                <form action="<%= request.getContextPath() %>/mis-reservas-user" method="POST" class="m-0">
+                                                    <input type="hidden" name="accion" value="pagarPendiente">
+                                                    <input type="hidden" name="idPago" value="<%= res.getPagoSaldo().getNumero() %>">
+                                                    <input type="hidden" name="concepto" value="<%= conceptoSaldo %>">
+                                                    <button type="submit" class="btn btn-warning btn-sm fw-bold text-dark">
+                                                        <i class="bi bi-wallet2 me-1"></i>Pagar
+                                                    </button>
+                                                </form>
+                                            </div>
+                        <%              }
+                                    }
+                                }
+                            }
+                            
+                            if (!tienePagosPendientes) { 
+                        %>
+                            <p class="text-muted small mb-0"><i class="bi bi-check2-circle me-1 text-success"></i>Estás al día con tus pagos de cocheras.</p>
+                        <% } %>
                     </div>
                 </div>
             </div>
@@ -243,60 +344,184 @@
     </div>
 
     <!-- Script de validaciones -->
-    <script>
-        // 1. Evitar que el usuario seleccione fechas anteriores a la hora actual
-        const now = new Date();
-        now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-        const minDatetime = now.toISOString().slice(0,16);
-        
-        document.getElementById('fechaDesde').min = minDatetime;
-        
-        // 2. Ajustar el 'min' de fechaHasta basado en lo que elija en fechaDesde
-        document.getElementById('fechaDesde').addEventListener('change', function() {
-            document.getElementById('fechaHasta').min = this.value;
-            // Opcional: auto-setear fechaHasta a 1 hora después del ingreso por defecto
-        });
-
-        // 3. Validación al enviar el formulario
-        document.getElementById('formReserva').addEventListener('submit', function(e) {
-            const desde = new Date(document.getElementById('fechaDesde').value);
-            const hasta = new Date(document.getElementById('fechaHasta').value);
-            
-            if (hasta <= desde) {
-                e.preventDefault();
-                Swal.fire({ icon: 'warning', title: 'Fechas inválidas', text: 'La fecha de salida debe ser posterior a la de ingreso.' });
-            }
-        });
-
-        // Alertas Flash
-        <% if (error != null) { %>
-            Swal.fire({ icon: 'error', title: 'Operación denegada', text: `<%= error %>` });
-            <% session.removeAttribute("error"); %>
-        <% } %>
-        
-        <% if (exito != null) { %>
-            Swal.fire({ icon: 'success', title: '¡Reserva Exitosa!', text: `<%= exito %>` });
-            <% session.removeAttribute("exito"); %>
-        <% } %>
-        
-     	// FUNCIÓN PARA DIBUJAR EL QR
-        function generarPaseQR(patente, usuario, tipoEstadia, fechaDesde) {
-            // 1. Armamos la cadena exacta que espera la terminal de la barrera
-            const cadenaQR = patente + "|" + usuario + "|" + tipoEstadia + "|" + fechaDesde;
-
-            // 2. Limpiamos el canvas por si había otro QR generado antes y dibujamos el nuevo
-            new QRious({
-                element: document.getElementById('canvasQR'),
-                value: cadenaQR,
-                size: 220,      
-                level: 'H'      
-            });
-
-            // 3. Mostramos el modal
-            const modal = new bootstrap.Modal(document.getElementById('modalQR'));
-            modal.show();
-        }
-    </script>
+	<script>
+	        // 1. Declaración de TODAS las referencias al DOM arriba de todo
+	        const selectCochera = document.querySelector('select[name="idCochera"]');
+	        const selectTipoEstadia = document.getElementById('selectTipoEstadia');
+	        const diaDesde = document.getElementById('diaDesde');
+	        const horaDesde = document.getElementById('horaDesde');
+	        const diaHasta = document.getElementById('diaHasta');
+	        const horaHasta = document.getElementById('horaHasta');
+	        const inputFechaDesde = document.getElementById('fechaDesde');
+	        const inputFechaHasta = document.getElementById('fechaHasta');
+	        const badgeDisp = document.getElementById('badgeDisponibilidad');
+	        const btnSubmit = document.querySelector('#formReserva button[type="submit"]');
+	
+	        // 2. Inicializar fechas mínimas (Hoy) y próximo slot horario disponible
+	        const ahora = new Date();
+	        // Ajuste local para que no salte al día siguiente después de las 21:00 hs por UTC
+	        const offsetMs = ahora.getTimezoneOffset() * 60000;
+	        const hoyStr = new Date(ahora.getTime() - offsetMs).toISOString().split('T')[0];
+	        
+	        diaDesde.min = hoyStr;
+	        diaHasta.min = hoyStr;
+	        diaDesde.value = hoyStr;
+	        diaHasta.value = hoyStr;
+	
+	        // Preseleccionar la próxima hora en punto (ej. si son 15:20, pone 16:00 a 17:00)
+	        let proximaHora = ahora.getHours() + 1;
+	        if (proximaHora >= 23) proximaHora = 22; 
+	        horaDesde.value = String(proximaHora).padStart(2, '0') + ":00";
+	        horaHasta.value = String(proximaHora + 1).padStart(2, '0') + ":00";
+	
+	        // 3. Función que calcula +12hs / +24hs según el Tipo de Estadía
+	        function aplicarReglaTipoEstadia() {
+	            if (!diaDesde.value || !horaDesde.value) return;
+	
+	            // Si todavía no eligió tipo de estadía, igual verificamos slots normales
+	            if (!selectTipoEstadia || !selectTipoEstadia.value) {
+	                actualizarYVerificarSlots();
+	                return;
+	            }
+	
+	            const textoTipo = selectTipoEstadia.options[selectTipoEstadia.selectedIndex].text.toLowerCase();
+	            
+	            let horasASumar = 0;
+	            if (textoTipo.includes("media") || textoTipo.includes("12")) {
+	                horasASumar = 12;
+	            } else if (textoTipo.includes("completa") || textoTipo.includes("24")) {
+	                horasASumar = 24;
+	            }
+	
+	            if (horasASumar > 0) {
+	                // Creamos la fecha base con el ingreso seleccionado
+	                const [anio, mes, dia] = diaDesde.value.split('-').map(Number);
+	                const [hora, min] = horaDesde.value.split(':').map(Number);
+	                const fechaCalculada = new Date(anio, mes - 1, dia, hora, min);
+	
+	                // Sumamos las 12 o 24 horas (Date cambia de día/mes/año automáticamente si cruza las 00:00)
+	                fechaCalculada.setHours(fechaCalculada.getHours() + horasASumar);
+	
+	                // Formateamos de vuelta a YYYY-MM-DD y HH:00
+	                const anioSalida = fechaCalculada.getFullYear();
+	                const mesSalida = String(fechaCalculada.getMonth() + 1).padStart(2, '0');
+	                const diaSalida = String(fechaCalculada.getDate()).padStart(2, '0');
+	                const horaSalida = String(fechaCalculada.getHours()).padStart(2, '0') + ":00";
+	
+	                diaHasta.value = anioSalida + "-" + mesSalida + "-" + diaSalida;
+	                horaHasta.value = horaSalida;
+	
+	                // Bloqueamos visualmente los selectores de salida para que no los modifique
+	                diaHasta.readOnly = true;
+	                diaHasta.style.pointerEvents = 'none';
+	                diaHasta.classList.add('bg-light');
+	                horaHasta.style.pointerEvents = 'none';
+	                horaHasta.classList.add('bg-light');
+	            } else {
+	                // Es "Por Hora": liberamos los campos para que elija libremente
+	                diaHasta.readOnly = false;
+	                diaHasta.style.pointerEvents = 'auto';
+	                diaHasta.classList.remove('bg-light');
+	                horaHasta.style.pointerEvents = 'auto';
+	                horaHasta.classList.remove('bg-light');
+	            }
+	
+	            // Disparamos la verificación de cupo con los valores ya actualizados
+	            actualizarYVerificarSlots();
+	        }
+	
+	        // 4. Función que une fecha+hora y consulta el cupo por AJAX
+	        function actualizarYVerificarSlots() {
+	            if (!diaDesde.value || !horaDesde.value || !diaHasta.value || !horaHasta.value) return;
+	
+	            // Unimos fecha + hora en los inputs ocultos (Formato: YYYY-MM-DDTHH:00)
+	            inputFechaDesde.value = diaDesde.value + "T" + horaDesde.value;
+	            inputFechaHasta.value = diaHasta.value + "T" + horaHasta.value;
+	            diaHasta.min = diaDesde.value;
+	
+	            const desdeDate = new Date(inputFechaDesde.value);
+	            const hastaDate = new Date(inputFechaHasta.value);
+	
+	            // Validar que no elija un slot en el pasado ni salida menor a entrada
+	            if (desdeDate < new Date()) {
+	                mostrarEstadoCupo('warning', '<i class="bi bi-clock-history me-1"></i>El horario de ingreso ya pasó.', false);
+	                return;
+	            }
+	            if (hastaDate <= desdeDate) {
+	                mostrarEstadoCupo('warning', '<i class="bi bi-exclamation-triangle me-1"></i>La salida debe ser al menos 1 hora después del ingreso.', false);
+	                return;
+	            }
+	
+	            // Si ya eligió cochera, consultamos disponibilidad en vivo
+	            if (selectCochera.value) {
+	                const url = "<%= request.getContextPath() %>/mis-reservas-user?accion=verificarCupo" +
+	                    "&idCochera=" + selectCochera.value +
+	                    "&fechaDesde=" + inputFechaDesde.value +
+	                    "&fechaHasta=" + inputFechaHasta.value;
+	
+	                fetch(url)
+	                    .then(res => res.json())
+	                    .then(data => {
+	                        if (data.disponibles > 0) {
+	                            mostrarEstadoCupo('success', '<i class="bi bi-check-circle-fill me-1"></i>¡Hay ' + data.disponibles + ' lugar(es) disponible(s) en este horario!', true);
+	                        } else {
+	                            mostrarEstadoCupo('danger', '<i class="bi bi-x-circle-fill me-1"></i>Cochera completa para este rango horario. Probá otro slot.', false);
+	                        }
+	                    })
+	                    .catch(() => mostrarEstadoCupo('secondary', 'Error al verificar cupo.', true));
+	            }
+	        }
+	
+	        function mostrarEstadoCupo(tipoAlerta, mensajeHTML, habilitarBoton) {
+	            badgeDisp.className = "alert alert-" + tipoAlerta + " py-2 px-3 small fw-bold mb-3 border-0";
+	            badgeDisp.innerHTML = mensajeHTML;
+	            if (btnSubmit && btnSubmit.innerText !== "Falta cargar un vehículo") {
+	                btnSubmit.disabled = !habilitarBoton;
+	            }
+	        }
+	
+	        // 5. Asignación de Eventos (Listeners)
+	        // Si cambia tipo de estadía o la fecha/hora de entrada -> recalcula salida (+12/+24) y luego verifica cupo
+	        if (selectTipoEstadia) {
+	            selectTipoEstadia.addEventListener('change', aplicarReglaTipoEstadia);
+	        }
+	        diaDesde.addEventListener('change', aplicarReglaTipoEstadia);
+	        horaDesde.addEventListener('change', aplicarReglaTipoEstadia);
+	
+	        // Si cambia la cochera o la fecha/hora de salida manualmente (en modo "Por Hora") -> solo verifica cupo
+	        selectCochera.addEventListener('change', actualizarYVerificarSlots);
+	        diaHasta.addEventListener('change', actualizarYVerificarSlots);
+	        horaHasta.addEventListener('change', actualizarYVerificarSlots);
+	
+	        // Ejecutar una vez al cargar la página
+	        actualizarYVerificarSlots();
+	
+	        // Alertas Flash
+	        <% if (error != null) { %>
+	            Swal.fire({ icon: 'error', title: 'Operación denegada', text: `<%= error %>` });
+	            <% session.removeAttribute("error"); %>
+	        <% } %>
+	        
+	        <% if (exito != null) { %>
+	            Swal.fire({ icon: 'success', title: '¡Reserva Exitosa!', text: `<%= exito %>` });
+	            <% session.removeAttribute("exito"); %>
+	        <% } %>
+	        
+	        // FUNCIÓN PARA DIBUJAR EL QR
+	        function generarPaseQR(patente, usuario, tipoEstadia, fechaDesde) {
+	            const cadenaQR = patente + "|" + usuario + "|" + tipoEstadia + "|" + fechaDesde;
+	
+	            new QRious({
+	                element: document.getElementById('canvasQR'),
+	                value: cadenaQR,
+	                size: 220,      
+	                level: 'H'      
+	            });
+	
+	            const modal = new bootstrap.Modal(document.getElementById('modalQR'));
+	            modal.show();
+	        }
+	    </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 	<!-- Modal para el QR De entrada/salida/entradaParcial-->

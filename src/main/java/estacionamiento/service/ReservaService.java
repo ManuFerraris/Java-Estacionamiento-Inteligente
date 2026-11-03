@@ -25,6 +25,7 @@ import estacionamiento.repository.VehiculoRepository;
 import estacionamiento.repository.UsuarioRepository;
 import estacionamiento.repository.TipoEstadiaRepository;
 import estacionamiento.repository.PrecioHistoricoTVRepository;
+import java.time.temporal.ChronoUnit;
 
 public class ReservaService {
 
@@ -59,8 +60,40 @@ public class ReservaService {
         this.notificacionService = new NotificacionService();
     }
     
+    public long consultarDisponibilidad(int idCochera, LocalDateTime fechaDesde, LocalDateTime fechaHasta) {
+        return lugarRepository.contarLugaresLibres(idCochera, fechaDesde, fechaHasta);
+    }
+    
     public Reserva generarReserva(String patente, Integer numeroUsuario, Integer idCochera, Integer idTipoEstadia, LocalDateTime fechaDesde, LocalDateTime fechaHastaTentativa) {
         
+    	if (fechaDesde.getMinute() != 0 || fechaHastaTentativa.getMinute() != 0) {
+            throw new IllegalArgumentException("Los horarios de reserva deben ser en bloques exactos de 1 hora (ej. 15:00, 16:00).");
+        }
+    	
+    	TipoEstadia tipoEstadia = tipoEstadiaRepository.buscarPorNumero(idTipoEstadia);
+        if (tipoEstadia == null) {
+            throw new IllegalArgumentException("El tipo de estadía seleccionado no es válido.");
+        }
+        
+        // Validaciones faltantes de duración según Tipo de Estadía
+        String descTipo = tipoEstadia.getDescripcion().toLowerCase();
+        long horasSolicitadas = ChronoUnit.HOURS.between(fechaDesde, fechaHastaTentativa);
+
+        if (descTipo.contains("media") || descTipo.contains("12")) {
+            if (horasSolicitadas != 12) {
+                throw new IllegalArgumentException("Para Media Estadía, la duración debe ser exactamente de 12 horas.");
+            }
+        } else if (descTipo.contains("completa") || descTipo.contains("24")) {
+            if (horasSolicitadas != 24) {
+                throw new IllegalArgumentException("Para Estadía Completa, la duración debe ser exactamente de 24 horas.");
+            }
+        } else {
+            // Caso "Por Hora"
+            if (horasSolicitadas < 1) {
+                throw new IllegalArgumentException("La reserva por hora debe ser de al menos 1 hora.");
+            }
+        }
+    	
         Lugar lugarDisponible = lugarRepository.obtenerPrimerLugarLibre(idCochera, fechaDesde, fechaHastaTentativa);
         if (lugarDisponible == null) {
             throw new IllegalArgumentException("No hay cupo disponible en la cochera para ese rango horario.");
@@ -76,10 +109,7 @@ public class ReservaService {
             throw new IllegalArgumentException("El usuario no existe.");
         }
 
-        TipoEstadia tipoEstadia = tipoEstadiaRepository.buscarPorNumero(idTipoEstadia);
-        if (tipoEstadia == null) {
-            throw new IllegalArgumentException("El tipo de estadía seleccionado no es válido.");
-        }
+        
 
         BigDecimal montoFinal = calcularMontoConBeneficios(numeroUsuario, vehiculo);
 
@@ -229,6 +259,46 @@ public class ReservaService {
         }
 
         return precioBase;
+    }
+
+    // Calcula el saldo restante según la duración total de la reserva
+    public BigDecimal calcularSaldoRestante(Reserva reserva) {
+        // Como reserva.getSenia() ya tiene el valor de 1 hora (con el descuento Medium/Premium incluido),
+        // lo usamos directamente como valor hora del cliente.
+        BigDecimal valorHoraConBeneficio = reserva.getSenia();
+
+        // Si es PREMIUM ($0), no tiene saldo a pagar
+        if (valorHoraConBeneficio.compareTo(BigDecimal.ZERO) == 0) {
+            return BigDecimal.ZERO;
+        }
+
+        long horasTotales = ChronoUnit.HOURS.between(
+            reserva.getId().getFechaDesde(), 
+            reserva.getFechaHastaTentativa()
+        );
+
+        // Si reservó 1 hora o menos, con la seña ya cubrió el 100% de la estadía
+        if (horasTotales <= 1) {
+            return BigDecimal.ZERO;
+        }
+
+        String descTipo = reserva.getTipoEstadia().getDescripcion().toLowerCase();
+        BigDecimal costoTotalEstadia;
+
+        // Opcional: Podés cobrar las 12/24 horas lineales, o hacerle un precio promocional
+        // (ej. que Media Estadía de 12hs cobre el equivalente a 10hs, y 24hs cobre 18hs).
+        // Acá te lo dejo lineal (horasTotales * valorHora), pero podés cambiar el multiplicador si querés promoción:
+        if (descTipo.contains("media") || descTipo.contains("12")) {
+            costoTotalEstadia = valorHoraConBeneficio.multiply(BigDecimal.valueOf(10));
+        } else if (descTipo.contains("completa") || descTipo.contains("24")) {
+            costoTotalEstadia = valorHoraConBeneficio.multiply(BigDecimal.valueOf(18));
+        } else {
+            // Por Hora
+            costoTotalEstadia = valorHoraConBeneficio.multiply(BigDecimal.valueOf(horasTotales));
+        }
+
+        // El saldo pendiente es el Total menos la Seña (1 hora) que paga al principio
+        return costoTotalEstadia.subtract(valorHoraConBeneficio);
     }
     
     // Tarea rutinaria: Cancela las reservas impagas a punto de expirar.

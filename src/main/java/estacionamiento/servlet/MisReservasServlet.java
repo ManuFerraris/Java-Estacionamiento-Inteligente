@@ -87,21 +87,46 @@ public class MisReservasServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         Usuario cliente = (Usuario) request.getSession().getAttribute("usuarioLogueado");
-
+        if (cliente == null) {
+            response.sendRedirect(request.getContextPath() + "/login");
+            return;
+        }
+        
+        // Primera carga
+        String accion = request.getParameter("accion");
+        if ("verificarCupo".equals(accion)) {
+            response.setContentType("application/json");
+            response.setCharacterEncoding("UTF-8");
+            try {
+                int idCochera = Integer.parseInt(request.getParameter("idCochera"));
+                LocalDateTime desde = LocalDateTime.parse(request.getParameter("fechaDesde"));
+                LocalDateTime hasta = LocalDateTime.parse(request.getParameter("fechaHasta"));
+                
+                if (!hasta.isAfter(desde)) {
+                    response.getWriter().write("{\"disponibles\": -1, \"mensaje\": \"La salida debe ser posterior al ingreso.\"}");
+                    return;
+                }
+                
+                long libres = reservaService.consultarDisponibilidad(idCochera, desde, hasta);
+                response.getWriter().write("{\"disponibles\": " + libres + "}");
+            } catch (Exception e) {
+                e.printStackTrace();
+                response.getWriter().write("{\"disponibles\": 0, \"error\": \"Datos incompletos\"}");
+            }
+            return;
+        }
+        
+        // carga de la vista
         try {
-            // Cargar las cocheras disponibles
             List<Cochera> cocheras = cocheraRepo.obtenerTodos();
             request.setAttribute("cocheras", cocheras);
 
-            // Cargar el catálogo de tipos de estadía
             List<TipoEstadia> tiposEstadia = tipoEstadiaRepo.obtenerTodos();
             request.setAttribute("tiposEstadia", tiposEstadia);
 
-            // Cargar el historial de reservas filtrando por usuario
             List<Reserva> misReservas = reservaService.obtenerReservasPorUsuario(cliente.getNumero());
             request.setAttribute("misReservas", misReservas);
 
-            // Extraer los vehículos
             List<Vehiculo> misVehiculos = vehiculoRepo.buscarPorUsuario(cliente.getNumero());
             
             System.out.println("Vehículos reales del usuario " + cliente.getNombre() + ": " + misVehiculos.size());
@@ -110,6 +135,7 @@ public class MisReservasServlet extends HttpServlet {
             request.getRequestDispatcher("/WEB-INF/views/misReservas.jsp").forward(request, response);
             
         } catch (Exception e) {
+            e.printStackTrace();
             request.setAttribute("error", "Error al cargar la información del módulo de reservas.");
             request.getRequestDispatcher("/WEB-INF/views/misReservas.jsp").forward(request, response);
         }
@@ -118,8 +144,37 @@ public class MisReservasServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         Usuario cliente = (Usuario) request.getSession().getAttribute("usuarioLogueado");
+        if (cliente == null) {
+            response.sendRedirect(request.getContextPath() + "/login");
+            return;
+        }
         
         try {
+            String accion = request.getParameter("accion");
+
+            // Flujo de pago pendiente
+            if ("pagarPendiente".equals(accion)) {
+                Integer idPago = Integer.parseInt(request.getParameter("idPago"));
+                String concepto = request.getParameter("concepto");
+                
+                Pago pagoPendiente = pagoService.buscarPago(idPago); 
+                if (pagoPendiente == null || pagoPendiente.getEstado() == EstadoPago.APROBADO) {
+                    throw new IllegalArgumentException("El pago seleccionado no existe o ya se encuentra abonado.");
+                }
+
+                MercadoPagoService mpService = new MercadoPagoService();
+                String urlCheckout = mpService.crearPreferencia(
+                        concepto, 
+                        pagoPendiente.getMonto(), 
+                        pagoPendiente.getNumero(),
+                        cliente.getMail()
+                );
+                
+                response.sendRedirect(urlCheckout);
+                return;
+            }
+
+            // Flujo de la nueva reserva
             String patente = request.getParameter("patente");
             Integer idCochera = Integer.parseInt(request.getParameter("idCochera"));
             Integer idTipoEstadia = Integer.parseInt(request.getParameter("idTipoEstadia"));
@@ -134,51 +189,66 @@ public class MisReservasServlet extends HttpServlet {
             // Primero creo la reserva:
             Reserva reserva = reservaService.generarReserva(patente, cliente.getNumero(), idCochera, idTipoEstadia, fechaDesde, fechaHasta);
             
-            // Segundo creo el pago:
-            Pago nuevoPago = new Pago();
-            nuevoPago.setMonto(reserva.getSenia());
+            // Segundo creo el pago de la SEÑA:
+            Pago nuevoPagoSenia = new Pago();
+            nuevoPagoSenia.setMonto(reserva.getSenia());
             
             // Validamos el caso PREMIUM ($0) ANTES de registrar el pago
-            boolean esPremium = nuevoPago.getMonto().compareTo(BigDecimal.ZERO) == 0;
+            boolean esPremium = nuevoPagoSenia.getMonto().compareTo(BigDecimal.ZERO) == 0;
             
             if (esPremium) {
-                nuevoPago.setEstado(EstadoPago.APROBADO);
-                // El PagoService exige que un pago APROBADO tenga TipoPago.
-                // Creo el BONIFICADO para diferenciar porque pago 0.
-                nuevoPago.setTipoPago(TipoPago.BONIFICADO); 
+                nuevoPagoSenia.setEstado(EstadoPago.APROBADO);
+                nuevoPagoSenia.setTipoPago(TipoPago.BONIFICADO); 
             } else {
-                nuevoPago.setEstado(EstadoPago.PENDIENTE);
+                nuevoPagoSenia.setEstado(EstadoPago.PENDIENTE);
             }
 
-            // Finalmente lo guardamos:
-            pagoService.registrarPago(nuevoPago);
+            // Guardamos el pago de la seña y lo asignamos:
+            pagoService.registrarPago(nuevoPagoSenia);
+            reserva.setPagoSenia(nuevoPagoSenia);
+
+            // Tercero, calculamos si queda SALDO RESTANTE de la estadía
+            if (!esPremium) {
+                BigDecimal saldoRestante = reservaService.calcularSaldoRestante(reserva);
+                if (saldoRestante.compareTo(BigDecimal.ZERO) > 0) {
+                    Pago nuevoPagoSaldo = new Pago();
+                    nuevoPagoSaldo.setMonto(saldoRestante);
+                    nuevoPagoSaldo.setEstado(EstadoPago.PENDIENTE);
+                    
+                    pagoService.registrarPago(nuevoPagoSaldo);
+                    reserva.setPagoSaldo(nuevoPagoSaldo);
+                }
+            }
             
-            // Tercero, asigno el pago en pagoSenia de reserva y lo guardo
-            reserva.setPagoSenia(nuevoPago);
+            // Actualizamos la reserva en BD con ambos pagos (seña y saldo si aplica) vinculados
             reservaService.actualizarReserva(reserva);
             
             // Cuarto valido el caso PREMIUM ($0)
             if (esPremium) {
-            	request.getSession().setAttribute("exito", "¡Reserva confirmada! (Beneficio Premium aplicado 100% Bonificado).");
+                request.getSession().setAttribute("exito", "¡Reserva confirmada! (Beneficio Premium aplicado 100% Bonificado).");
                 response.sendRedirect(request.getContextPath() + "/mis-reservas-user");
                 return; // Cortamos con la ejecucion aca porque solamente se puede redirigir una vez en el servlet y no DOS o mas.
             }
             
-            // Quinto, ahora si llamo al servicio de MP en caso de que tenga que pagar porque no tiene el plan "Premium".
+            // Quinto, ahora si llamo al servicio de MP para cobrar la SEÑA en caso de que no tenga el plan "Premium".
             MercadoPagoService mpService = new MercadoPagoService();
             String urlCheckout = mpService.crearPreferencia(
-            		"Seña Reserva Cochera - " + reserva.getVehiculo().getPatente(), 
-            	    nuevoPago.getMonto(), 
-            	    nuevoPago.getNumero(),
-            	    cliente.getMail()
+                    "Seña Reserva Cochera - " + reserva.getVehiculo().getPatente(), 
+                    nuevoPagoSenia.getMonto(), 
+                    nuevoPagoSenia.getNumero(),
+                    cliente.getMail()
             );
-            System.out.println("Estructura mpService creada: "+mpService);
+            System.out.println("Estructura mpService creada: " + mpService);
             
             // Finalmente redirijo al ciudadano directo a la pantalla de mercado pago.
-            // Esta pantalla la provee la API de MP.
             response.sendRedirect(urlCheckout);
-            return; // Nuevamente, cortamos el flujo de redireccion.
+            return; 
             
+        } catch (IllegalArgumentException e) {
+            // Mostramos al usuario el mensaje exacto de nuestras validaciones de negocio
+            request.getSession().setAttribute("error", e.getMessage());
+            response.sendRedirect(request.getContextPath() + "/mis-reservas-user");
+            return;
         } catch (com.mercadopago.exceptions.MPApiException mpEx) {
             System.err.println("=== ERROR DE MERCADO PAGO ===");
             System.err.println("Status Code: " + mpEx.getApiResponse().getStatusCode());

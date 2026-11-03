@@ -149,7 +149,15 @@ public class ReservaRepositoryMySQL implements ReservaRepository {
 	public List<Reserva> buscarPorUsuario(Integer numeroUsuario) {
         EntityManager em = emf.createEntityManager();
         try {
-            String jpql = "SELECT r FROM Reserva r WHERE r.id.numeroUsuario = :id ORDER BY r.id.fechaDesde DESC";
+        	String jpql = "SELECT r FROM Reserva r " +
+                    "LEFT JOIN FETCH r.pagoSenia " +
+                    "LEFT JOIN FETCH r.pagoSaldo " +
+                    "LEFT JOIN FETCH r.vehiculo " +
+                    "LEFT JOIN FETCH r.tipoEstadia " +
+                    "LEFT JOIN FETCH r.lugar " +
+                    "WHERE r.id.numeroUsuario = :id " +
+                    "ORDER BY r.id.fechaDesde DESC";
+        	
             return em.createQuery(jpql, Reserva.class)
                      .setParameter("id", numeroUsuario)
                      .getResultList();

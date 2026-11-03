@@ -112,6 +112,7 @@ public class LugarRepositoryMySQL implements LugarRepository {
         }
     }
 
+    //Este es el primer metodo que usamos antes SIN los slots, lo reemplazamos por "contarLugaresLibres".
     @Override
     public Lugar obtenerPrimerLugarLibre(int idCochera, LocalDateTime fechaDesde, LocalDateTime fechaHasta) {
         EntityManager em = emf.createEntityManager();
@@ -141,4 +142,30 @@ public class LugarRepositoryMySQL implements LugarRepository {
             em.close();
         }
     }
+
+	@Override
+	public Long contarLugaresLibres(int idCochera, LocalDateTime fechaDesde, LocalDateTime fechaHasta) {
+		EntityManager em = emf.createEntityManager();
+		try {
+			LocalDateTime inicioConBuffer = fechaDesde.minusMinutes(10);
+	        LocalDateTime finConBuffer = fechaHasta.plusMinutes(10);
+	        
+	        String jpql = "SELECT COUNT(l) FROM Lugar l WHERE l.cochera.codigo = :idCochera AND l.codigo NOT IN (" +
+	                      "    SELECT r.lugar.codigo FROM Reserva r " +
+	                      "    WHERE r.estado IN (estacionamiento.domain.EstadoReserva.PENDIENTE, " +
+	                      "                       estacionamiento.domain.EstadoReserva.EN_CURSO, " +
+	                      "                       estacionamiento.domain.EstadoReserva.SALIDA_PARCIAL) " +
+	                      "    AND (r.id.fechaDesde < :fechaHasta AND r.fechaHastaTentativa > :fechaDesde)" +
+	                      ")";
+	        TypedQuery<Long> query = em.createQuery(jpql, Long.class);
+	        query.setParameter("idCochera", idCochera);
+	        query.setParameter("fechaDesde", inicioConBuffer);
+	        query.setParameter("fechaHasta", finConBuffer);
+
+	        Long cantidad = query.getSingleResult();
+	        return cantidad != null ? cantidad : 0L;
+		}finally {
+			em.close();
+		}
+	}
 }
