@@ -165,4 +165,30 @@ public class ReservaRepositoryMySQL implements ReservaRepository {
             em.close();
         }
     }
+	
+	@Override
+	public List<Reserva> obtenerActivasPorCochera(int codigoCochera) {
+	    EntityManager em = emf.createEntityManager();
+	    try {
+	        // Traemos las que están EN_CURSO, SALIDA_PARCIAL y las PENDIENTES 
+	        // para que el encargado vea quién está por entrar o quién está estacionado
+	        String jpql = "SELECT r FROM Reserva r " +
+	                      "LEFT JOIN FETCH r.vehiculo " +
+	                      "LEFT JOIN FETCH r.usuario " +
+	                      "LEFT JOIN FETCH r.tipoEstadia " +
+	                      "LEFT JOIN FETCH r.lugar l " +
+	                      "LEFT JOIN FETCH r.pagoSenia " +
+	                      "LEFT JOIN FETCH r.pagoSaldo " +
+	                      "WHERE l.cochera.codigo = :codCochera " +
+	                      "AND r.estado IN (estacionamiento.domain.EstadoReserva.PENDIENTE, " +
+	                      "                 estacionamiento.domain.EstadoReserva.EN_CURSO, " +
+	                      "                 estacionamiento.domain.EstadoReserva.SALIDA_PARCIAL) " +
+	                      "ORDER BY r.id.fechaDesde ASC";
+	        return em.createQuery(jpql, Reserva.class)
+	                 .setParameter("codCochera", codigoCochera)
+	                 .getResultList();
+	    } finally {
+	        em.close();
+	    }
+	}
 }

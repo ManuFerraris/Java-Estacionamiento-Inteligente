@@ -68,22 +68,33 @@ public class SeguridadFilter implements Filter {
         // 4. Si está logueado, evaluamos los permisos (Roles)
         RolesUsuario rolUsuario = usuarioLogueado.getRol();
 
-        // Agrupamos las rutas de gestión de la municipalidad
+        // Agrupamos las rutas de gestión administrativa de la municipalidad
         boolean esRutaOficina = path.endsWith("-oficina") || 
                                 path.equals("/usuarios") || 
                                 path.equals("/suscripciones") || 
                                 path.equals("/tipos-plan");
 
-        // Agrupamos las rutas exclusivas de la app del usuario final
+        // Agrupamos las rutas operativas de la cochera física
+        boolean esRutaEncargado = path.endsWith("-encargado");
+
+        // Agrupamos las rutas exclusivas de la app del ciudadano
         boolean esRutaCliente = path.endsWith("-user");
 
         if (esRutaOficina) {
             if (rolUsuario == RolesUsuario.ADMIN || rolUsuario == RolesUsuario.TRABAJADOR) {
-                // Tiene permiso, abrimos la puerta
                 chain.doFilter(request, response);
             } else {
-                // Es un cliente intentando entrar al panel municipal
-                res.sendError(HttpServletResponse.SC_FORBIDDEN, "No tienes permisos de empleado para acceder a esta área.");
+                res.sendError(HttpServletResponse.SC_FORBIDDEN, "No tienes permisos administrativos para acceder a esta área municipal.");
+            }
+            return;
+        }
+
+        if (esRutaEncargado) {
+            // Permitimos al ENCARGADO operar su cochera (y al ADMIN por si necesita supervisar)
+            if (rolUsuario == RolesUsuario.ENCARGADO || rolUsuario == RolesUsuario.ADMIN) {
+                chain.doFilter(request, response);
+            } else {
+                res.sendError(HttpServletResponse.SC_FORBIDDEN, "Esta vista es exclusiva para los encargados operativos de cochera.");
             }
             return;
         }
@@ -97,7 +108,7 @@ public class SeguridadFilter implements Filter {
             return;
         }
 
-        // Si es una ruta que no clasificamos arriba, dejamos pasar la petición por defecto
+        // Si es una ruta común (ej. /logout o recursos compartidos), dejamos pasar
         chain.doFilter(request, response);
 	}
 	

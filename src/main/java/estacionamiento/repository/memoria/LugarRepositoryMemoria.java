@@ -87,4 +87,10 @@ public class LugarRepositoryMemoria implements LugarRepository {
 		// TODO Auto-generated method stub
 		return null;
 	}
+
+	@Override
+	public List<Lugar> obtenerPorCochera(int codigoCochera) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

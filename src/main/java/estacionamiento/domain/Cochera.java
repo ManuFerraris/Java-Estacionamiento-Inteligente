@@ -31,6 +31,9 @@ public class Cochera {
 	@OneToMany(mappedBy = "cochera", targetEntity = Lugar.class)
 	private List<Lugar> lugares;
 	
+	@OneToMany(mappedBy = "cochera", targetEntity = AsignacionCochera.class)
+    private List<AsignacionCochera> asignacionesEncargados;
+	
 	public Cochera() {}
 	
 	public Cochera(Integer cod, String nom, String direc, String desc) {
@@ -70,5 +73,21 @@ public class Cochera {
 
 	public void setDescripcion(String descripcion) {
 		this.descripcion = descripcion;
+	}
+
+	public List<Lugar> getLugares() {
+		return lugares;
+	}
+
+	public void setLugares(List<Lugar> lugares) {
+		this.lugares = lugares;
+	}
+
+	public List<AsignacionCochera> getAsignacionesEncargados() {
+		return asignacionesEncargados;
+	}
+
+	public void setAsignacionesEncargados(List<AsignacionCochera> asignacionesEncargados) {
+		this.asignacionesEncargados = asignacionesEncargados;
 	}
 }

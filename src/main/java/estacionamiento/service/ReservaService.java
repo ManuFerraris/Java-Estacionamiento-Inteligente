@@ -454,8 +454,10 @@ public class ReservaService {
                 reservaRepository.actualizar(r);
             }
         }
-        
-        
         return misReservas;
+    }
+    
+    public List<Reserva> obtenerActivasPorCochera(int codigoCochera) {
+    	return reservaRepository.obtenerActivasPorCochera(codigoCochera);
     }
 }

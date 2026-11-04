@@ -112,7 +112,6 @@ public class LugarRepositoryMySQL implements LugarRepository {
         }
     }
 
-    //Este es el primer metodo que usamos antes SIN los slots, lo reemplazamos por "contarLugaresLibres".
     @Override
     public Lugar obtenerPrimerLugarLibre(int idCochera, LocalDateTime fechaDesde, LocalDateTime fechaHasta) {
         EntityManager em = emf.createEntityManager();
@@ -121,11 +120,15 @@ public class LugarRepositoryMySQL implements LugarRepository {
         	// se queden estancados en la entrada.
         	LocalDateTime inicioConBuffer = fechaDesde.minusMinutes(10);
         	LocalDateTime finConBuffer = fechaHasta.plusMinutes(10);
-            String jpql = "SELECT l FROM Lugar l WHERE l.cochera.codigo = :idCochera AND l.codigo NOT IN (" +
-                          "    SELECT r.lugar.codigo FROM Reserva r " +
-                          "    WHERE r.estado IN ('PENDIENTE', 'EN_CURSO', 'SALIDA_PARCIAL') " +
-                          "    AND (r.id.fechaDesde < :fechaHasta AND r.fechaHastaTentativa > :fechaDesde)" +
-                          ")";
+        	String jpql = "SELECT l FROM Lugar l WHERE l.cochera.codigo = :idCochera " +
+                    "AND LOWER(l.descripcion) != 'inactivo' " +
+                    "AND l.codigo NOT IN (" +
+                    "    SELECT r.lugar.codigo FROM Reserva r " +
+                    "    WHERE r.estado IN (estacionamiento.domain.EstadoReserva.PENDIENTE, " +
+                    "                       estacionamiento.domain.EstadoReserva.EN_CURSO, " +
+                    "                       estacionamiento.domain.EstadoReserva.SALIDA_PARCIAL) " +
+                    "    AND (r.id.fechaDesde < :fechaHasta AND r.fechaHastaTentativa > :fechaDesde)" +
+                    ")";
                           
             TypedQuery<Lugar> query = em.createQuery(jpql, Lugar.class);
             query.setParameter("idCochera", idCochera); // Filtro crucial porque sino podemos filtrar por otras cocheras o todas.
@@ -150,13 +153,16 @@ public class LugarRepositoryMySQL implements LugarRepository {
 			LocalDateTime inicioConBuffer = fechaDesde.minusMinutes(10);
 	        LocalDateTime finConBuffer = fechaHasta.plusMinutes(10);
 	        
-	        String jpql = "SELECT COUNT(l) FROM Lugar l WHERE l.cochera.codigo = :idCochera AND l.codigo NOT IN (" +
-	                      "    SELECT r.lugar.codigo FROM Reserva r " +
-	                      "    WHERE r.estado IN (estacionamiento.domain.EstadoReserva.PENDIENTE, " +
-	                      "                       estacionamiento.domain.EstadoReserva.EN_CURSO, " +
-	                      "                       estacionamiento.domain.EstadoReserva.SALIDA_PARCIAL) " +
-	                      "    AND (r.id.fechaDesde < :fechaHasta AND r.fechaHastaTentativa > :fechaDesde)" +
-	                      ")";
+	        String jpql = "SELECT COUNT(l) FROM Lugar l WHERE l.cochera.codigo = :idCochera " +
+                    "AND LOWER(l.descripcion) != 'inactivo' " +
+                    "AND l.codigo NOT IN (" +
+                    "    SELECT r.lugar.codigo FROM Reserva r " +
+                    "    WHERE r.estado IN (estacionamiento.domain.EstadoReserva.PENDIENTE, " +
+                    "                       estacionamiento.domain.EstadoReserva.EN_CURSO, " +
+                    "                       estacionamiento.domain.EstadoReserva.SALIDA_PARCIAL) " +
+                    "    AND (r.id.fechaDesde < :fechaHasta AND r.fechaHastaTentativa > :fechaDesde)" +
+                    ")";
+	        
 	        TypedQuery<Long> query = em.createQuery(jpql, Long.class);
 	        query.setParameter("idCochera", idCochera);
 	        query.setParameter("fechaDesde", inicioConBuffer);
@@ -167,5 +173,20 @@ public class LugarRepositoryMySQL implements LugarRepository {
 		}finally {
 			em.close();
 		}
+	}
+	
+	@Override
+	public List<Lugar> obtenerPorCochera(int codigoCochera) {
+	    EntityManager em = emf.createEntityManager();
+	    try {
+	        String jpql = "SELECT l FROM Lugar l JOIN FETCH l.cochera " +
+	                      "WHERE l.cochera.codigo = :codCochera " +
+	                      "ORDER BY l.numeroPiso ASC, l.codigo ASC";
+	        return em.createQuery(jpql, Lugar.class)
+	                 .setParameter("codCochera", codigoCochera)
+	                 .getResultList();
+	    } finally {
+	        em.close();
+	    }
 	}
 }

@@ -22,6 +22,7 @@
         <class>estacionamiento.domain.PrecioHistoricoTP</class>
         <class>estacionamiento.domain.PrecioHistoricoTV</class>
         <class>estacionamiento.domain.TipoVehiculo</class>
+        <class>estacionamiento.domain.AsignacionCochera</class>
         <class>estacionamiento.domain.claves.BeneficioId</class>
         <class>estacionamiento.domain.claves.HistoricoSalidasId</class>
         <class>estacionamiento.domain.claves.LugarTipoEstadiaId</class>
@@ -30,6 +31,7 @@
         <class>estacionamiento.domain.claves.PrecioHistoricoTVId</class>
         <class>estacionamiento.domain.claves.ReservaId</class>
         <class>estacionamiento.domain.claves.SuscripcionId</class>
+        <class>estacionamiento.domain.claves.AsignacionCocheraId</class>
         
         <properties>
             <!-- Conexión a MySQL -->

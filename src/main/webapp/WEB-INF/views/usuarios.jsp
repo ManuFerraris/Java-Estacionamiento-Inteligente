@@ -2,6 +2,8 @@
 <%@ page import="java.util.List" %>
 <%@ page import="estacionamiento.domain.Usuario" %>
 <%@ page import="estacionamiento.domain.RolesUsuario" %>
+<%@ page import="estacionamiento.domain.Cochera" %>
+<%@ page import="estacionamiento.domain.AsignacionCochera" %>
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -15,12 +17,20 @@
 
 	<%@ include file="navbar.jsp" %>
 	
-    <div class="container-fluid mt-5 px-4">
-        <h1 class="mb-4 text-secondary">Administración de Usuarios</h1>
+    <% 
+        List<Usuario> lista = (List<Usuario>) request.getAttribute("listaUsuarios");
+        List<Cochera> listaCocheras = (List<Cochera>) request.getAttribute("listaCocheras");
+        List<AsignacionCochera> asignacionesActivas = (List<AsignacionCochera>) request.getAttribute("asignacionesActivas");
+    %>
+
+    <div class="container-fluid mt-5 px-4 mb-5">
+        <h1 class="mb-4 text-secondary">Administración de Usuarios y Personal</h1>
 
         <div class="row">
-            <!-- COLUMNA IZQUIERDA: Formulario de Alta/Edición -->
+            <!-- COLUMNA IZQUIERDA: Formulario de Alta/Edición + Gestión de Encargados -->
             <div class="col-lg-4 col-md-12">
+                
+                <!-- 1. TARJETA ALTA/EDICIÓN DE USUARIO -->
                 <div class="card shadow-sm mb-4 border-0">
                     <div class="card-header bg-primary text-white">
                         <h5 class="mb-0" id="tituloFormulario"><i class="bi bi-person-plus-fill me-2"></i>Registrar Nuevo Usuario</h5>
@@ -48,13 +58,29 @@
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <label for="rol" class="form-label text-muted fw-bold">Rol</label>
-                                    <select class="form-select" id="rol" name="rol" required>
+                                    <select class="form-select" id="rol" name="rol" required onchange="verificarRolEncargado()">
                                         <option value="" disabled selected>Seleccione un rol...</option>
                                         <% for (RolesUsuario r : RolesUsuario.values()) { %>
                                             <option value="<%= r.name() %>"><%= r.name() %></option>
                                         <% } %>
                                     </select>
                                 </div>
+                            </div>
+
+                            <!-- Desplegable dinámico: Solo visible si eligen rol ENCARGADO al crear -->
+                            <div class="mb-3 d-none p-3 bg-info bg-opacity-10 border border-info rounded-3" id="divCocheraInicial">
+                                <label for="codigoCocheraInicial" class="form-label text-dark fw-bold mb-1">
+                                    <i class="bi bi-building-check me-1 text-primary"></i>Asignar Cochera de Trabajo (Opcional)
+                                </label>
+                                <select class="form-select" id="codigoCocheraInicial" name="codigoCocheraInicial">
+                                    <option value="">-- Asignar más tarde --</option>
+                                    <% if (listaCocheras != null) {
+                                        for (Cochera c : listaCocheras) { %>
+                                            <option value="<%= c.getCodigo() %>"><%= c.getNombre() %> (<%= c.getDireccion() %>)</option>
+                                    <%  }
+                                       } %>
+                                </select>
+                                <div class="form-text small">Se registrará con fecha de inicio de hoy.</div>
                             </div>
 
                             <div class="row">
@@ -82,11 +108,11 @@
                             <div class="row">
                                 <div class="col-md-6 mb-3">
                                     <label for="numeroTelefono" class="form-label text-muted fw-bold">Teléfono</label>
-                                    <input type="tel" class="form-control" id="numeroTelefono" name="numeroTelefono">
+                                    <input type="tel" class="form-control" id="numeroTelefono" name="numeroTelefono" required>
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <label for="direccion" class="form-label text-muted fw-bold">Dirección</label>
-                                    <input type="text" class="form-control" id="direccion" name="direccion">
+                                    <input type="text" class="form-control" id="direccion" name="direccion" required>
                                 </div>
                             </div>
                             
@@ -99,11 +125,53 @@
                         </form>
                     </div>
                 </div>
+
+                <!-- 2. NUEVA TARJETA: ASIGNACIÓN DE COCHERAS A ENCARGADOS -->
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-dark text-white">
+                        <h5 class="mb-0"><i class="bi bi-building-gear me-2 text-warning"></i>Asignar Encargado a Cochera</h5>
+                    </div>
+                    <div class="card-body">
+                        <form action="<%= request.getContextPath() %>/usuarios" method="POST">
+                            <input type="hidden" name="accion" value="asignarCochera">
+                            <div class="mb-3">
+                                <label class="form-label text-muted small fw-bold">Seleccionar Encargado Activo</label>
+                                <select class="form-select" name="numeroUsuario" required>
+                                    <option value="" disabled selected>Elija un encargado...</option>
+                                    <% if (lista != null) {
+                                        for (Usuario u : lista) {
+                                            if (u.getRol() == RolesUsuario.ENCARGADO && u.getFechaBaja() == null) { %>
+                                                <option value="<%= u.getNumero() %>"><%= u.getApellido() %>, <%= u.getNombre() %> (<%= u.getNombreUsuario() %>)</option>
+                                    <%      }
+                                        }
+                                       } %>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label text-muted small fw-bold">Cochera Municipal Destino</label>
+                                <select class="form-select" name="codigoCochera" required>
+                                    <option value="" disabled selected>Elija una cochera...</option>
+                                    <% if (listaCocheras != null) {
+                                        for (Cochera c : listaCocheras) { %>
+                                            <option value="<%= c.getCodigo() %>"><%= c.getNombre() %> - <%= c.getDireccion() %></option>
+                                    <%  }
+                                       } %>
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-warning w-100 fw-bold text-dark">
+                                <i class="bi bi-link-45deg me-1"></i>Vincular a Cochera
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
             </div>
 
-            <!-- COLUMNA DERECHA: Tabla con el listado -->
+            <!-- COLUMNA DERECHA: Tabla de Usuarios + Tabla de Asignaciones Activas -->
             <div class="col-lg-8 col-md-12">
-                <div class="card shadow-sm border-0">
+                
+                <!-- Tabla 1: Listado de Usuarios -->
+                <div class="card shadow-sm border-0 mb-4">
                     <div class="card-header bg-white border-bottom">
                         <h5 class="mb-0 text-dark"><i class="bi bi-people-fill me-2"></i>Listado de Usuarios</h5>
                     </div>
@@ -121,15 +189,18 @@
                             </thead>
                             <tbody class="align-middle">
                                 <%
-                                    List<Usuario> lista = (List<Usuario>) request.getAttribute("listaUsuarios");
                                     if (lista != null && !lista.isEmpty()) {
                                         for (Usuario u : lista) {
+                                            String badgeRol = "bg-info text-dark";
+                                            if (u.getRol() == RolesUsuario.ADMIN) badgeRol = "bg-dark text-white";
+                                            else if (u.getRol() == RolesUsuario.TRABAJADOR) badgeRol = "bg-primary text-white";
+                                            else if (u.getRol() == RolesUsuario.ENCARGADO) badgeRol = "bg-warning text-dark";
                                 %>
                                             <tr>
                                                 <td class="ps-3 fw-bold text-secondary"><%= u.getNumero() %></td>
                                                 <td>
                                                     <span class="fw-semibold text-primary d-block"><%= u.getNombreUsuario() %></span>
-                                                    <span class="badge bg-info text-dark mt-1"><%= u.getRol() != null ? u.getRol().name() : "CLIENTE" %></span>
+                                                    <span class="badge <%= badgeRol %> mt-1"><%= u.getRol() != null ? u.getRol().name() : "CLIENTE" %></span>
                                                 </td>
                                                 <td><%= u.getApellido() %>, <%= u.getNombre() %></td>
                                                 <td>
@@ -192,31 +263,99 @@
                         </table>
                     </div>
                 </div>
+
+                <!-- Tabla 2: Encargados en Cocheras (Asignaciones Activas N a M) -->
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0 text-dark"><i class="bi bi-pin-map-fill me-2 text-warning"></i>Plantel de Encargados por Cochera (Activos)</h5>
+                    </div>
+                    <div class="card-body p-0 table-responsive">
+                        <table class="table table-hover mb-0 align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="ps-3">Cochera Municipal</th>
+                                    <th>Encargado Asignado</th>
+                                    <th>Desde Fecha</th>
+                                    <th class="text-center">Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% if (asignacionesActivas != null && !asignacionesActivas.isEmpty()) {
+                                    for (AsignacionCochera asig : asignacionesActivas) { %>
+                                        <tr>
+                                            <td class="ps-3">
+                                                <div class="fw-bold text-dark"><%= asig.getCochera().getNombre() %></div>
+                                                <div class="small text-muted"><%= asig.getCochera().getDireccion() %></div>
+                                            </td>
+                                            <td>
+                                                <span class="fw-semibold"><%= asig.getUsuario().getApellido() %>, <%= asig.getUsuario().getNombre() %></span>
+                                                <span class="badge bg-light text-secondary border ms-1"><%= asig.getUsuario().getNombreUsuario() %></span>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-success bg-opacity-10 text-success border border-success">
+                                                    <i class="bi bi-calendar-check me-1"></i><%= asig.getId().getFechaDesde() %>
+                                                </span>
+                                            </td>
+                                            <td class="text-center">
+                                                <form action="<%= request.getContextPath() %>/usuarios" method="POST" class="m-0">
+                                                    <input type="hidden" name="accion" value="finalizarAsignacion">
+                                                    <input type="hidden" name="numeroUsuario" value="<%= asig.getId().getNumeroUsuario() %>">
+                                                    <input type="hidden" name="codigoCochera" value="<%= asig.getId().getCodigoCochera() %>">
+                                                    <button type="submit" class="btn btn-outline-danger btn-sm" 
+                                                            title="Finalizar asignación en esta cochera"
+                                                            onclick="return confirm('¿Finalizar la asignación de este encargado en la cochera?');">
+                                                        <i class="bi bi-box-arrow-right me-1"></i>Desvincular
+                                                    </button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                <%  }
+                                   } else { %>
+                                    <tr>
+                                        <td colspan="4" class="text-center text-muted py-4">
+                                            No hay encargados asignados a cocheras actualmente.
+                                        </td>
+                                    </tr>
+                                <% } %>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
             </div>
         </div>
     </div>
 
     <% 
-	 	// 1. Leemos los mensajes desde la sesión (no desde el request)
-	    String error = (String) session.getAttribute("error");
-	    String exito = (String) session.getAttribute("exito");
-	    
-	    // 2. Limpiamos la sesión inmediatamente para que el mensaje se muestre UNA sola vez
-	    if (error != null) session.removeAttribute("error");
-	    if (exito != null) session.removeAttribute("exito");
+        String error = (String) session.getAttribute("error");
+        String exito = (String) session.getAttribute("exito");
+        if (error != null) session.removeAttribute("error");
+        if (exito != null) session.removeAttribute("exito");
     %>
     
     <script>
-        // Validación frontend para que las contraseñas coincidan
+        function verificarRolEncargado() {
+            const rolSelect = document.getElementById('rol');
+            const accionForm = document.getElementById('accionForm').value;
+            const divCochera = document.getElementById('divCocheraInicial');
+            
+            // Mostramos el selector de cochera inicial si están creando un ENCARGADO
+            if (accionForm === 'crear' && rolSelect.value === 'ENCARGADO') {
+                divCochera.classList.remove('d-none');
+            } else {
+                divCochera.classList.add('d-none');
+                document.getElementById('codigoCocheraInicial').value = '';
+            }
+        }
+
         document.getElementById('formUsuario').addEventListener('submit', function(event) {
             let pass = document.getElementById('contrasenia').value;
             let conf = document.getElementById('confirmarContrasenia').value;
             let accion = document.getElementById('accionForm').value;
 
-            // Si es creación, o si es edición y escribieron algo en la contraseña
             if (accion === 'crear' || pass.trim() !== '') {
                 if (pass !== conf) {
-                    event.preventDefault(); // Detiene el envío del formulario
+                    event.preventDefault();
                     Swal.fire({
                         icon: 'warning',
                         title: 'Contraseñas no coinciden',
@@ -240,7 +379,8 @@
             document.getElementById('numeroTelefono').value = telefono;
             document.getElementById('direccion').value = direccion;
             
-            // Lógica de contraseñas en edición
+            verificarRolEncargado();
+            
             document.getElementById('contrasenia').required = false;
             document.getElementById('confirmarContrasenia').required = false;
             document.getElementById('helpContrasenia').style.display = 'block';
@@ -268,6 +408,8 @@
             document.getElementById('direccion').value = '';
             document.getElementById('contrasenia').value = '';
             document.getElementById('confirmarContrasenia').value = '';
+            
+            verificarRolEncargado();
             
             document.getElementById('contrasenia').required = true;
             document.getElementById('confirmarContrasenia').required = true;
