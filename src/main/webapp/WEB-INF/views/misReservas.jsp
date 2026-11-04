@@ -174,6 +174,7 @@
                         </form>
                     </div>
                 </div>
+                
                 <!-- NUEVA TARJETA: Pagos Pendientes de Reservas (Señas, Saldos o Multas) -->
                 <div class="card border-0 shadow-sm rounded-4 border-start border-warning border-4 mt-4">
                     <div class="card-body p-4">
@@ -190,8 +191,12 @@
                                     // Solo revisamos reservas activas (no canceladas ni ausentes)
                                     if (res.getEstado() != EstadoReserva.CANCELADA && res.getEstado() != EstadoReserva.NO_PRESENTADO) {
                                         
-                                        // 1. ¿Tiene la SEÑA pendiente? (Ej: cerró MP sin pagar al reservar)
-                                        if (res.getPagoSenia() != null && res.getPagoSenia().getEstado() == estacionamiento.domain.EstadoPago.PENDIENTE) {
+                                        // 1. ¿Tiene la SEÑA pendiente y NO está aprobada?
+                                        boolean seniaPendiente = res.getPagoSenia() != null && 
+                                                                 res.getPagoSenia().getEstado() != null && 
+                                                                 res.getPagoSenia().getEstado() == estacionamiento.domain.EstadoPago.PENDIENTE;
+                                        
+                                        if (seniaPendiente) {
                                             tienePagosPendientes = true;
                                             String conceptoSenia = "Seña Reserva - " + res.getVehiculo().getPatente();
                         %>
@@ -212,8 +217,12 @@
                                             </div>
                         <%              } 
                                         
-                                        // 2. ¿Tiene el SALDO DE ESTADÍA o MULTA pendiente?
-                                        if (res.getPagoSaldo() != null && res.getPagoSaldo().getEstado() == estacionamiento.domain.EstadoPago.PENDIENTE) {
+                                        // 2. ¿Tiene el SALDO DE ESTADÍA o MULTA pendiente y NO está aprobado?
+                                        boolean saldoPendiente = res.getPagoSaldo() != null && 
+                                                                 res.getPagoSaldo().getEstado() != null && 
+                                                                 res.getPagoSaldo().getEstado() == estacionamiento.domain.EstadoPago.PENDIENTE;
+
+                                        if (saldoPendiente) {
                                             tienePagosPendientes = true;
                                             String conceptoSaldo = "Saldo Estadía - " + res.getVehiculo().getPatente();
                         %>

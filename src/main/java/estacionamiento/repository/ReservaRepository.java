@@ -13,4 +13,5 @@ public interface ReservaRepository {
 	Reserva buscarPorClave(ReservaId claveCompuesta);
 	public List<Reserva> buscarReservasPendientesSinPagoCompleto(LocalDateTime limiteTiempo);
 	List<Reserva> buscarPorUsuario(Integer numeroUsuario);
+	List<Reserva> obtenerActivasPorCochera(int codigoCochera);
 }

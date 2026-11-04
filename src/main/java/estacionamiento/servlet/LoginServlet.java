@@ -62,11 +62,14 @@ public class LoginServlet extends HttpServlet {
     }
     
     private void redirigirSegunRol(Usuario u, HttpServletRequest request, HttpServletResponse response) throws IOException {
-        if (u.getRol() == RolesUsuario.ADMIN || u.getRol() == RolesUsuario.TRABAJADOR) {
-            // Los empleados van a la gestión de usuarios por defecto (por ahora para probar, luego al menu).
+    	if (u.getRol() == RolesUsuario.ADMIN || u.getRol() == RolesUsuario.TRABAJADOR) {
+            // Empleados administrativos de la municipalidad
             response.sendRedirect(request.getContextPath() + "/dashboard-oficina");
+        } else if (u.getRol() == RolesUsuario.ENCARGADO) {
+            // Operador físico de la cochera
+            response.sendRedirect(request.getContextPath() + "/panel-encargado");
         } else {
-            // El cliente va a su portal
+            // Ciudadano / Cliente
             response.sendRedirect(request.getContextPath() + "/inicio-user");
         }
     }

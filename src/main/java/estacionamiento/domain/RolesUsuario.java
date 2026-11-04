@@ -1,7 +1,8 @@
 package estacionamiento.domain;
 
 public enum RolesUsuario {
-	ADMIN,
-	TRABAJADOR,
-	CLIENTE
+	ADMIN, // Administrador municipal
+	TRABAJADOR, // Trabajador municipal
+	CLIENTE, // Cualquier persona que quiere estacionar
+	ENCARGADO // El trabajador en la cochera
 }

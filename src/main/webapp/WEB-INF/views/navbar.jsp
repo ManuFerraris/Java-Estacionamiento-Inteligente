@@ -146,6 +146,19 @@
                 </li>
             <% } %>
             
+            <%-- ENLACES EXCLUSIVOS PARA ENCARGADO O ADMIN --%>
+            <% if (usuarioSesion.getRol() == RolesUsuario.ADMIN || usuarioSesion.getRol() == RolesUsuario.ENCARGADO) { %>
+                <li class="nav-item px-3 mt-3">
+                    <h6 class="text-secondary text-uppercase small fw-bold px-3 mb-2">Mi Puesto / Barrera</h6>
+                </li>
+                <li class="nav-item px-3 mb-1">
+                    <a class="nav-link px-3 py-2 rounded-3 text-warning <%= uriActual.endsWith("/panel-encargado") ? "active bg-warning text-dark fw-bold" : "" %>" 
+                       href="<%= request.getContextPath() %>/panel-encargado">
+                        <i class="bi bi-bar-chart-line-fill me-2"></i>Mi Puesto
+                    </a>
+                </li>
+            <% } %>
+            
             <%-- ENLACES PARA EL CIUDADANO (CLIENTE) --%>
             <% if (usuarioSesion.getRol() == RolesUsuario.CLIENTE) { %>
                 <li class="nav-item px-3 mb-1">

@@ -61,4 +61,9 @@ public class LugarService {
         lugar.setDescripcion("Inactivo");
         lugarRepository.actualizar(codigo, lugar);
     }
+    
+    public List<Lugar> obtenerLugaresPorCochera(int codigoCochera) {
+    	return lugarRepository.obtenerPorCochera(codigoCochera);
+    }
+    
 }

@@ -2,6 +2,8 @@ package estacionamiento.servlet;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.mercadopago.client.payment.PaymentClient;
@@ -26,11 +28,36 @@ public class WebhookMercadoPagoServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
     private PagoService pagoService;
     private PagoSuscripcionService pagoSuscripcionService;
+    private String mpAccessToken;
     
     @Override
     public void init() throws ServletException {
         this.pagoService = new PagoService(new PagoRepositoryMySQL());
         this.pagoSuscripcionService = new PagoSuscripcionService(new PagoSuscripcionRepositoryMySQL());
+        
+        try {
+            Properties props = new Properties();
+            try (InputStream input = getClass().getClassLoader().getResourceAsStream("config.properties")) {
+                if (input != null) {
+                    props.load(input);
+                    this.mpAccessToken = props.getProperty("mercadopago.access.token");
+                }
+            }
+            
+            // Para producción: Cuando subamos la app a un servidor real podemos implementar las variables .env:
+            String envToken = System.getenv("MP_ACCESS_TOKEN");
+            if (envToken != null && !envToken.trim().isEmpty()) {
+                this.mpAccessToken = envToken;
+            }
+
+            if (this.mpAccessToken == null || this.mpAccessToken.trim().isEmpty()) {
+                System.err.println("[ADVERTENCIA WEBHOOK] No se encontró el Access Token de Mercado Pago en la configuración.");
+            }
+            
+        } catch (Exception e) {
+            System.err.println("[ERROR WEBHOOK] No se pudo cargar el archivo de configuración.");
+            e.printStackTrace();
+        }
     }
     
     @Override
@@ -89,7 +116,7 @@ public class WebhookMercadoPagoServlet extends HttpServlet {
                 System.out.println("[WEBHOOK] Procesando Orden Comercial para extraer el pago asociado...");
                 com.mercadopago.client.merchantorder.MerchantOrderClient orderClient = new com.mercadopago.client.merchantorder.MerchantOrderClient();
                 MPRequestOptions options = MPRequestOptions.builder()
-                        .accessToken("APP_USR-713702972657291-090815-59d577f977930b4ffdd43d2e1a5ff00d-1997921995")
+                        .accessToken(this.mpAccessToken)
                         .build();
                 
                 com.mercadopago.resources.merchantorder.MerchantOrder order = orderClient.get(Long.parseLong(paymentIdStr), options);
@@ -111,7 +138,7 @@ public class WebhookMercadoPagoServlet extends HttpServlet {
                 
                 PaymentClient client = new PaymentClient();
                 MPRequestOptions options = MPRequestOptions.builder()
-                        .accessToken("APP_USR-713702972657291-090815-59d577f977930b4ffdd43d2e1a5ff00d-1997921995")
+                        .accessToken(this.mpAccessToken)
                         .build();
                 
                 Payment payment = client.get(paymentId, options);

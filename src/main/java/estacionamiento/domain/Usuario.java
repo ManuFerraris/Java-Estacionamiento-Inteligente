@@ -63,6 +63,9 @@ public class Usuario {
     @OneToMany(mappedBy = "usuario", targetEntity = Vehiculo.class)
     private List<Vehiculo> misVehiculos;
     
+    @OneToMany(mappedBy = "usuario", targetEntity = AsignacionCochera.class)
+    private List<AsignacionCochera> asignacionesCochera;
+    
 	public Usuario() {
 	}
 
@@ -192,4 +195,13 @@ public class Usuario {
 	public void setMisVehiculos(List<Vehiculo> misVehiculos) {
 		this.misVehiculos = misVehiculos;
 	}
+	
+	public List<AsignacionCochera> getAsignacionesCochera() {
+		return asignacionesCochera;
+	}
+
+	public void setAsignacionesCochera(List<AsignacionCochera> asignacionesCochera) {
+		this.asignacionesCochera = asignacionesCochera;
+	}
+
 }
