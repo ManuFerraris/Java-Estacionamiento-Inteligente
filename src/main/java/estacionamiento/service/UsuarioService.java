@@ -41,6 +41,11 @@ public class UsuarioService {
             throw new IllegalArgumentException("Se debe proporcionar un correo electrónico válido.");
         }
         
+        // VALIDACIÓN DE EMAIL ÚNICO
+        if (usuarioRepository.buscarPorMail(nuevoUsuario.getMail()) != null) {
+            throw new IllegalArgumentException("El correo electrónico ingresado ya se encuentra asociado a otra cuenta.");
+        }
+        
         // Validar el correo de recuperación (opcional, pero si viene, debe ser válido)
         if (nuevoUsuario.getMailRecuperacion() != null && !nuevoUsuario.getMailRecuperacion().trim().isEmpty()) {
         	if (!nuevoUsuario.getMailRecuperacion().contains("@")) {
@@ -153,6 +158,15 @@ public class UsuarioService {
 	    if (esNuloOBlanco(usuarioAActualizar.getMail()) || !usuarioAActualizar.getMail().contains("@")) {
 	        throw new IllegalArgumentException("Se debe proporcionar un correo electrónico válido.");
 	    }
+	    
+	    // VALIDACIÓN DE EMAIL ÚNICO (PARA ACTUALIZAR)
+	    Usuario usuarioExistenteConEmail = usuarioRepository.buscarPorMail(usuarioAActualizar.getMail());
+        
+        // Si encontramos un usuario con ese mail, y su ID/número NO es el del usuario que estamos editando:
+        if (usuarioExistenteConEmail != null && !usuarioExistenteConEmail.getNumero().equals(numero)) {
+            throw new IllegalArgumentException("El correo electrónico ingresado ya se encuentra asociado a otra cuenta.");
+        }
+        
 	    if (usuarioAActualizar.getMailRecuperacion() != null && !usuarioAActualizar.getMailRecuperacion().trim().isEmpty()) {
 	        if (!usuarioAActualizar.getMailRecuperacion().contains("@")) {
 	            throw new IllegalArgumentException("El correo de recuperación proporcionado no es válido.");
@@ -203,4 +217,8 @@ public class UsuarioService {
 		Usuario usuarioRefrescado = usuarioRepository.buscarUsuarioConReservas(idUsuario);
 		return usuarioRefrescado.getReservas();
 	}
-}
+	
+	public boolean existeUsuario(String nombreUsuario) throws Exception {
+	    Usuario u = usuarioRepository.buscarPorNombreUsuario(nombreUsuario);
+	    return u != null;
+	}}
