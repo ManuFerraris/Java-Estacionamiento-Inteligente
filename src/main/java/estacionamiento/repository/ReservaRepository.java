@@ -1,5 +1,6 @@
 package estacionamiento.repository;
 import java.util.List;
+
 import estacionamiento.domain.Reserva;
 import estacionamiento.domain.claves.ReservaId;
 
@@ -14,4 +15,5 @@ public interface ReservaRepository {
 	public List<Reserva> buscarReservasPendientesSinPagoCompleto(LocalDateTime limiteTiempo);
 	List<Reserva> buscarPorUsuario(Integer numeroUsuario);
 	List<Reserva> obtenerActivasPorCochera(int codigoCochera);
+    List<Reserva> obtenerTodasLasActivas();
 }

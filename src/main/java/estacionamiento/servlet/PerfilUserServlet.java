@@ -5,7 +5,7 @@ import java.io.IOException;
 import estacionamiento.domain.Usuario;
 import estacionamiento.repository.mysql.UsuarioRepositoryMySQL;
 import estacionamiento.service.UsuarioService;
-
+import estacionamiento.util.AppLogger;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -26,7 +26,11 @@ public class PerfilUserServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        request.getRequestDispatcher("/WEB-INF/views/perfilUser.jsp").forward(request, response);
+        try {
+        	request.getRequestDispatcher("/WEB-INF/views/perfilUser.jsp").forward(request, response);
+        }catch(Exception e) {
+        	AppLogger.error("Error inesperado al actualizar el perfil del usuario: ", e);
+        }
     }
 
     @Override
@@ -76,7 +80,7 @@ public class PerfilUserServlet extends HttpServlet {
             session.setAttribute("error", e.getMessage());
         } catch (Exception e) {
             session.setAttribute("error", "Error inesperado al actualizar el perfil.");
-            e.printStackTrace();
+            AppLogger.error("Error inesperado al actualizar el perfil del usuario: " + (usuarioLogueado != null ? usuarioLogueado.getNombreUsuario() : "Desconocido"), e);
         }
 
         response.sendRedirect(request.getContextPath() + "/perfil-user");

@@ -6,7 +6,7 @@ import estacionamiento.domain.RolesUsuario;
 import estacionamiento.domain.Usuario;
 import estacionamiento.repository.mysql.UsuarioRepositoryMySQL;
 import estacionamiento.service.UsuarioService;
-
+import estacionamiento.util.AppLogger;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -56,6 +56,7 @@ public class LoginServlet extends HttpServlet {
             request.setAttribute("error", e.getMessage());
             request.getRequestDispatcher("/WEB-INF/views/login.jsp").forward(request, response);
         } catch (Exception e) {
+        	AppLogger.error("Error inesperado en el servidor al intentar autenticar al usuario: " + nombreUsuario, e);
             request.setAttribute("error", "Error inesperado en el servidor.");
             request.getRequestDispatcher("/WEB-INF/views/login.jsp").forward(request, response);
         }

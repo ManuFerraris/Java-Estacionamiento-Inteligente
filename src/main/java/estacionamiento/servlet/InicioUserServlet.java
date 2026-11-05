@@ -1,6 +1,8 @@
 package estacionamiento.servlet;
 
 import java.io.IOException;
+
+import estacionamiento.util.AppLogger;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -14,7 +16,14 @@ public class InicioUserServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        // A futuro, aca podemos cargaremos la lista de suscripciones activas del cliente para mostrarlas en el dashboard
-        request.getRequestDispatcher("/WEB-INF/views/inicioUser.jsp").forward(request, response);
+    	try {
+            // A futuro, acá cargaremos la lista de suscripciones activas del cliente para mostrarlas en el dashboard
+            request.getRequestDispatcher("/WEB-INF/views/inicioUser.jsp").forward(request, response);
+            
+        } catch (Exception e) {
+            AppLogger.error("Error crítico al cargar el dashboard del usuario (inicio-user)", e);
+            request.setAttribute("error", "Error al cargar la página principal.");
+            request.getRequestDispatcher("/WEB-INF/views/inicioUser.jsp").forward(request, response);
+        }
     }
 }

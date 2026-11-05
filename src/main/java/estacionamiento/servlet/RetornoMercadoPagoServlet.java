@@ -2,6 +2,7 @@ package estacionamiento.servlet;
 
 import java.io.IOException;
 import estacionamiento.service.PagoService;
+import estacionamiento.util.AppLogger;
 import estacionamiento.repository.mysql.PagoRepositoryMySQL;
 
 import jakarta.servlet.ServletException;
@@ -23,37 +24,43 @@ public class RetornoMercadoPagoServlet extends HttpServlet {
 	
 	@Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        
-        String externalReference = request.getParameter("external_reference");
-        String status = request.getParameter("collection_status"); // "approved", "pending", "rejected"
+        try {
+            String externalReference = request.getParameter("external_reference");
+            String status = request.getParameter("collection_status"); // "approved", "pending", "rejected"
 
-        if (externalReference != null) {
-            
-            // SUSCRIPCIÓN
-            if (externalReference.startsWith("SUSC_")) {
-                if ("approved".equals(status)) {
-                    request.getSession().setAttribute("exito", "¡Pago de suscripción aprobado y acreditado!");
-                } else {
-                    request.getSession().setAttribute("error", "El pago de la suscripción está pendiente o fue rechazado.");
-                }
+            if (externalReference != null) {
                 
-                response.sendRedirect(request.getContextPath() + "/mis-suscripciones-user");
-                return; 
-            } 
-            
-            // RESERVA DE COCHERA
-            else if (externalReference.startsWith("RES_") || externalReference.matches("\\d+")) {
-                if ("approved".equals(status)) {
-                    request.getSession().setAttribute("exito", "¡Reserva pagada con éxito!");
-                } else {
-                    request.getSession().setAttribute("error", "El pago de la reserva falló.");
-                }
+                // SUSCRIPCIÓN
+                if (externalReference.startsWith("SUSC_")) {
+                    if ("approved".equals(status)) {
+                        request.getSession().setAttribute("exito", "¡Pago de suscripción aprobado y acreditado!");
+                    } else {
+                        request.getSession().setAttribute("error", "El pago de la suscripción está pendiente o fue rechazado.");
+                    }
+                    
+                    response.sendRedirect(request.getContextPath() + "/mis-suscripciones-user");
+                    return; 
+                } 
                 
-                response.sendRedirect(request.getContextPath() + "/mis-reservas-user");
-                return;
+                // RESERVA DE COCHERA
+                else if (externalReference.startsWith("RES_") || externalReference.matches("\\d+")) {
+                    if ("approved".equals(status)) {
+                        request.getSession().setAttribute("exito", "¡Reserva pagada con éxito!");
+                    } else {
+                        request.getSession().setAttribute("error", "El pago de la reserva falló.");
+                    }
+                    
+                    response.sendRedirect(request.getContextPath() + "/mis-reservas-user");
+                    return;
+                }
             }
-        }
 
-        response.sendRedirect(request.getContextPath() + "/index.jsp");
+            response.sendRedirect(request.getContextPath() + "/index.jsp");
+            
+        } catch (Exception e) {
+            AppLogger.error("Error al procesar el retorno de pago desde la pasarela de Mercado Pago", e);
+            request.getSession().setAttribute("error", "Ocurrió un error al procesar el estado de tu pago.");
+            response.sendRedirect(request.getContextPath() + "/index.jsp");
+        }
     }
 }

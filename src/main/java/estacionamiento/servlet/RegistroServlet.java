@@ -5,7 +5,7 @@ import java.io.IOException;
 import estacionamiento.domain.Usuario;
 import estacionamiento.repository.mysql.UsuarioRepositoryMySQL;
 import estacionamiento.service.UsuarioService;
-
+import estacionamiento.util.AppLogger;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -64,6 +64,7 @@ public class RegistroServlet extends HttpServlet {
             request.setAttribute("error", e.getMessage());
             request.getRequestDispatcher("/WEB-INF/views/registro.jsp").forward(request, response);
         } catch (Exception e) {
+        	AppLogger.error("Error inesperado al intentar registrar un nuevo usuario cliente", e);
             request.setAttribute("error", "Ocurrió un error inesperado. Intente nuevamente.");
             request.getRequestDispatcher("/WEB-INF/views/registro.jsp").forward(request, response);
         }

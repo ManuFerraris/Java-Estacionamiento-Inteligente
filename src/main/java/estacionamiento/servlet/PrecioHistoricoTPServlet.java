@@ -6,7 +6,7 @@ import estacionamiento.repository.mysql.PrecioHistoricoTPRepositoryMySQL;
 import estacionamiento.repository.mysql.TipoPlanRepositoryMySQL;
 import estacionamiento.service.PrecioHistoricoTPService;
 import estacionamiento.service.TipoPlanService;
-
+import estacionamiento.util.AppLogger;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -48,6 +48,7 @@ public class PrecioHistoricoTPServlet extends HttpServlet {
             
             request.getRequestDispatcher("/WEB-INF/views/preciosHistoricosTP.jsp").forward(request, response);
         } catch(Exception e) {
+        	AppLogger.error("Error al cargar la pantalla de precios históricos de planes", e);
             request.setAttribute("error", "Error al cargar la pantalla: " + e.getMessage());
             request.getRequestDispatcher("/WEB-INF/views/preciosHistoricosTP.jsp").forward(request, response);
         }
@@ -102,6 +103,7 @@ public class PrecioHistoricoTPServlet extends HttpServlet {
             request.setAttribute("error", "Error de validación: " + e.getMessage());
             doGet(request, response);
         } catch(Exception e) {
+        	AppLogger.error("Error inesperado en la gestión de precios históricos de planes (acción: " + request.getParameter("accion") + ")", e);
             request.setAttribute("error", "Error inesperado: " + e.getMessage());
             doGet(request, response);
         }

@@ -29,6 +29,7 @@ import estacionamiento.repository.mysql.PagoRepositoryMySQL;
 
 import estacionamiento.service.ReservaService;
 import estacionamiento.service.SuscripcionService;
+import estacionamiento.util.AppLogger;
 import estacionamiento.service.MercadoPagoService;
 import estacionamiento.service.PagoService;
 import estacionamiento.service.NotificacionService;
@@ -135,7 +136,7 @@ public class MisReservasServlet extends HttpServlet {
             request.getRequestDispatcher("/WEB-INF/views/misReservas.jsp").forward(request, response);
             
         } catch (Exception e) {
-            e.printStackTrace();
+        	AppLogger.error("Fallo crítico al intentar cargar el panel de reservas del usuario " + cliente.getNombre(), e);
             request.setAttribute("error", "Error al cargar la información del módulo de reservas.");
             request.getRequestDispatcher("/WEB-INF/views/misReservas.jsp").forward(request, response);
         }
@@ -260,7 +261,7 @@ public class MisReservasServlet extends HttpServlet {
             return;
         } catch (Exception e) {
             request.getSession().setAttribute("error", "Ocurrió un error inesperado al procesar la reserva.");
-            e.printStackTrace();
+            AppLogger.error("Fallo crítico al intentar cargar el panel de reservas del usuario " + cliente.getNombre(), e);
             response.sendRedirect(request.getContextPath() + "/mis-reservas-user");
             return;
         }

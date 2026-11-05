@@ -35,6 +35,12 @@ public class Reserva {
     
     @Column(name="fecha_hasta_real")
 	private LocalDateTime fechaHastaReal;
+    
+    @Column(name="notifiacion_tolerancia_enviada", nullable = false)
+	private boolean alertaToleranciaEnviada;
+    
+    @Column(name="notifiacion_vencimiento_enviada", nullable = false)
+	private boolean alertaVencimientoEnviada;
 	
     @Enumerated(EnumType.STRING)
     @Column(name="estado", columnDefinition = "VARCHAR(30)", nullable=false)
@@ -185,5 +191,23 @@ public class Reserva {
 				+ estado + ", pagoSenia=" + pagoSenia + ", pagoSaldo=" + pagoSaldo + ", lugar=" + lugar + ", senia="
 				+ senia + "]";
 	}
+
+	public boolean isAlertaToleranciaEnviada() {
+		return alertaToleranciaEnviada;
+	}
+
+	public void setAlertaToleranciaEnviada(boolean alertaToleranciaEnviada) {
+		this.alertaToleranciaEnviada = alertaToleranciaEnviada;
+	}
+
+	public boolean isAlertaVencimientoEnviada() {
+		return alertaVencimientoEnviada;
+	}
+
+	public void setAlertaVencimientoEnviada(boolean alertaVencimientoEnviada) {
+		this.alertaVencimientoEnviada = alertaVencimientoEnviada;
+	}
+	
+	
 	
 }

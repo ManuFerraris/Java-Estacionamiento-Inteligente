@@ -6,7 +6,7 @@ import java.util.List;
 import estacionamiento.domain.TipoVehiculo;
 import estacionamiento.repository.mysql.TipoVehiculoRepositoryMySQL;
 import estacionamiento.service.TipoVehiculoService;
-
+import estacionamiento.util.AppLogger;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -49,7 +49,7 @@ public class TipoVehiculoServlet extends HttpServlet {
             ).forward(request, response);
 
         } catch (Exception e) {
-
+        	AppLogger.error("Error al cargar la lista de tipos de vehículo", e);
             request.setAttribute(
                     "error",
                     "Error al cargar los tipos de vehículo: "
@@ -169,7 +169,7 @@ public class TipoVehiculoServlet extends HttpServlet {
             doGet(request, response);
 
         } catch (Exception e) {
-
+        	AppLogger.error("Error inesperado en la gestión de tipos de vehículo (acción: " + request.getParameter("accion") + ")", e);
             request.setAttribute(
                     "error",
                     "Error inesperado: " + e.getMessage()

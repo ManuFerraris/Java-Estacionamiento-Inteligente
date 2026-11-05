@@ -14,6 +14,7 @@ import estacionamiento.domain.PrecioHistoricoTV;
 import estacionamiento.domain.TipoVehiculo;
 import estacionamiento.service.PrecioHistoricoTVService;
 import estacionamiento.service.TipoVehiculoService;
+import estacionamiento.util.AppLogger;
 import estacionamiento.repository.mysql.TipoVehiculoRepositoryMySQL;
 import estacionamiento.repository.mysql.PrecioHistoricoTVRepositoryMySQL;
 
@@ -37,6 +38,7 @@ public class PreciosHistoricosTVServlet extends HttpServlet {
             request.setAttribute("listaPrecios", listaPrecios);
 
         } catch (Exception e) {
+        	AppLogger.error("Error al cargar los datos para precios históricos de tipos de vehículo", e);
             request.setAttribute("error", "Error al cargar los datos: " + e.getMessage());
         }
     	
@@ -74,6 +76,7 @@ public class PreciosHistoricosTVServlet extends HttpServlet {
         } catch (NumberFormatException e) {
             request.setAttribute("error", "Error en el formato de los números ingresados.");
         } catch (Exception e) {
+        	AppLogger.error("Error inesperado en la operación de precios históricos de vehículos (acción: " + accion + ")", e);
             request.setAttribute("error", "Error en la operación: " + e.getMessage());
         }
 

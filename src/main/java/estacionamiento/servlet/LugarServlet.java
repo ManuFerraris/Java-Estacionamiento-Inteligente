@@ -12,6 +12,7 @@ import estacionamiento.domain.Cochera;
 import estacionamiento.domain.Lugar;
 import estacionamiento.domain.TipoEstadia;
 import estacionamiento.service.LugarService;
+import estacionamiento.util.AppLogger;
 import estacionamiento.service.CocheraService;
 import estacionamiento.repository.mysql.LugarRepositoryMySQL;
 import estacionamiento.repository.mysql.CocheraRepositoryMySQL;
@@ -60,6 +61,7 @@ public class LugarServlet extends HttpServlet {
             
             request.getRequestDispatcher("/WEB-INF/views/lugares.jsp").forward(request, response);
         } catch (Exception e) {
+        	AppLogger.error("Error al cargar los datos para la gestión de lugares", e);
             request.setAttribute("error", "Error al cargar datos: " + e.getMessage());
             request.getRequestDispatcher("/WEB-INF/views/lugares.jsp").forward(request, response);
         }
@@ -109,6 +111,7 @@ public class LugarServlet extends HttpServlet {
         } catch (IllegalArgumentException e) {
             request.getSession().setAttribute("error", "Error de validación: " + e.getMessage());
         } catch (Exception e) {
+        	AppLogger.error("Error inesperado en la gestión de lugares (acción: " + accion + ")", e);
             request.getSession().setAttribute("error", "Error inesperado: " + e.getMessage());
         }
         

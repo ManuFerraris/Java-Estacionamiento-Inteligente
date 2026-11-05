@@ -12,6 +12,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import estacionamiento.domain.TipoEstadia;
 import estacionamiento.repository.TipoEstadiaRepository;
 import estacionamiento.repository.mysql.TipoEstadiaRepositoryMySQL;
+import estacionamiento.util.AppLogger;
 
 @WebServlet("/tipoEstadia")
 public class TipoEstadiaServlet extends HttpServlet {
@@ -35,6 +36,7 @@ public class TipoEstadiaServlet extends HttpServlet {
             
             request.getRequestDispatcher("/WEB-INF/views/tipoEstadia.jsp").forward(request, response);
         } catch (Exception e) {
+        	AppLogger.error("Error al cargar la lista de tipos de estadía", e);
             request.setAttribute("error", "Error al cargar los datos: " + e.getMessage());
             request.getRequestDispatcher("/WEB-INF/views/tipoEstadia.jsp").forward(request, response);
         }
@@ -60,6 +62,7 @@ public class TipoEstadiaServlet extends HttpServlet {
                 request.setAttribute("exito", "Tipo de estadía registrado correctamente.");
             }
         } catch (Exception e) {
+        	AppLogger.error("Error inesperado en la gestión de tipos de estadía (acción: " + accion + ")", e);
             request.setAttribute("error", "Error en la operación: " + e.getMessage());
         }
         

@@ -10,6 +10,7 @@ import java.io.IOException;
 
 import estacionamiento.domain.RolesUsuario;
 import estacionamiento.domain.Usuario;
+import estacionamiento.util.AppLogger;
 
 @WebServlet("/terminal-barrera")
 public class TerminalBarreraServlet extends HttpServlet {
@@ -31,7 +32,13 @@ public class TerminalBarreraServlet extends HttpServlet {
             return;
         }
 
-        // Despachamos al JSP de la terminal
-        request.getRequestDispatcher("/WEB-INF/views/controlBarrera.jsp").forward(request, response);
+        try {
+            // Despachamos al JSP de la terminal
+            request.getRequestDispatcher("/WEB-INF/views/controlBarrera.jsp").forward(request, response);
+        } catch (Exception e) {
+            AppLogger.error("Error al cargar la terminal de control de barrera", e);
+            request.setAttribute("error", "Error al cargar la vista de control.");
+            request.getRequestDispatcher("/WEB-INF/views/controlBarrera.jsp").forward(request, response);
+        }
     }
 }

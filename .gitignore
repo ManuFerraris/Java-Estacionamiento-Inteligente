@@ -1,2 +1,23 @@
-/target/
+# Archivos compilados y empaquetados
+target/
+*.class
+*.war
+*.ear
+*.jar
+
+# Configuraciones de IDEs
+.idea/
+.eclipse/
+.metadata/
+.classpath
+.project
+.settings/
+*.iml
+
+# Archivos de configuración sensibles (¡Clave para el TP!)
 src/main/resources/config.properties
+src/main/resources/application.properties
+
+# Logs y temporales
+*.log
+hs_err_pid*

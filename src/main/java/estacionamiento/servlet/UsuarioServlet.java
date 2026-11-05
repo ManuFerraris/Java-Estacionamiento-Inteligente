@@ -10,7 +10,7 @@ import estacionamiento.repository.mysql.CocheraRepositoryMySQL;
 import estacionamiento.repository.mysql.UsuarioRepositoryMySQL;
 import estacionamiento.service.AsignacionCocheraService;
 import estacionamiento.service.UsuarioService;
-
+import estacionamiento.util.AppLogger;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -49,7 +49,7 @@ public class UsuarioServlet extends HttpServlet {
 			
 			request.getRequestDispatcher("/WEB-INF/views/usuarios.jsp").forward(request, response);
 		} catch (Exception e) {
-			e.printStackTrace();
+			AppLogger.error("Error al cargar la lista de usuarios y asignaciones", e);
 			request.getSession().setAttribute("error", "Error al cargar los datos: " + e.getMessage());
 			request.getRequestDispatcher("/WEB-INF/views/usuarios.jsp").forward(request, response);
 		}
@@ -161,7 +161,7 @@ public class UsuarioServlet extends HttpServlet {
 			request.getSession().setAttribute("error", e.getMessage());
 			response.sendRedirect(request.getContextPath() + "/usuarios");
 		} catch (Exception e) {
-			e.printStackTrace();
+			AppLogger.error("Error inesperado en la gestión de usuarios (acción: " + request.getParameter("accion") + ")", e);
 			request.getSession().setAttribute("error", "Error inesperado: " + e.getMessage());
 			response.sendRedirect(request.getContextPath() + "/usuarios");
 		}
