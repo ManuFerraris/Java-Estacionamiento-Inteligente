@@ -151,7 +151,25 @@
 				        </div>
 				    </a>
 				</div>
-
+             
+              <!-- NUEVA TARJETA: Estadísticas de Demanda -->
+              <div class="col-md-4">
+    				<a href="<%= request.getContextPath() %>/reporte-demanda-oficina"
+       				 class="text-decoration-none">
+        			  <div class="card border-0 shadow-sm rounded-4 h-100 hover-card">
+            			<div class="card-body p-4 text-center">
+               				 <div class="bg-info bg-opacity-10 rounded-circle d-inline-flex p-3 mb-3">
+                   				 <i class="bi bi-bar-chart-line-fill fs-1 text-info"></i>
+               			  </div>
+              			  <h5 class="text-dark fw-bold mb-2">Estadísticas de Demanda</h5>
+               			 <p class="text-muted small mb-0">
+                		    Consulta la demanda por tipo de vehículo y el estado de las reservas.
+               			 </p>
+         		    </div>
+       		    </div>
+   		     </a>
+	      </div>
+             
             <%-- VISTA EXCLUSIVA PARA CLIENTES --%>
             <% } else { %>
 
