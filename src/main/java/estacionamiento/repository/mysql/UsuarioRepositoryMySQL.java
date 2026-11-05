@@ -138,5 +138,20 @@ public class UsuarioRepositoryMySQL implements UsuarioRepository{
 			em.close();
 		}
 	}
+	
+	@Override
+	public Usuario buscarPorMail(String mail) {
+		EntityManager em = emf.createEntityManager();
+        try {
+            // Buscamos al usuario por su mail y verificamos que no esté dado de baja
+            return em.createQuery("SELECT u FROM Usuario u WHERE u.mail = :mail AND u.fechaBaja IS NULL", Usuario.class)
+                     .setParameter("mail", mail)
+                     .getSingleResult();
+        } catch (jakarta.persistence.NoResultException e) {
+            return null;
+        } finally {
+            em.close();
+        }
+	}
 
 }

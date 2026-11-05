@@ -81,4 +81,10 @@ public class UsuarioRepositoryMemoria implements UsuarioRepository {
 		// TODO Auto-generated method stub
 		return null;
 	 }
+
+	 @Override
+	 public Usuario buscarPorMail(String mail) {
+		// TODO Auto-generated method stub
+		return null;
+	 }
 }
