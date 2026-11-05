@@ -15,7 +15,7 @@ import estacionamiento.repository.mysql.PagoRepositoryMySQL;
 import estacionamiento.repository.mysql.PagoSuscripcionRepositoryMySQL;
 import estacionamiento.service.PagoService;
 import estacionamiento.service.PagoSuscripcionService;
-
+import estacionamiento.util.AppLogger;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -55,8 +55,7 @@ public class WebhookMercadoPagoServlet extends HttpServlet {
             }
             
         } catch (Exception e) {
-            System.err.println("[ERROR WEBHOOK] No se pudo cargar el archivo de configuración.");
-            e.printStackTrace();
+        	AppLogger.error("No se pudo cargar el archivo de configuración o el token de Mercado Pago", e);
         }
     }
     
@@ -169,8 +168,7 @@ public class WebhookMercadoPagoServlet extends HttpServlet {
             }
             
         } catch (Exception e) {
-            System.err.println("\n[WEBHOOK] EXCEPCIÓN FATAL DETECTADA:");
-            e.printStackTrace();
+        	AppLogger.error("Excepción fatal detectada durante la intercepción y procesamiento del Webhook de Mercado Pago", e);
         }
         System.out.println("========== [WEBHOOK] FIN DE INTERCEPCIÓN ==========\n");
     }

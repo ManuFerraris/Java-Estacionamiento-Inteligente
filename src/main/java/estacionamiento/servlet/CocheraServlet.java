@@ -3,7 +3,7 @@ package estacionamiento.servlet;
 import estacionamiento.domain.Cochera;
 import estacionamiento.repository.mysql.CocheraRepositoryMySQL;
 import estacionamiento.service.CocheraService;
-
+import estacionamiento.util.AppLogger;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -50,6 +50,7 @@ private static final long serialVersionUID = 1L;
             request.getRequestDispatcher("/WEB-INF/views/cocheras.jsp").forward(request, response);
             
         } catch (Exception e) {
+        	AppLogger.error("Error al cargar la lista de cocheras", e);
             request.setAttribute("error", "Error al cargar las cocheras: " + e.getMessage());
             request.getRequestDispatcher("/WEB-INF/views/cocheras.jsp").forward(request, response);
         }
@@ -105,6 +106,7 @@ private static final long serialVersionUID = 1L;
             request.setAttribute("error", "Error de validación: " + e.getMessage());
             doGet(request, response);
         } catch (Exception e) {
+        	AppLogger.error("Error inesperado en la gestión de cocheras (acción: " + request.getParameter("accion") + ")", e);
             request.setAttribute("error", "Error inesperado: " + e.getMessage());
             doGet(request, response);
         }

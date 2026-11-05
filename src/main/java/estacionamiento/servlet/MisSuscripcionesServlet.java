@@ -17,6 +17,7 @@ import estacionamiento.repository.mysql.PagoSuscripcionRepositoryMySQL;
 import estacionamiento.service.SuscripcionService;
 import estacionamiento.service.PagoSuscripcionService;
 import estacionamiento.service.TipoPlanService;
+import estacionamiento.util.AppLogger;
 import estacionamiento.service.MercadoPagoService;
 
 import jakarta.servlet.ServletException;
@@ -66,6 +67,7 @@ public class MisSuscripcionesServlet extends HttpServlet {
             request.getRequestDispatcher("/WEB-INF/views/misSuscripciones.jsp").forward(request, response);
             
         } catch (Exception e) {
+        	AppLogger.error("Error crítico al cargar la información de suscripciones para el usuario: " + (cliente != null ? cliente.getNombre() : "Desconocido"), e);
             request.setAttribute("error", "Error al cargar la información: " + e.getMessage());
             request.getRequestDispatcher("/WEB-INF/views/misSuscripciones.jsp").forward(request, response);
         }
@@ -101,8 +103,8 @@ public class MisSuscripcionesServlet extends HttpServlet {
         } catch (IllegalArgumentException e) {
             request.getSession().setAttribute("error", e.getMessage());
         } catch (Exception e) {
+        	AppLogger.error("Error inesperado procesando la operación de suscripción (acción: " + accion + ")", e);
             request.getSession().setAttribute("error", "Error inesperado procesando la operación.");
-            e.printStackTrace();
         }
         
         // Redireccion para evitar el reenvío de formulario (Patrón PRG)

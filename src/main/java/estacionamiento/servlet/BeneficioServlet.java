@@ -7,7 +7,7 @@ import estacionamiento.repository.mysql.BeneficioRepositoryMySQL;
 import estacionamiento.repository.mysql.TipoPlanRepositoryMySQL;
 import estacionamiento.service.BeneficioService;
 import estacionamiento.service.TipoPlanService;
-
+import estacionamiento.util.AppLogger;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -47,6 +47,7 @@ public class BeneficioServlet extends HttpServlet {
     		
     		request.getRequestDispatcher("/WEB-INF/views/beneficios.jsp").forward(request, response);
     	}catch(Exception e) {
+    		AppLogger.error("Error al cargar los beneficios para este tipo de plan", e);
     		request.setAttribute("error", "Error al cargar los beneficios para este tipo de plan: " + e.getMessage());
             request.getRequestDispatcher("/WEB-INF/views/beneficios.jsp").forward(request, response);
     	}
@@ -112,6 +113,7 @@ public class BeneficioServlet extends HttpServlet {
 			request.setAttribute("error", "Error de validación: " + e.getMessage());
             doGet(request, response);
 		}catch(Exception e) {
+			AppLogger.error("Error inesperado en la gestión de beneficios (acción: " + request.getParameter("accion") + ")", e);
 			request.setAttribute("error", "Error inesperado: " + e.getMessage());
             doGet(request, response);
 		}

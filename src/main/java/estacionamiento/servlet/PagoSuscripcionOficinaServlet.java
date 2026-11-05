@@ -7,7 +7,7 @@ import estacionamiento.domain.PagoSuscripcion;
 import estacionamiento.domain.TipoPago;
 import estacionamiento.repository.mysql.PagoSuscripcionRepositoryMySQL;
 import estacionamiento.service.PagoSuscripcionService;
-
+import estacionamiento.util.AppLogger;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -38,6 +38,7 @@ public class PagoSuscripcionOficinaServlet extends HttpServlet {
             request.setAttribute("listaPagos", pagos);
             request.getRequestDispatcher("/WEB-INF/views/pagosSuscripcionesOficina.jsp").forward(request, response);
         } catch (Exception e) {
+        	AppLogger.error("Error al cargar la lista de comprobantes de pago de suscripciones", e);
             request.setAttribute("error", "Error al cargar los comprobantes: " + e.getMessage());
             request.getRequestDispatcher("/WEB-INF/views/pagosSuscripcionesOficina.jsp").forward(request, response);
         }
@@ -69,6 +70,7 @@ public class PagoSuscripcionOficinaServlet extends HttpServlet {
             request.setAttribute("error", "Validación: " + e.getMessage());
             doGet(request, response);
         } catch (Exception e) {
+        	AppLogger.error("Error inesperado en la gestión de pagos de suscripciones (acción: " + request.getParameter("accion") + ")", e);
             request.setAttribute("error", "Error inesperado: " + e.getMessage());
             doGet(request, response);
         }

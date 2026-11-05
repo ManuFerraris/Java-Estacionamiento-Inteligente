@@ -10,6 +10,7 @@ import java.io.IOException;
 
 import estacionamiento.domain.RolesUsuario;
 import estacionamiento.domain.Usuario;
+import estacionamiento.util.AppLogger;
 
 @WebServlet("/reportes-oficina")
 public class ReportesDashboardServlet extends HttpServlet {
@@ -25,13 +26,16 @@ public class ReportesDashboardServlet extends HttpServlet {
             return;
         }
         
+        try {
         Usuario usuarioSesion = (Usuario) session.getAttribute("usuarioLogueado");
 
 	     if (usuarioSesion.getRol() != RolesUsuario.ADMIN) {
 	         response.sendError(HttpServletResponse.SC_FORBIDDEN, "Acceso denegado: Área exclusiva de Administración.");
 	         return;
 	     }
-
-        request.getRequestDispatcher("/WEB-INF/views/dashboardReportes.jsp").forward(request, response);
+	     request.getRequestDispatcher("/WEB-INF/views/dashboardReportes.jsp").forward(request, response);
+        }catch(Exception e) {
+        	AppLogger.error("Error al cargar el dashboard de reportes administrativos", e);
+        }
     }
 }

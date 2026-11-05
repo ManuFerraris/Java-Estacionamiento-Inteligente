@@ -28,6 +28,7 @@ import estacionamiento.repository.mysql.TipoPlanRepositoryMySQL;
 import estacionamiento.repository.mysql.UsuarioRepositoryMySQL;
 import estacionamiento.repository.mysql.VehiculoRepositoryMySQL;
 import estacionamiento.service.*;
+import estacionamiento.util.AppLogger;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -136,7 +137,7 @@ public class PanelEncargadoServlet extends HttpServlet {
             request.getRequestDispatcher("/WEB-INF/views/panelEncargado.jsp").forward(request, response);
 
         } catch (Exception e) {
-            e.printStackTrace();
+        	AppLogger.error("Error al cargar el panel operativo del encargado", e);
             request.setAttribute("error", "Error al cargar el panel operativo: " + e.getMessage());
             request.getRequestDispatcher("/WEB-INF/views/panelEncargado.jsp").forward(request, response);
         }
@@ -229,7 +230,7 @@ public class PanelEncargadoServlet extends HttpServlet {
             request.getSession().setAttribute("error", e.getMessage());
             response.sendRedirect(request.getContextPath() + "/panel-encargado" + sufijoRedirect);
         } catch (Exception e) {
-            e.printStackTrace();
+        	AppLogger.error("Error en la operación de cochera (acción: " + accion + ")", e);
             request.getSession().setAttribute("error", "Error en la operación de cochera: " + e.getMessage());
             response.sendRedirect(request.getContextPath() + "/panel-encargado" + sufijoRedirect);
         }

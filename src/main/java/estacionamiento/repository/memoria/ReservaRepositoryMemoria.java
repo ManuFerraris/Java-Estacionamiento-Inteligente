@@ -62,4 +62,10 @@ public class ReservaRepositoryMemoria implements ReservaRepository {
 		// TODO Auto-generated method stub
 		return null;
 	}
+
+	@Override
+	public List<Reserva> obtenerTodasLasActivas() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

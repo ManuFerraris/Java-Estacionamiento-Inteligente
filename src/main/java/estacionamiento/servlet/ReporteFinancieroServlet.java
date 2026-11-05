@@ -17,6 +17,7 @@ import estacionamiento.domain.RolesUsuario;
 import estacionamiento.domain.Usuario;
 import estacionamiento.dto.FilaReporteFinancieroDTO;
 import estacionamiento.service.ReporteFinancieroService;
+import estacionamiento.util.AppLogger;
 import estacionamiento.repository.mysql.ReporteFinancieroRepository;
 
 @WebServlet("/reporte-financiero-oficina")
@@ -74,6 +75,7 @@ public class ReporteFinancieroServlet extends HttpServlet {
             request.setAttribute("filtroOrigen", origenFiltro);
 
         } catch (Exception e) {
+        	AppLogger.error("Error al procesar y generar el reporte financiero", e);
             request.setAttribute("error", "Error al procesar el reporte: " + e.getMessage());
         }
 

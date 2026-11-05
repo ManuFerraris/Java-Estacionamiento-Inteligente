@@ -14,6 +14,7 @@ import estacionamiento.domain.TipoEstadia;
 import estacionamiento.domain.LugarTipoEstadia;
 import estacionamiento.repository.mysql.LugarRepositoryMySQL;
 import estacionamiento.repository.mysql.TipoEstadiaRepositoryMySQL;
+import estacionamiento.util.AppLogger;
 import estacionamiento.repository.mysql.LugarTipoEstadiaRepositoryMySQL;
 
 @WebServlet("/LugarTipoEstadiaServlet")
@@ -67,6 +68,7 @@ public class LugarTipoEstadiaServlet extends HttpServlet {
                 request.getSession().setAttribute("exito", "El tipo de estadía se asignó al lugar correctamente.");
             }
         } catch (Exception e) {
+        	AppLogger.error("Error inesperado al intentar asignar tipo de estadía al lugar", e);
             request.getSession().setAttribute("error", "Error al asignar estadía: " + e.getMessage());
         }
         

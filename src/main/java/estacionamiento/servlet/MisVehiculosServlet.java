@@ -9,7 +9,7 @@ import estacionamiento.domain.Vehiculo;
 
 import estacionamiento.repository.mysql.TipoVehiculoRepositoryMySQL;
 import estacionamiento.repository.mysql.VehiculoRepositoryMySQL;
-
+import estacionamiento.util.AppLogger;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -44,6 +44,7 @@ public class MisVehiculosServlet extends HttpServlet {
             request.getRequestDispatcher("/WEB-INF/views/misVehiculos.jsp").forward(request, response);
             
         } catch (Exception e) {
+        	AppLogger.error("Error al cargar la flota de vehículos para el usuario: " + (cliente != null ? cliente.getNombre() : "Desconocido"), e);
             request.setAttribute("error", "Error al cargar tu flota de vehículos.");
             request.getRequestDispatcher("/WEB-INF/views/misVehiculos.jsp").forward(request, response);
         }
@@ -90,8 +91,8 @@ public class MisVehiculosServlet extends HttpServlet {
         } catch (IllegalArgumentException e) {
             request.getSession().setAttribute("error", e.getMessage());
         } catch (Exception e) {
+        	AppLogger.error("Error inesperado en la gestión de vehículos (acción: " + accion + ") para el usuario " + (cliente != null ? cliente.getNombre() : "Desconocido"), e);
             request.getSession().setAttribute("error", "Ocurrió un error inesperado. Verifica si el vehículo tiene reservas asociadas.");
-            e.printStackTrace();
         }
         
         response.sendRedirect(request.getContextPath() + "/mis-vehiculos-user");

@@ -3,7 +3,7 @@ package estacionamiento.servlet;
 import estacionamiento.domain.TipoPlan;
 import estacionamiento.repository.mysql.TipoPlanRepositoryMySQL;
 import estacionamiento.service.TipoPlanService;
-
+import estacionamiento.util.AppLogger;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -37,6 +37,7 @@ public class TipoPlanServlet extends HttpServlet {
             request.setAttribute("listaTiposPlan", planes);
             request.getRequestDispatcher("/WEB-INF/views/tipoPlanes.jsp").forward(request, response);
         } catch(Exception e) {
+        	AppLogger.error("Error al cargar la lista de tipos de planes", e);
             request.setAttribute("error", "Error al cargar los planes: " + e.getMessage());
             request.getRequestDispatcher("/WEB-INF/views/tipoPlanes.jsp").forward(request, response);
         }
@@ -92,6 +93,7 @@ public class TipoPlanServlet extends HttpServlet {
             request.setAttribute("error", "Error de validación: " + e.getMessage());
             doGet(request, response);
         } catch (Exception e) {
+        	AppLogger.error("Error inesperado en la gestión de tipos de planes (acción: " + request.getParameter("accion") + ")", e);
             request.setAttribute("error", "Error inesperado: " + e.getMessage());
             doGet(request, response);
         }

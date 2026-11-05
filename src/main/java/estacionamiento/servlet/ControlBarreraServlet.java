@@ -20,6 +20,7 @@ import estacionamiento.repository.mysql.VehiculoRepositoryMySQL;
 
 import estacionamiento.service.ReservaService;
 import estacionamiento.service.SuscripcionService;
+import estacionamiento.util.AppLogger;
 import estacionamiento.service.NotificacionService;
 
 import jakarta.servlet.ServletException;
@@ -128,9 +129,9 @@ public class ControlBarreraServlet extends HttpServlet {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             out.print("{\"error\": \"" + e.getMessage() + "\"}");
         } catch (Exception e) {
+        	AppLogger.error("Error interno en el servidor de cocheras durante la operación de barrera", e);
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             out.print("{\"error\": \"Error interno en el servidor de cocheras.\"}");
-            e.printStackTrace();
         } finally {
             out.flush();
         }

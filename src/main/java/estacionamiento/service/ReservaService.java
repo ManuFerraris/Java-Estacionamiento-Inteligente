@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.Duration;
 import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 import estacionamiento.domain.EstadoPago;
@@ -178,6 +179,7 @@ public class ReservaService {
         }
         
         reserva.setEstado(EstadoReserva.EN_CURSO);
+        notificacionService.enviarAvisoIngreso(reserva.getUsuario(), reserva.getVehiculo(), LocalDateTime.now(ZoneId.of("America/Argentina/Buenos_Aires")));
         reservaRepository.actualizar(reserva);
     }
 
@@ -285,9 +287,6 @@ public class ReservaService {
         String descTipo = reserva.getTipoEstadia().getDescripcion().toLowerCase();
         BigDecimal costoTotalEstadia;
 
-        // Opcional: Podés cobrar las 12/24 horas lineales, o hacerle un precio promocional
-        // (ej. que Media Estadía de 12hs cobre el equivalente a 10hs, y 24hs cobre 18hs).
-        // Acá te lo dejo lineal (horasTotales * valorHora), pero podés cambiar el multiplicador si querés promoción:
         if (descTipo.contains("media") || descTipo.contains("12")) {
             costoTotalEstadia = valorHoraConBeneficio.multiply(BigDecimal.valueOf(10));
         } else if (descTipo.contains("completa") || descTipo.contains("24")) {
@@ -320,6 +319,47 @@ public class ReservaService {
         }
     }
     
+    public void notificarAlertasDeTiempo() {
+        LocalDateTime ahora = LocalDateTime.now(ZoneId.of("America/Argentina/Buenos_Aires"));
+        
+        // Traemos TODAS las reservas activas para evaluarlas
+        List<Reserva> reservasActivas = reservaRepository.obtenerTodasLasActivas(); 
+
+        for (Reserva r : reservasActivas) {
+            
+            // A) ALERTA DE EXPIRACIÓN INMINENTE (Para reservas PENDIENTES que no llegaron)
+            if (r.getEstado() == EstadoReserva.PENDIENTE) {
+                // Ejemplo: La tolerancia es de 20 min. Queremos avisar a los 15 min de demora.
+                LocalDateTime horaAvisoTolerancia = r.getId().getFechaDesde().plusMinutes(15);
+                
+                // Si pasaron 15 minutos, todavía no se canceló, y aún no le avisamos...
+                if (ahora.isAfter(horaAvisoTolerancia) && ahora.isBefore(r.getId().getFechaDesde().plusMinutes(20))) {
+                    // Acá deberías tener un flag booleano en Reserva (ej. 'alertaToleranciaEnviada') 
+                    // para no mandarle 50 mails en esos 5 minutos.
+                    if (!r.isAlertaToleranciaEnviada()) {
+                        notificacionService.enviarAlertaTolerancia(r.getUsuario(), r);
+                        r.setAlertaToleranciaEnviada(true);
+                        reservaRepository.actualizar(r);
+                    }
+                }
+            }
+            
+            // B) RECORDATORIO DE ESTADÍA (Para reservas EN_CURSO "Por Hora")
+            if (r.getEstado() == EstadoReserva.EN_CURSO && r.getTipoEstadia().getDescripcion().equalsIgnoreCase("Por Hora")) {
+                // Queremos avisar 15 minutos antes de que venza su hora
+                LocalDateTime horaAvisoVencimiento = r.getFechaHastaTentativa().minusMinutes(15);
+                
+                if (ahora.isAfter(horaAvisoVencimiento) && ahora.isBefore(r.getFechaHastaTentativa())) {
+                    if (!r.isAlertaVencimientoEnviada()) {
+                        notificacionService.enviarRecordatorioEstadia(r.getUsuario(), r);
+                        r.setAlertaVencimientoEnviada(true);
+                        reservaRepository.actualizar(r);
+                    }
+                }
+            }
+        }
+    }
+    
     // Módulo de envío de correos (Es un mock para futura integración con Jakarta Mail)
     // Ahora esta hardcodeado
     private void notificarCancelacion(Usuario usuario, Reserva reserva) {
@@ -330,7 +370,9 @@ public class ReservaService {
         String asunto = "Aviso Importante: Reserva Cancelada por Falta de Pago";
         String cuerpo = "Hola " + usuario.getNombre() + ",\n\n" +
                 "Te informamos que tu reserva para el vehículo " + patente + " " +
-                "programada para el " + reserva.getId().getFechaDesde() + " ha sido CANCELADA.\n\n" +
+                "programada para el " + 
+                reserva.getId().getFechaDesde().format(DateTimeFormatter.ofPattern("dd/MM/yyyy 'a las' HH:mm")) + " hs" + 
+                " ha sido CANCELADA.\n\n" +
                 "Motivo: El saldo total no fue abonado dentro de la ventana de tiempo permitida " +
                 "(hasta 60 minutos antes del ingreso).\n\n" +
                 "Por políticas de la Municipalidad, la seña abonada no es reembolsable. " +
@@ -432,6 +474,9 @@ public class ReservaService {
         pagoRepository.actualizar(deuda);
 
         confirmarSalidaFisica(reserva, LocalDateTime.now(ZoneId.of("America/Argentina/Buenos_Aires")), true);
+        
+        LocalDateTime ahora = LocalDateTime.now(ZoneId.of("America/Argentina/Buenos_Aires"));
+        notificacionService.enviarAvisoSalida(reserva.getUsuario(), reserva.getVehiculo(), ahora);
         
         return new SalidaDTO(true, BigDecimal.ZERO, "Pago registrado correctamente. Barrera abierta.");
     }

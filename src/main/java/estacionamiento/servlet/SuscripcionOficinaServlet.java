@@ -15,7 +15,7 @@ import estacionamiento.repository.mysql.UsuarioRepositoryMySQL;
 import estacionamiento.service.SuscripcionService;
 import estacionamiento.service.TipoPlanService;
 import estacionamiento.service.UsuarioService;
-
+import estacionamiento.util.AppLogger;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -69,6 +69,7 @@ public class SuscripcionOficinaServlet extends HttpServlet {
 
             request.getRequestDispatcher("/WEB-INF/views/suscripcionesOficina.jsp").forward(request, response);
         } catch (Exception e) {
+        	AppLogger.error("Error al cargar la pantalla de gestión de suscripciones de oficina", e);
             request.setAttribute("error", "Error al cargar la pantalla: " + e.getMessage());
             request.getRequestDispatcher("/WEB-INF/views/suscripcionesOficina.jsp").forward(request, response);
         }
@@ -111,6 +112,7 @@ public class SuscripcionOficinaServlet extends HttpServlet {
             request.setAttribute("error", "Error de validación: " + e.getMessage());
             doGet(request, response);
         } catch (Exception e) {
+        	AppLogger.error("Error inesperado en la gestión administrativa de suscripciones (acción: " + request.getParameter("accion") + ")", e);
             request.setAttribute("error", "Error inesperado: " + e.getMessage());
             doGet(request, response);
         }

@@ -191,4 +191,26 @@ public class ReservaRepositoryMySQL implements ReservaRepository {
 	        em.close();
 	    }
 	}
+
+	@Override
+	public List<Reserva> obtenerTodasLasActivas() {
+		EntityManager em = emf.createEntityManager();
+		try {
+			
+	        String jpql = "SELECT r FROM Reserva r " +
+	                      "LEFT JOIN FETCH r.vehiculo " +
+	                      "LEFT JOIN FETCH r.usuario " +
+	                      "LEFT JOIN FETCH r.tipoEstadia " +
+	                      "LEFT JOIN FETCH r.lugar " +
+	                      "LEFT JOIN FETCH r.pagoSenia " +
+	                      "LEFT JOIN FETCH r.pagoSaldo " +
+	                      "WHERE r.estado IN (estacionamiento.domain.EstadoReserva.PENDIENTE, " +
+	                      "                   estacionamiento.domain.EstadoReserva.EN_CURSO, " +
+	                      "                   estacionamiento.domain.EstadoReserva.SALIDA_PARCIAL) " +
+	                      "ORDER BY r.id.fechaDesde ASC";  
+	        return em.createQuery(jpql, Reserva.class).getResultList();
+	    } finally {
+	        em.close();
+	    }
+	}
 }

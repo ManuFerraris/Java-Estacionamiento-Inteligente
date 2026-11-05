@@ -3,7 +3,10 @@ package estacionamiento.service;
 import java.util.concurrent.CompletableFuture;
 
 import estacionamiento.domain.Reserva;
+import estacionamiento.domain.Usuario;
+import estacionamiento.domain.Vehiculo;
 
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 public class NotificacionService {
@@ -62,4 +65,96 @@ public class NotificacionService {
             }
         });
     }
+    
+    public void enviarAvisoIngreso(Usuario usuario, Vehiculo vehiculo, LocalDateTime fechaHora) {
+    	
+    	String correoDestino = usuario.getMail();
+        String asunto = "Seguridad MR Estacionamiento: Ingreso Registrado";
+        String cuerpo = "Hola " + usuario.getNombre() + ",\n\n" +
+                "Te informamos que el vehículo con patente " + vehiculo.getPatente() + 
+                " acaba de ingresar a nuestra cochera el " + fechaHora.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")) + ".\n\n" +
+                "Si no fuiste vos, comunicate urgente con la administración.";
+
+        // Logica de envio de jakarta
+        CompletableFuture.runAsync(() -> {
+            try {
+                System.out.println("Enviando correo en segundo plano a: " + correoDestino);
+                EmailUtil.enviarCorreo(correoDestino, asunto, cuerpo.toString());
+            } catch (Exception e) {
+                System.err.println("Error al enviar el email a " + correoDestino + ": " + e.getMessage());
+            }
+        });
+        
+        System.out.println("[EMAIL ENVIADO] " + asunto + " a " + usuario.getMail());
+    }
+
+    public void enviarAvisoSalida(Usuario usuario, Vehiculo vehiculo, LocalDateTime fechaHora) {
+    	
+    	String correoDestino = usuario.getMail();
+        String asunto = "Seguridad MR Estacionamiento: Salida Registrada";
+        String cuerpo = "Hola " + usuario.getNombre() + ",\n\n" +
+                "Te informamos que el vehículo con patente " + vehiculo.getPatente() + 
+                " se ha retirado de la cochera el " + fechaHora.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")) + ".\n\n" +
+                "¡Gracias por elegirnos!";
+
+        // Logica de envio de jakarta
+        CompletableFuture.runAsync(() -> {
+            try {
+                System.out.println("Enviando correo en segundo plano a: " + correoDestino);
+                EmailUtil.enviarCorreo(correoDestino, asunto, cuerpo.toString());
+            } catch (Exception e) {
+                System.err.println("Error al enviar el email a " + correoDestino + ": " + e.getMessage());
+            }
+        });
+        
+        System.out.println("[EMAIL ENVIADO] " + asunto + " a " + usuario.getMail());
+    }
+
+    public void enviarRecordatorioEstadia(Usuario usuario, Reserva r) {
+		String correoDestino = usuario.getMail();
+        String asunto = "Aviso MR Estacionamiento: Tu tiempo de estadía está por finalizar";
+        
+        String horaVencimiento = r.getFechaHastaTentativa().format(DateTimeFormatter.ofPattern("HH:mm"));
+        String patente = r.getVehiculo().getPatente();
+
+        String cuerpo = "Hola " + usuario.getNombre() + ",\n\n" +
+                "Te recordamos que el tiempo prepagado para tu vehículo patente " + patente + 
+                " finaliza a las " + horaVencimiento + " hs.\n\n" +
+                "Si necesitás quedarte más tiempo, recordá que podés extender tu estadía ingresando a la sección 'Mis Reservas' en nuestra aplicación para evitar recargos en la barrera de salida.\n\n" +
+                "¡Gracias por elegirnos!";
+
+        // Lógica de envío asíncrono
+        CompletableFuture.runAsync(() -> {
+            try {
+                System.out.println("Enviando correo en segundo plano a: " + correoDestino);
+                EmailUtil.enviarCorreo(correoDestino, asunto, cuerpo);
+            } catch (Exception e) {
+                System.err.println("Error al enviar el recordatorio a " + correoDestino + ": " + e.getMessage());
+            }
+        });
+	}
+
+	public void enviarAlertaTolerancia(Usuario usuario, Reserva r) {
+		String correoDestino = usuario.getMail();
+        String asunto = "Alerta MR Estacionamiento: Tu reserva está por expirar";
+        
+        String horaDesde = r.getId().getFechaDesde().format(DateTimeFormatter.ofPattern("HH:mm"));
+        String patente = r.getVehiculo().getPatente();
+        
+        String cuerpo = "Hola " + usuario.getNombre() + ",\n\n" +
+                "Notamos que aún no ingresaste al predio con tu vehículo patente " + patente + ".\n\n" +
+                "Tu horario de reserva inició a las " + horaDesde + " hs. Te avisamos que el plazo máximo de tolerancia está a punto de agotarse (restan 5 minutos).\n\n" +
+                "Si no ingresás o no extendés tu reserva desde la app antes de que finalice el tiempo, el sistema la cancelará automáticamente y se liberará el lugar.\n\n" +
+                "¡Te estamos esperando!";
+
+        // Lógica de envío asíncrono
+        CompletableFuture.runAsync(() -> {
+            try {
+                System.out.println("Enviando alerta de tolerancia a: " + correoDestino);
+                EmailUtil.enviarCorreo(correoDestino, asunto, cuerpo);
+            } catch (Exception e) {
+                System.err.println("Error al enviar alerta de tolerancia a " + correoDestino + ": " + e.getMessage());
+            }
+        });
+	}
 }
