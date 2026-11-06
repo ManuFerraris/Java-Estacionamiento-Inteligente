@@ -1,3 +1,4 @@
+
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ page import="java.util.List" %>
 <%@ page import="estacionamiento.domain.Usuario" %>
@@ -6,19 +7,24 @@
 <%@ page import="estacionamiento.domain.TipoPlan" %>
 <%@ page import="estacionamiento.domain.TipoPago" %>
 <%@ page import="estacionamiento.domain.Beneficio" %>
+
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <title>Mis Suscripciones - MR Estacionamiento</title>
+
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <style>
         .hover-card {
             transition: all 0.3s ease-in-out;
             cursor: pointer;
         }
+
         .hover-card:hover {
             transform: translateY(-5px);
             box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.15) !important;
@@ -26,163 +32,293 @@
         }
     </style>
 </head>
+
 <body class="bg-light">
 
     <%@ include file="navbar.jsp" %>
 
     <div class="container px-4 mb-5">
-        
+
         <div class="d-flex justify-content-between align-items-center mb-4 mt-3">
-            <h2 class="text-secondary fw-bold"><i class="bi bi-card-checklist me-2 text-success"></i>Mis Suscripciones</h2>
+            <h2 class="text-secondary fw-bold">
+                <i class="bi bi-card-checklist me-2 text-success"></i>Mis Suscripciones
+            </h2>
         </div>
 
-        <% 
+        <%
             String error = (String) session.getAttribute("error");
             String exito = (String) session.getAttribute("exito");
         %>
 
         <div class="row g-4">
+
             <!-- COLUMNA IZQUIERDA: Estado Actual y Pagos Pendientes -->
             <div class="col-lg-4">
-                
+
                 <!-- Tarjeta de Plan Actual -->
                 <div class="card border-0 shadow-sm rounded-4 mb-4">
+
                     <div class="card-header bg-success text-white py-3 rounded-top-4">
-                        <h5 class="mb-0"><i class="bi bi-star-fill me-2"></i>Plan Actual</h5>
+                        <h5 class="mb-0">
+                            <i class="bi bi-star-fill me-2"></i>Plan Actual
+                        </h5>
                     </div>
+
                     <div class="card-body p-4 text-center">
-                        <% 
+
+                        <%
                             Suscripcion activa = (Suscripcion) request.getAttribute("suscripcionActiva");
-                            if (activa != null) { 
+
+                            if (activa != null) {
                         %>
-                            <h3 class="fw-bold text-dark mb-1"><%= activa.getTipoPlan().getNombre() %></h3>
-                            <p class="text-muted mb-3">Vence el: <%= activa.getFechaHasta().toLocalDate() %></p>
-                            <span class="badge bg-success bg-opacity-10 text-success border border-success px-3 py-2 rounded-pill">Activa</span>
+
+                            <h3 class="fw-bold text-dark mb-1">
+                                <%= activa.getTipoPlan().getNombre() %>
+                            </h3>
+
+                            <p class="text-muted mb-3">
+                                Vence el: <%= activa.getFechaHasta().toLocalDate() %>
+                            </p>
+
+                            <span class="badge bg-success bg-opacity-10 text-success border border-success px-3 py-2 rounded-pill">
+                                Activa
+                            </span>
+
                         <% } else { %>
+
                             <i class="bi bi-slash-circle text-muted fs-1 mb-2 d-block"></i>
                             <h5 class="text-muted">Sin plan activo</h5>
-                            <p class="small text-muted mb-0">Selecciona un plan del catálogo para comenzar.</p>
+                            <p class="small text-muted mb-0">
+                                Selecciona un plan del catálogo para comenzar.
+                            </p>
+
                         <% } %>
+
                     </div>
                 </div>
 
                 <!-- Tarjeta de Pagos Pendientes -->
                 <div class="card border-0 shadow-sm rounded-4 border-start border-warning border-4">
+
                     <div class="card-body p-4">
-                        <h5 class="fw-bold text-dark mb-3"><i class="bi bi-receipt me-2 text-warning"></i>Facturas Pendientes</h5>
-                        
-                        <% 
-                            List<PagoSuscripcion> pendientes = (List<PagoSuscripcion>) request.getAttribute("pagosPendientes");
+
+                        <h5 class="fw-bold text-dark mb-3">
+                            <i class="bi bi-receipt me-2 text-warning"></i>Facturas Pendientes
+                        </h5>
+
+                        <%
+                            List<PagoSuscripcion> pendientes =
+                                (List<PagoSuscripcion>) request.getAttribute("pagosPendientes");
+
                             if (pendientes != null && !pendientes.isEmpty()) {
-                                for(PagoSuscripcion p : pendientes) {
+
+                                for (PagoSuscripcion p : pendientes) {
+
                                     String nombrePlan = p.getSuscripcion().getTipoPlan().getNombre();
                         %>
+
                             <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-3">
+
                                 <div>
                                     <h6 class="mb-0 fw-bold"><%= nombrePlan %></h6>
                                     <small class="text-muted">$ <%= p.getMonto() %></small>
                                 </div>
-                                <!-- El botón ahora envía directamente el formulario hacia Mercado Pago -->
-                                <form action="<%= request.getContextPath() %>/mis-suscripciones-user" method="POST" class="m-0">
+
+                                <form action="<%= request.getContextPath() %>/mis-suscripciones-user"
+                                      method="POST" class="m-0">
+
                                     <input type="hidden" name="accion" value="pagar">
                                     <input type="hidden" name="idPagoSuscripcion" value="<%= p.getId() %>">
+
                                     <button type="submit" class="btn btn-warning btn-sm fw-bold text-dark">
                                         <i class="bi bi-wallet2 me-1"></i>Pagar
                                     </button>
+
                                 </form>
+
                             </div>
-                        <% 
+
+                        <%
                                 }
-                            } else { 
+
+                            } else {
                         %>
-                            <p class="text-muted small mb-0"><i class="bi bi-check2-circle me-1"></i>Estás al día con tus pagos.</p>
+
+                            <p class="text-muted small mb-0">
+                                <i class="bi bi-check2-circle me-1"></i>
+                                Estás al día con tus pagos.
+                            </p>
+
                         <% } %>
-                        
+
                     </div>
                 </div>
+
             </div>
 
             <!-- COLUMNA DERECHA: Catálogo de Planes -->
             <div class="col-lg-8">
+
                 <div class="card border-0 shadow-sm rounded-4">
+
                     <div class="card-body p-4">
-                        <h5 class="fw-bold text-dark mb-4"><i class="bi bi-shop me-2 text-primary"></i>Catálogo de Planes</h5>
-                        
+
+                        <h5 class="fw-bold text-dark mb-4">
+                            <i class="bi bi-shop me-2 text-primary"></i>Catálogo de Planes
+                        </h5>
+
                         <div class="row g-3">
-                            <% 
-                                List<TipoPlan> planes = (List<TipoPlan>) request.getAttribute("listaPlanes");
+
+                            <%
+                                List<TipoPlan> planes =
+                                    (List<TipoPlan>) request.getAttribute("listaPlanes");
+
+                                boolean hayPlanesActivos = false;
+
                                 if (planes != null && !planes.isEmpty()) {
-                                    for(TipoPlan plan : planes) {
+
+                                    for (TipoPlan plan : planes) {
+
+                                        // Solamente mostramos planes que no tengan fecha de baja.
+                                        if (plan.getFechaBaja() == null) {
+
+                                            hayPlanesActivos = true;
                             %>
-                            <div class="col-md-6">
-                                <div class="card h-100 border bg-white shadow-sm hover-card">
-                                    <div class="card-body p-4 d-flex flex-column">
-                                        
-                                        <div class="text-center mb-3">
-                                            <h5 class="fw-bold text-primary mb-1"><%= plan.getNombre() %></h5>
-                                            <p class="text-muted small mb-0"><%= plan.getDetalle() %></p>
+
+                                <div class="col-md-6">
+
+                                    <div class="card h-100 border bg-white shadow-sm hover-card">
+
+                                        <div class="card-body p-4 d-flex flex-column">
+
+                                            <div class="text-center mb-3">
+
+                                                <h5 class="fw-bold text-primary mb-1">
+                                                    <%= plan.getNombre() %>
+                                                </h5>
+
+                                                <p class="text-muted small mb-0">
+                                                    <%= plan.getDetalle() %>
+                                                </p>
+
+                                            </div>
+
+                                            <div class="bg-light rounded-3 p-3 flex-grow-1 mb-4">
+
+                                                <span class="d-block small fw-bold text-secondary mb-2">
+                                                    Beneficios incluidos:
+                                                </span>
+
+                                                <ul class="list-unstyled small mb-0 text-start">
+
+                                                    <%
+                                                        if (plan.getBeneficios() != null
+                                                            && !plan.getBeneficios().isEmpty()) {
+
+                                                            for (Beneficio beneficio : plan.getBeneficios()) {
+                                                    %>
+
+                                                        <li class="mb-2 text-muted d-flex align-items-start">
+                                                            <i class="bi bi-check-circle-fill text-success me-2 mt-1"></i>
+                                                            <span><%= beneficio.getDescripcion() %></span>
+                                                        </li>
+
+                                                    <%
+                                                            }
+
+                                                        } else {
+                                                    %>
+
+                                                        <li class="text-muted small fst-italic">
+                                                            Beneficios estándar de cochera.
+                                                        </li>
+
+                                                    <% } %>
+
+                                                </ul>
+
+                                            </div>
+
+                                            <form action="<%= request.getContextPath() %>/mis-suscripciones-user"
+                                                  method="POST" class="mt-auto">
+
+                                                <input type="hidden" name="accion" value="contratar">
+                                                <input type="hidden" name="codigoPlan" value="<%= plan.getCodigo() %>">
+
+                                                <button type="submit"
+                                                        class="btn btn-outline-primary w-100 fw-bold"
+                                                        onclick="return confirm('¿Deseas dar de alta este plan? Generará una factura pendiente para hoy.');">
+
+                                                    <i class="bi bi-cart-plus me-2"></i>Seleccionar Plan
+
+                                                </button>
+
+                                            </form>
+
                                         </div>
-                                        
-                                        <div class="bg-light rounded-3 p-3 flex-grow-1 mb-4">
-                                            <span class="d-block small fw-bold text-secondary mb-2">Beneficios incluidos:</span>
-                                            <ul class="list-unstyled small mb-0 text-start">
-                                                <%
-                                                    if (plan.getBeneficios() != null && !plan.getBeneficios().isEmpty()) {
-                                                        for(Beneficio beneficio : plan.getBeneficios()) {
-                                                %>
-                                                    <li class="mb-2 text-muted d-flex align-items-start">
-                                                        <i class="bi bi-check-circle-fill text-success me-2 mt-1"></i>
-                                                        <span><%= beneficio.getDescripcion() %></span>
-                                                    </li>
-                                                <%
-                                                        }
-                                                    } else {
-                                                %>
-                                                    <li class="text-muted small fst-italic">Beneficios estándar de cochera.</li>
-                                                <%
-                                                    }
-                                                %>
-                                            </ul>
-                                        </div>
-                                        
-                                        <form action="<%= request.getContextPath() %>/mis-suscripciones-user" method="POST" class="mt-auto">
-                                            <input type="hidden" name="accion" value="contratar">
-                                            <input type="hidden" name="codigoPlan" value="<%= plan.getCodigo() %>">
-                                            <button type="submit" class="btn btn-outline-primary w-100 fw-bold" onclick="return confirm('¿Deseas dar de alta este plan? Generará una factura pendiente para hoy.');">
-                                                <i class="bi bi-cart-plus me-2"></i>Seleccionar Plan
-                                            </button>
-                                        </form>
-                                        
                                     </div>
                                 </div>
-                            </div>
-                            <% 
-                                    }
-                                } else {
+
+                            <%
+                                        } // Fin del if de plan activo
+
+                                    } // Fin del for de planes
+                                }
+
+                                if (!hayPlanesActivos) {
                             %>
+
                                 <div class="col-12 text-center py-5">
+
                                     <i class="bi bi-inbox text-muted fs-1 d-block mb-3"></i>
-                                    <h6 class="text-muted">No hay planes disponibles en este momento.</h6>
+
+                                    <h6 class="text-muted">
+                                        No hay planes disponibles en este momento.
+                                    </h6>
+
                                 </div>
+
                             <% } %>
+
                         </div>
+
                     </div>
                 </div>
+
             </div>
+
         </div>
     </div>
 
     <script>
+
         <% if (error != null) { %>
-            Swal.fire({ icon: 'error', title: 'Oops...', text: '<%= error %>' });
+
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: '<%= error %>'
+            });
+
             <% session.removeAttribute("error"); %>
+
         <% } %>
-        
+
         <% if (exito != null) { %>
-            Swal.fire({ icon: 'success', title: '¡Éxito!', text: '<%= exito %>' });
+
+            Swal.fire({
+                icon: 'success',
+                title: '¡Éxito!',
+                text: '<%= exito %>'
+            });
+
             <% session.removeAttribute("exito"); %>
+
         <% } %>
+
     </script>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
 </body>
 </html>

@@ -44,7 +44,14 @@ public class SuscripcionService {
         if (usuario == null) throw new IllegalArgumentException("El usuario seleccionado no existe.");
 
         TipoPlan plan = tipoPlanRepository.buscarPorClave(codigoPlan);
-        if (plan == null) throw new IllegalArgumentException("El tipo de plan seleccionado no existe.");
+
+        if (plan == null) {
+            throw new IllegalArgumentException("El tipo de plan seleccionado no existe.");
+        }
+
+        if (plan.getFechaBaja() != null) {
+            throw new IllegalArgumentException("No se puede asignar un plan que se encuentra dado de baja.");
+        }
 
         // 1. Verificamos que el plan tenga un precio vigente antes de hacer cualquier cosa
         PrecioHistoricoTP precioVigente = precioRepository.obtenerPrecioVigente(codigoPlan);

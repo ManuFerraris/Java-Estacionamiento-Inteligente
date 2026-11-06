@@ -53,6 +53,10 @@ public class MisSuscripcionesServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         Usuario cliente = (Usuario) request.getSession().getAttribute("usuarioLogueado");
+        if (cliente == null) {
+            response.sendRedirect(request.getContextPath() + "/login");
+            return;
+        }
 
         try {
             Suscripcion activa = suscripcionService.obtenerActivaPorUsuario(cliente.getNumero());
@@ -76,6 +80,10 @@ public class MisSuscripcionesServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         Usuario cliente = (Usuario) request.getSession().getAttribute("usuarioLogueado");
+        if (cliente == null) {
+            response.sendRedirect(request.getContextPath() + "/login");
+            return;
+        }
         String accion = request.getParameter("accion");
 
         try {

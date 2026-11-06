@@ -84,30 +84,39 @@ public class BeneficioRepositoryMySQL implements BeneficioRepository {
         }
     }
 
-    @Override
-    public void eliminar(int codTP, int numero) {
-        EntityManager em = emf.createEntityManager();
-        EntityTransaction tx = em.getTransaction();
-        
-        try {
-            tx.begin();
-            BeneficioId claveCompuesta = new BeneficioId(codTP, numero);
-            Beneficio benAEliminar = em.find(Beneficio.class, claveCompuesta);
-            
-            if (benAEliminar != null) {
-                em.remove(benAEliminar);
-                tx.commit();
-                System.out.println("MySQL: Beneficio eliminado correctamente.");
-            } else {
-                System.out.println("MySQL: El beneficio no fue encontrado para ser eliminado.");
-            }
-        } catch (Exception e) {
-            if (tx != null && tx.isActive()) tx.rollback();
-            throw e;
-        } finally {
-            em.close();
-        }
-    }
+
+		@Override
+		public void eliminar(int codTP, int numero) {
+		    EntityManager em = emf.createEntityManager();
+		    EntityTransaction tx = em.getTransaction();
+		
+		    try {
+		        tx.begin();
+		
+		        BeneficioId claveCompuesta = new BeneficioId(codTP, numero);
+		        Beneficio beneficio = em.find(Beneficio.class, claveCompuesta);
+		
+		        if (beneficio != null) {
+		            if (beneficio.getFechaBaja() == null) {
+		                beneficio.setFechaBaja(java.time.LocalDateTime.now());
+		            }
+		            tx.commit();
+		            System.out.println("MySQL: Beneficio dado de baja correctamente.");
+		        } else {
+		            throw new IllegalArgumentException(
+		                "No se encontró el beneficio para dar de baja.");
+		        }
+		
+		    } catch (Exception e) {
+		        if (tx != null && tx.isActive()) {
+		            tx.rollback();
+		        }
+		        throw e;
+		    } finally {
+		        em.close();
+		    }
+		}
+
 
     @Override
     public int obtenerProximoNumeroPorPlan(int codigoPlan) {
