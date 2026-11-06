@@ -8,6 +8,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.EntityTransaction;
 import jakarta.persistence.Persistence;
+import java.time.LocalDate;
 
 public class TipoPlanRepositoryMySQL implements TipoPlanRepository{
 	
@@ -89,22 +90,28 @@ public class TipoPlanRepositoryMySQL implements TipoPlanRepository{
 
 	@Override
 	public void eliminar(Integer codigo) {
-		EntityManager em = emf.createEntityManager();
-        EntityTransaction tx = em.getTransaction();
-        
-        try {
-        	tx.begin();
-        	TipoPlan tpAEliminar = em.find(TipoPlan.class, codigo);
-        	if(tpAEliminar != null) {
-        		em.remove(tpAEliminar);
-        		tx.commit();
-        	}
-        }catch(Exception e) {
-        	if (tx != null && tx.isActive()) tx.rollback();
-        	throw e;
-        }finally {
-        	em.close();
-        }
+	    EntityManager em = emf.createEntityManager();
+	    EntityTransaction tx = em.getTransaction();
+
+	    try {
+	        tx.begin();
+
+	        TipoPlan plan = em.find(TipoPlan.class, codigo);
+
+	        if (plan != null && plan.getFechaBaja() == null) {
+	            plan.setFechaBaja(LocalDate.now());
+	        }
+
+	        tx.commit();
+
+	    } catch (Exception e) {
+	        if (tx != null && tx.isActive()) {
+	            tx.rollback();
+	        }
+	        throw e;
+	    } finally {
+	        em.close();
+	    }
 	}
 	
 }
