@@ -62,4 +62,15 @@ private List<TipoEstadia> baseDeDatosMemoria;
 			 System.out.println("No se encontró el Tipo De Estadia para eliminar.");
 		 }
 	 }
+	 
+	 @Override
+	 public boolean tieneReservasAsociadas(int numero) {
+	     TipoEstadia tipoEstadia = buscarPorNumero(numero);
+
+	     if (tipoEstadia == null || tipoEstadia.getReservas() == null) {
+	         return false;
+	     }
+
+	     return !tipoEstadia.getReservas().isEmpty();
+	 }
 }
