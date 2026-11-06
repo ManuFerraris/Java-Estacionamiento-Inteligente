@@ -9,4 +9,5 @@ public interface TipoEstadiaRepository {
     List<TipoEstadia> obtenerTodos();
     void actualizar(int numero, TipoEstadia tipoEstadia);
     void eliminar(int numero);
+    boolean tieneReservasAsociadas(int numero);
 }

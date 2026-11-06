@@ -98,4 +98,24 @@ public class TipoEstadiaRepositoryMySQL implements TipoEstadiaRepository {
             em.close();
         }
     }
+    @Override
+    public boolean tieneReservasAsociadas(int numero) {
+
+        EntityManager em = emf.createEntityManager();
+
+        try {
+            Long cantidad = em.createQuery(
+                "SELECT COUNT(r) FROM Reserva r " +
+                "WHERE r.tipoEstadia.numero = :numero",
+                Long.class
+            )
+            .setParameter("numero", numero)
+            .getSingleResult();
+
+            return cantidad > 0;
+
+        } finally {
+            em.close();
+        }
+    }
 }

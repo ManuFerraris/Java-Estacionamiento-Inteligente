@@ -59,4 +59,11 @@ public class TipoEstadia {
 	public void setCupo(int cupo) {
 		this.cupo = cupo;
 	}
+	public List<Reserva> getReservas() {
+	    return reservas;
+	}
+
+	public void setReservas(List<Reserva> reservas) {
+	    this.reservas = reservas;
+	}
 }
