@@ -7,18 +7,18 @@ import estacionamiento.domain.EstadoSuscripcion;
 import estacionamiento.domain.Suscripcion;
 import estacionamiento.domain.claves.SuscripcionId;
 import estacionamiento.repository.SuscripcionRepository;
+import estacionamiento.util.JPAUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.EntityTransaction;
 import jakarta.persistence.NoResultException;
-import jakarta.persistence.Persistence;
 
 public class SuscripcionRepositoryMySQL implements SuscripcionRepository {
 
     private EntityManagerFactory emf;
 
     public SuscripcionRepositoryMySQL() {
-        this.emf = Persistence.createEntityManagerFactory("EstacionamientoPU");
+    	this.emf = JPAUtil.getEntityManagerFactory();
     }
 
     @Override

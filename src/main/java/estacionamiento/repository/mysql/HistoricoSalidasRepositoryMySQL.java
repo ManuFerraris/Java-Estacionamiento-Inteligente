@@ -4,9 +4,9 @@ import estacionamiento.domain.HistoricoSalidas;
 import estacionamiento.domain.claves.HistoricoSalidasId;
 import estacionamiento.domain.claves.ReservaId;
 import estacionamiento.repository.HistoricoSalidasRepository;
+import estacionamiento.util.JPAUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
-import jakarta.persistence.Persistence;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -16,7 +16,7 @@ public class HistoricoSalidasRepositoryMySQL implements HistoricoSalidasReposito
     private final EntityManagerFactory emf;
 
     public HistoricoSalidasRepositoryMySQL() {
-        this.emf = Persistence.createEntityManagerFactory("EstacionamientoPU");
+    	this.emf = JPAUtil.getEntityManagerFactory();
     }
 
     @Override

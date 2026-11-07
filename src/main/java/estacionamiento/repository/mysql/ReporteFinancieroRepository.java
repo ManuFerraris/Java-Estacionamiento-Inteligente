@@ -7,17 +7,17 @@ import java.util.List;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
-import jakarta.persistence.Persistence;
 import jakarta.persistence.TypedQuery;
 
 import estacionamiento.dto.FilaReporteFinancieroDTO;
+import estacionamiento.util.JPAUtil;
 
 public class ReporteFinancieroRepository {
 
     private final EntityManagerFactory emf;
 
     public ReporteFinancieroRepository() {
-        this.emf = Persistence.createEntityManagerFactory("EstacionamientoPU");
+    	this.emf = JPAUtil.getEntityManagerFactory();
     }
 
     public List<FilaReporteFinancieroDTO> generarReporte(LocalDateTime fechaDesde, LocalDateTime fechaHasta, String filtroOrigen) {

@@ -6,17 +6,16 @@ import java.util.List;
 import estacionamiento.domain.LugarTipoEstadia;
 import estacionamiento.domain.claves.LugarTipoEstadiaId;
 import estacionamiento.repository.LugarTipoEstadiaRepository;
-
+import estacionamiento.util.JPAUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
-import jakarta.persistence.Persistence;
 
 public class LugarTipoEstadiaRepositoryMySQL implements LugarTipoEstadiaRepository {
 
     private final EntityManagerFactory emf;
 
     public LugarTipoEstadiaRepositoryMySQL() {
-        this.emf = Persistence.createEntityManagerFactory("EstacionamientoPU");
+    	this.emf = JPAUtil.getEntityManagerFactory();
     }
 
     @Override

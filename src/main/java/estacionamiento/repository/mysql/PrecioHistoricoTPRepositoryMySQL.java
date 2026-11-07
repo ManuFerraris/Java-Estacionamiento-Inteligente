@@ -6,19 +6,19 @@ import java.time.LocalDateTime;
 import estacionamiento.domain.PrecioHistoricoTP;
 import estacionamiento.domain.claves.PrecioHistoricoTPId;
 import estacionamiento.repository.PrecioHistoricoTPRepository;
+import estacionamiento.util.JPAUtil;
 
 import java.util.List;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.EntityTransaction;
-import jakarta.persistence.Persistence;
 
 public class PrecioHistoricoTPRepositoryMySQL implements PrecioHistoricoTPRepository {
 	
 private EntityManagerFactory emf;
     
     public PrecioHistoricoTPRepositoryMySQL() {
-        this.emf = Persistence.createEntityManagerFactory("EstacionamientoPU");
+    	this.emf = JPAUtil.getEntityManagerFactory();
     }
 
     @Override

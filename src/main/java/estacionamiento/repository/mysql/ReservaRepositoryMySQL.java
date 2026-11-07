@@ -7,16 +7,16 @@ import estacionamiento.domain.EstadoReserva;
 import estacionamiento.domain.Reserva;
 import estacionamiento.domain.claves.ReservaId;
 import estacionamiento.repository.ReservaRepository;
+import estacionamiento.util.JPAUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
-import jakarta.persistence.Persistence;
 
 public class ReservaRepositoryMySQL implements ReservaRepository {
 
     private final EntityManagerFactory emf;
     
     public ReservaRepositoryMySQL() {
-        this.emf = Persistence.createEntityManagerFactory("EstacionamientoPU");
+    	this.emf = JPAUtil.getEntityManagerFactory();
     }
     
     @Override

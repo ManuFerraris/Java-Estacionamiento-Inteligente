@@ -8,10 +8,9 @@ import estacionamiento.domain.PrecioHistoricoTV;
 import estacionamiento.domain.TipoVehiculo;
 import estacionamiento.domain.claves.PrecioHistoricoTVId; 
 import estacionamiento.repository.PrecioHistoricoTVRepository;
-
+import estacionamiento.util.JPAUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
-import jakarta.persistence.Persistence;
 import jakarta.persistence.TypedQuery;
 
 public class PrecioHistoricoTVRepositoryMySQL implements PrecioHistoricoTVRepository {
@@ -19,7 +18,7 @@ public class PrecioHistoricoTVRepositoryMySQL implements PrecioHistoricoTVReposi
     private final EntityManagerFactory emf;
     
     public PrecioHistoricoTVRepositoryMySQL() {
-        this.emf = Persistence.createEntityManagerFactory("EstacionamientoPU");
+    	this.emf = JPAUtil.getEntityManagerFactory();
     }
     
     @Override

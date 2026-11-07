@@ -3,16 +3,16 @@ package estacionamiento.repository.mysql;
 import java.util.List;
 import estacionamiento.domain.Vehiculo;
 import estacionamiento.repository.VehiculoRepository;
+import estacionamiento.util.JPAUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
-import jakarta.persistence.Persistence;
 
 public class VehiculoRepositoryMySQL implements VehiculoRepository {
 
 	private final EntityManagerFactory emf;
 
     public VehiculoRepositoryMySQL() {
-        this.emf = Persistence.createEntityManagerFactory("EstacionamientoPU");
+    	this.emf = JPAUtil.getEntityManagerFactory();
     }
 
     @Override

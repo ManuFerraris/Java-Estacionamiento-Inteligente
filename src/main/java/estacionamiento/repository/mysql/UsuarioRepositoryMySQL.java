@@ -4,17 +4,17 @@ import java.util.List;
 
 import estacionamiento.domain.Usuario;
 import estacionamiento.repository.UsuarioRepository;
+import estacionamiento.util.JPAUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.EntityTransaction;
-import jakarta.persistence.Persistence;
 
 public class UsuarioRepositoryMySQL implements UsuarioRepository{
 
 	private EntityManagerFactory emf;
     
     public UsuarioRepositoryMySQL() {
-        this.emf = Persistence.createEntityManagerFactory("EstacionamientoPU");
+    	this.emf = JPAUtil.getEntityManagerFactory();
     }
     
 	@Override
