@@ -25,6 +25,7 @@ public class JPAUtil {
                 properties.put("jakarta.persistence.jdbc.url", dbUrl);
                 properties.put("jakarta.persistence.jdbc.user", dbUser);
                 properties.put("jakarta.persistence.jdbc.password", dbPassword);
+                properties.put("hibernate.connection.pool_size", "2");
                 properties.put("hibernate.show_sql", "false");
                 
                 AppLogger.info("JPA inicializado en modo PRODUCCIÓN (Variables de entorno inyectadas).");
