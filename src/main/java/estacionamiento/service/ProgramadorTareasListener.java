@@ -15,6 +15,7 @@ import estacionamiento.repository.mysql.TipoEstadiaRepositoryMySQL;
 import estacionamiento.repository.mysql.TipoPlanRepositoryMySQL;
 import estacionamiento.repository.mysql.UsuarioRepositoryMySQL;
 import estacionamiento.repository.mysql.VehiculoRepositoryMySQL;
+import estacionamiento.util.JPAUtil;
 import jakarta.servlet.ServletContextEvent;
 import jakarta.servlet.ServletContextListener;
 import jakarta.servlet.annotation.WebListener;
@@ -76,6 +77,9 @@ public class ProgramadorTareasListener implements ServletContextListener {
         if (scheduler != null && !scheduler.isShutdown()) {
             scheduler.shutdownNow();
             System.out.println("[SISTEMA] Motor de tareas en segundo plano detenido.");
+        }
+        if (JPAUtil.getEntityManagerFactory() != null && JPAUtil.getEntityManagerFactory().isOpen()) {
+            JPAUtil.getEntityManagerFactory().close();
         }
     }
 }
