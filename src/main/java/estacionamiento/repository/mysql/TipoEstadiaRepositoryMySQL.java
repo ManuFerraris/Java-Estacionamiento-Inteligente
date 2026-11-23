@@ -3,17 +3,16 @@ package estacionamiento.repository.mysql;
 import java.util.List;
 import estacionamiento.domain.TipoEstadia;
 import estacionamiento.repository.TipoEstadiaRepository;
+import estacionamiento.util.JPAUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
-import jakarta.persistence.Persistence;
 
 public class TipoEstadiaRepositoryMySQL implements TipoEstadiaRepository {
 
     private final EntityManagerFactory emf;
     
     public TipoEstadiaRepositoryMySQL() {
-        // Solo guardamos el Factory globalmente
-        this.emf = Persistence.createEntityManagerFactory("EstacionamientoPU");
+    	this.emf = JPAUtil.getEntityManagerFactory();
     }
     
     @Override

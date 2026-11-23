@@ -2,6 +2,7 @@ package estacionamiento.repository.mysql;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import estacionamiento.util.JPAUtil;
 
 import estacionamiento.domain.EstadoReserva;
 import estacionamiento.dto.EstadisticaVehiculoDTO;
@@ -11,7 +12,6 @@ import estacionamiento.repository.EstadisticaRepository;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
-import jakarta.persistence.Persistence;
 import jakarta.persistence.TypedQuery;
 
 public class EstadisticaRepositoryMySQL implements EstadisticaRepository {
@@ -19,7 +19,7 @@ public class EstadisticaRepositoryMySQL implements EstadisticaRepository {
     private EntityManagerFactory emf;
 
     public EstadisticaRepositoryMySQL() {
-        this.emf = Persistence.createEntityManagerFactory("EstacionamientoPU");
+    	this.emf = JPAUtil.getEntityManagerFactory();
     }
 
     @Override
@@ -150,11 +150,12 @@ public class EstadisticaRepositoryMySQL implements EstadisticaRepository {
         query.setParameter("desde", desde);
         query.setParameter("hasta", hasta);
     }
-
+    
+/*
     private Long contar(
             EntityManager em, String jpql,
             LocalDateTime desde, LocalDateTime hasta,
-            String tipoVehiculo, EstadoReserva estado) {
+            String tipoVehiculo) {
 
         TypedQuery<Long> query = em.createQuery(jpql, Long.class);
 
@@ -166,7 +167,8 @@ public class EstadisticaRepositoryMySQL implements EstadisticaRepository {
 
         return query.getSingleResult();
     }
-
+*/
+    
     private Long contarEstado(
             EntityManager em, String base,
             LocalDateTime desde, LocalDateTime hasta,

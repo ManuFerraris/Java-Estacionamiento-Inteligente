@@ -4,10 +4,10 @@ import java.util.List;
 
 import estacionamiento.domain.TipoPlan;
 import estacionamiento.repository.TipoPlanRepository;
+import estacionamiento.util.JPAUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.EntityTransaction;
-import jakarta.persistence.Persistence;
 import java.time.LocalDate;
 
 public class TipoPlanRepositoryMySQL implements TipoPlanRepository{
@@ -15,7 +15,7 @@ public class TipoPlanRepositoryMySQL implements TipoPlanRepository{
 	private EntityManagerFactory emf;
 	
 	public TipoPlanRepositoryMySQL() {
-		this.emf = Persistence.createEntityManagerFactory("EstacionamientoPU");
+		this.emf = JPAUtil.getEntityManagerFactory();
 	}
 	
 	@Override

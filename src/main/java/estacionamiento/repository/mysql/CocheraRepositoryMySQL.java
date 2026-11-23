@@ -3,16 +3,16 @@ package estacionamiento.repository.mysql;
 import java.util.List;
 import estacionamiento.domain.Cochera;
 import estacionamiento.repository.CocheraRepository;
+import estacionamiento.util.JPAUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.EntityTransaction;
-import jakarta.persistence.Persistence;
 
 public class CocheraRepositoryMySQL implements CocheraRepository {
 	private EntityManagerFactory emf;
     
     public CocheraRepositoryMySQL() {
-        this.emf = Persistence.createEntityManagerFactory("EstacionamientoPU");
+    	this.emf = JPAUtil.getEntityManagerFactory();
     }
     
     // El famoso 'getOne()' de diseño

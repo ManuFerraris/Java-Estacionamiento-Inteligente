@@ -5,17 +5,17 @@ import java.util.List;
 import estacionamiento.domain.Beneficio;
 import estacionamiento.domain.claves.BeneficioId;
 import estacionamiento.repository.BeneficioRepository;
+import estacionamiento.util.JPAUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.EntityTransaction;
-import jakarta.persistence.Persistence;
 
 public class BeneficioRepositoryMySQL implements BeneficioRepository {
 
     private EntityManagerFactory emf;
     
     public BeneficioRepositoryMySQL() {
-        this.emf = Persistence.createEntityManagerFactory("EstacionamientoPU");
+    	this.emf = JPAUtil.getEntityManagerFactory();
     }
     
     @Override

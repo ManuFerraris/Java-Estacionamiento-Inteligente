@@ -4,16 +4,16 @@ import java.util.List;
 import estacionamiento.domain.AsignacionCochera;
 import estacionamiento.domain.Cochera;
 import estacionamiento.repository.AsignacionCocheraRepository;
+import estacionamiento.util.JPAUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
-import jakarta.persistence.Persistence;
 import jakarta.persistence.TypedQuery;
 
 public class AsignacionCocheraRepositoryMySQL implements AsignacionCocheraRepository {
 
 	private EntityManagerFactory emf;
     public AsignacionCocheraRepositoryMySQL() {
-    	this.emf = Persistence.createEntityManagerFactory("EstacionamientoPU");
+    	this.emf = JPAUtil.getEntityManagerFactory();
     }
     
     @Override
