@@ -1,5 +1,10 @@
 package estacionamiento.service;
 
+import java.io.InputStream;
+import java.math.BigDecimal;
+import java.util.Collections;
+import java.util.Properties;
+
 import com.mercadopago.client.preference.PreferenceBackUrlsRequest;
 import com.mercadopago.client.preference.PreferenceClient;
 import com.mercadopago.client.preference.PreferenceItemRequest;
@@ -11,27 +16,62 @@ import com.mercadopago.exceptions.MPException;
 import com.mercadopago.resources.preference.Preference;
 
 import estacionamiento.domain.PagoSuscripcion;
-
-import java.math.BigDecimal;
-import java.util.Collections;
+import estacionamiento.util.AppLogger;
 
 public class MercadoPagoService {
 
+    private final String mpAccessToken;
+    private final String appBaseUrl;
+    private final String webhookUrl;
+
     public MercadoPagoService() {
+        this.mpAccessToken = obtenerConfig("MP_ACCESS_TOKEN", "mercadopago.access.token", "");
+        
+        // En Clever Cloud: https://tu-app.cleverapps.io (sin barra al final)
+        // En Local: http://localhost:8080/backend-estacionamiento
+        this.appBaseUrl = obtenerConfig("APP_BASE_URL", "app.base.url", "http://localhost:8080/backend-estacionamiento");
+        
+        // Si estamos en producción (APP_BASE_URL), el webhook usa el dominio real.
+        // Si estamos en local, lee la URL de Ngrok desde config.properties.
+        String envBaseUrl = System.getenv("APP_BASE_URL");
+        if (envBaseUrl != null && !envBaseUrl.trim().isEmpty()) {
+            this.webhookUrl = this.appBaseUrl + "/api/webhook-mp";
+        } else {
+            this.webhookUrl = obtenerConfig("MP_WEBHOOK_URL", "mercadopago.webhook.url", this.appBaseUrl + "/api/webhook-mp");
+        }
+    }
+
+    private String obtenerConfig(String envKey, String propKey, String defaultValue) {
+        String envVal = System.getenv(envKey);
+        if (envVal != null && !envVal.trim().isEmpty()) {
+            return envVal.trim();
+        }
+        try (InputStream input = getClass().getClassLoader().getResourceAsStream("config.properties")) {
+            if (input != null) {
+                Properties props = new Properties();
+                props.load(input);
+                String propVal = props.getProperty(propKey);
+                if (propVal != null && !propVal.trim().isEmpty()) {
+                    return propVal.trim();
+                }
+            }
+        } catch (Exception e) {
+            AppLogger.error("Error leyendo config.properties para: " + propKey, e);
+        }
+        return defaultValue;
+    }
+
+    private PreferenceBackUrlsRequest construirBackUrls() {
+        return PreferenceBackUrlsRequest.builder()
+                .success(this.appBaseUrl + "/api/pago-exito")
+                .pending(this.appBaseUrl + "/api/pago-pendiente")
+                .failure(this.appBaseUrl + "/api/pago-fallo")
+                .build();
     }
 
     public String crearPreferencia(String titulo, BigDecimal monto, Integer idPagoLocal, String emailCliente) throws MPException, MPApiException {
-        
-    	System.out.println("[MercadoPagoService] Parametros recibidos: " 
-    			+ "Titulo: "+ titulo +"\n" 
-    			+ "Monto: "+ monto +"\n"
-    			+ "Id Pago Local: " + idPagoLocal +"\n"
-    			+ "Email Cliente: " + emailCliente + "\n");
-        // Si la seña calculada es menor a 15 ARS, forzamos un valor para evitar el rechazo del PolicyAgent.
         BigDecimal montoSeguro = (monto.compareTo(new BigDecimal("15.00")) < 0) ? new BigDecimal("150.00") : monto;
-        
-        System.out.println("Monto recibido/calculado: " + montoSeguro);
-        
+
         PreferenceItemRequest itemRequest = PreferenceItemRequest.builder()
                 .title(titulo)
                 .quantity(1)
@@ -39,47 +79,30 @@ public class MercadoPagoService {
                 .currencyId("ARS")
                 .build();
 
-        PreferenceBackUrlsRequest backUrls = PreferenceBackUrlsRequest.builder()
-                .success("localhost:8080/backend-estacionamiento/api/pago-exito")
-                .pending("localhost:8080/backend-estacionamiento/api/pago-pendiente")
-                .failure("localhost:8080/backend-estacionamiento/api/pago-fallo")
-                .build();
-
-        // 2. Comprador de prueba oficial (Bypass de auto-compra)
         PreferencePayerRequest payerRequest = PreferencePayerRequest.builder()
-                .email("test_user_3682619193@testuser.com") 
+                .email("test_user_3682619193@testuser.com")
                 .build();
 
-        String referenciaExterna = "RES_" + idPagoLocal;
         PreferenceRequest preferenceRequest = PreferenceRequest.builder()
                 .items(Collections.singletonList(itemRequest))
-                .backUrls(backUrls) 
+                .backUrls(construirBackUrls())
                 .payer(payerRequest)
                 .autoReturn("approved")
-                .externalReference(referenciaExterna)
-                // ATENTISSSS
-                // Cada vez que levantamos Ngrok la url CAMBIA!!! 
-                // Solamente agreguen la nueva aca y listo "https://.../backend-estacionamiento/api/webhook-mp"
-                .notificationUrl("https://canteen-washhouse-clever.ngrok-free.dev/backend-estacionamiento/api/webhook-mp")
+                .externalReference("RES_" + idPagoLocal)
+                .notificationUrl(this.webhookUrl)
                 .build();
 
-        // 3. EL BYPASS ARQUITECTÓNICO: MPRequestOptions
-        // Inyectamos el token del VENDEDOR explícitamente en esta transacción exacta.
         MPRequestOptions options = MPRequestOptions.builder()
-                .accessToken("APP_USR-713702972657291-090815-59d577f977930b4ffdd43d2e1a5ff00d-1997921995")
+                .accessToken(this.mpAccessToken)
                 .build();
 
         PreferenceClient client = new PreferenceClient();
-        
-        // Pasamos el 'options' como segundo parámetro para forzar la credencial
         Preference preference = client.create(preferenceRequest, options);
 
-        return preference.getInitPoint(); 
+        return preference.getInitPoint();
     }
-    
+
     public String crearPreferenciaSuscripcion(PagoSuscripcion pago) throws Exception {
-        
-        // 1. Datos del Plan a cobrar
         PreferenceItemRequest itemRequest = PreferenceItemRequest.builder()
                 .title("Suscripción - " + pago.getSuscripcion().getTipoPlan().getNombre())
                 .quantity(1)
@@ -87,39 +110,26 @@ public class MercadoPagoService {
                 .currencyId("ARS")
                 .build();
 
-        // 2. Las mismas URLs de retorno que ya tenés
-        PreferenceBackUrlsRequest backUrls = PreferenceBackUrlsRequest.builder()
-                .success("localhost:8080/backend-estacionamiento/api/pago-exito")
-                .pending("localhost:8080/backend-estacionamiento/api/pago-pendiente")
-                .failure("localhost:8080/backend-estacionamiento/api/pago-fallo")
-                .build();
-        
         PreferencePayerRequest payerRequest = PreferencePayerRequest.builder()
-                .email("test_user_3682619193@testuser.com") 
+                .email("test_user_3682619193@testuser.com")
                 .build();
-
-        // 3. Identificador Polimórfico (Acá está la magia)
-        String referenciaExterna = "SUSC_" + pago.getId();
 
         PreferenceRequest preferenceRequest = PreferenceRequest.builder()
                 .items(Collections.singletonList(itemRequest))
-                .backUrls(backUrls) 
-                .autoReturn("approved") 
-                .externalReference(referenciaExterna)
+                .backUrls(construirBackUrls())
+                .autoReturn("approved")
+                .externalReference("SUSC_" + pago.getId())
                 .payer(payerRequest)
-                .notificationUrl("https://canteen-washhouse-clever.ngrok-free.dev/backend-estacionamiento/api/webhook-mp") 
+                .notificationUrl(this.webhookUrl)
                 .build();
 
         MPRequestOptions options = MPRequestOptions.builder()
-                .accessToken("APP_USR-713702972657291-090815-59d577f977930b4ffdd43d2e1a5ff00d-1997921995")
+                .accessToken(this.mpAccessToken)
                 .build();
 
         PreferenceClient client = new PreferenceClient();
-        
-        System.out.println("Preferencia de SUSCRIPCION a enviar: " + preferenceRequest + "\n" + preferenceRequest);
         Preference preference = client.create(preferenceRequest, options);
-        System.out.println("Preferencia final de SUSCRIPCION: " + preference);
-        
-        return preference.getSandboxInitPoint(); 
+
+        return preference.getSandboxInitPoint();
     }
 }

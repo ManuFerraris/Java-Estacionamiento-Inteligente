@@ -1,0 +1,4 @@
+mail.password=contraseña_generada_en_gmail
+mail.remitente=mail_que_envia_los_correos
+mercadopago.access.token=access_token_privado_de_mercado_pago
+mercadopago.webhook.url=ruta_con_ngrok_para_pruebas_locales
