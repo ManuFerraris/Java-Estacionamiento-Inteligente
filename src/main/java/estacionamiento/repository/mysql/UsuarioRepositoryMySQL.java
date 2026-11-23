@@ -99,6 +99,7 @@ public class UsuarioRepositoryMySQL implements UsuarioRepository{
         try {
         	Usuario usuarioAEliminar = em.find(Usuario.class, numero);
         	if(usuarioAEliminar != null) {
+        		tx.begin();
         		em.remove(usuarioAEliminar);
         		tx.commit();
         	}

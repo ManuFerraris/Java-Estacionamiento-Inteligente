@@ -67,7 +67,7 @@ public class ProgramadorTareasListener implements ServletContextListener {
         };
 
         // Ejecuta la tarea: Arranca a los 0 minutos, y se repite cada 1 minuto
-        scheduler.scheduleAtFixedRate(tareaAlertas, 0, 1, TimeUnit.MINUTES);
+        scheduler.scheduleAtFixedRate(tareaAlertas, 2, 1, TimeUnit.MINUTES);
     }
 
     @Override
