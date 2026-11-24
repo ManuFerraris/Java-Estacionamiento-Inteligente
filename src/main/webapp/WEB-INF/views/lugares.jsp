@@ -50,11 +50,13 @@
                                     <% 
                                         List<Cochera> cocheras = (List<Cochera>) request.getAttribute("listaCocheras");
                                         if (cocheras != null && !cocheras.isEmpty()) {
-                                            for (Cochera c : cocheras) { 
+                                        	for (Cochera c : cocheras) {
+                                        	    if (c.getFechaBaja() == null) {
                                     %>
                                                 <option value="<%= c.getCodigo() %>"><%= c.getNombre() %> - <%= c.getDireccion() %></option>
                                     <% 
                                             }
+                                        	}
                                         } 
                                     %>
                                 </select>
@@ -95,36 +97,68 @@
                                                 <td><span class="badge bg-secondary">Piso <%= l.getNumeroPiso() %></span></td>
                                                 <td><%= (l.getCochera() != null) ? l.getCochera().getNombre() : "N/A" %></td>
                                                 <td>
-                                                    <% if ("Inactivo".equalsIgnoreCase(l.getDescripcion())) { %>
-                                                        <span class="badge bg-danger">Inactivo</span>
-                                                    <% } else { %>
-                                                        <%= l.getDescripcion() %>
-                                                    <% } %>
+                                                    <% if (l.getFechaBaja() != null) { %>
+													    <span class="badge bg-danger">Inactivo</span>
+													<% } else { %>
+													    <%= l.getDescripcion() %>
+													<% } %>
                                                 </td>
                                                 <td>
-                                                    <div class="d-flex justify-content-center gap-2">
-                                                        <!-- BOTÓN ASIGNAR ESTADÍA -->
-                                                        <button class="btn btn-sm btn-outline-primary" title="Asignar Estadía"
-                                                                onclick="abrirModalAsignacion('<%= l.getCodigo() %>')">
-                                                            <i class="bi bi-tags-fill"></i>
-                                                        </button>
-                                                        
-                                                        <!-- BOTÓN EDITAR -->
-                                                        <button class="btn btn-sm btn-warning text-dark" title="Editar"
-                                                                onclick="cargarEdicion('<%= l.getCodigo() %>', '<%= l.getNumeroPiso() %>', '<%= l.getDescripcion() %>', '<%= (l.getCochera() != null) ? l.getCochera().getCodigo() : "" %>')">
-                                                            <i class="bi bi-pencil-square"></i>
-                                                        </button>
-                                                        
-                                                        <!-- BOTÓN BAJA LÓGICA -->
-                                                        <form action="LugarServlet" method="POST" class="m-0">
-                                                            <input type="hidden" name="accion" value="bajaLogica">
-                                                            <input type="hidden" name="codigoLugar" value="<%= l.getCodigo() %>">
-                                                            <button type="submit" class="btn btn-outline-danger btn-sm" title="Dar de Baja"
-                                                                    onclick="return confirm('¿Marcar este lugar como inactivo?');">
-                                                                <i class="bi bi-ban"></i>
-                                                            </button>
-                                                        </form>
-                                                    </div>
+                                                   
+                                                        <div class="d-flex justify-content-center gap-2">
+
+															    <% if (l.getFechaBaja() == null) { %>
+															
+															        <!-- ASIGNAR ESTADÍA -->
+															        <button class="btn btn-sm btn-outline-primary"
+															                title="Asignar Estadía"
+															                onclick="abrirModalAsignacion('<%= l.getCodigo() %>')">
+															            <i class="bi bi-tags-fill"></i>
+															        </button>
+															
+															        <!-- EDITAR -->
+															        <button class="btn btn-sm btn-warning text-dark"
+															                title="Editar"
+															                onclick="cargarEdicion('<%= l.getCodigo() %>',
+															                    '<%= l.getNumeroPiso() %>',
+															                    '<%= l.getDescripcion().replace("'", "\\'") %>',
+															                    '<%= (l.getCochera() != null) ? l.getCochera().getCodigo() : "" %>')">
+															            <i class="bi bi-pencil-square"></i>
+															        </button>
+															
+															        <!-- BAJA LÓGICA -->
+															        <form action="LugarServlet" method="POST" class="m-0">
+															            <input type="hidden" name="accion" value="bajaLogica">
+															            <input type="hidden" name="codigoLugar"
+															                   value="<%= l.getCodigo() %>">
+															
+															            <button type="submit"
+															                    class="btn btn-outline-danger btn-sm"
+															                    title="Dar de Baja"
+															                    onclick="return confirm('¿Marcar este lugar como inactivo?');">
+															                <i class="bi bi-ban"></i>
+															            </button>
+															        </form>
+															
+															    <% } else { %>
+															
+															        <!-- REACTIVAR -->
+															        <form action="LugarServlet" method="POST" class="m-0">
+															            <input type="hidden" name="accion" value="altaLogica">
+															            <input type="hidden" name="codigoLugar"
+															                   value="<%= l.getCodigo() %>">
+															
+															            <button type="submit"
+															                    class="btn btn-outline-success btn-sm"
+															                    title="Reactivar"
+															                    onclick="return confirm('¿Reactivar este lugar?');">
+															                <i class="bi bi-arrow-counterclockwise"></i>
+															            </button>
+															        </form>
+															
+															    <% } %>
+															
+															</div>
                                                 </td>
                                             </tr>
                                 <%      }

@@ -93,4 +93,8 @@ public class LugarRepositoryMemoria implements LugarRepository {
 		// TODO Auto-generated method stub
 		return null;
 	}
+	@Override
+	public boolean tieneReservasActivasPorLugar(Integer codigoLugar) {
+	    return false;
+	}
 }
