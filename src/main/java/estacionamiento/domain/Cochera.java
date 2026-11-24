@@ -28,6 +28,9 @@ public class Cochera {
 	@Column(name="descripcion", nullable=false)
 	private String descripcion;
 	
+	@Column(name = "fecha_baja")
+	private java.time.LocalDate fechaBaja;
+	
 	@OneToMany(mappedBy = "cochera", targetEntity = Lugar.class)
 	private List<Lugar> lugares;
 	
@@ -89,5 +92,13 @@ public class Cochera {
 
 	public void setAsignacionesEncargados(List<AsignacionCochera> asignacionesEncargados) {
 		this.asignacionesEncargados = asignacionesEncargados;
+	}
+	
+	public java.time.LocalDate getFechaBaja() {
+	    return fechaBaja;
+	}
+
+	public void setFechaBaja(java.time.LocalDate fechaBaja) {
+	    this.fechaBaja = fechaBaja;
 	}
 }

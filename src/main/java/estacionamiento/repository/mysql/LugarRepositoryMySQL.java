@@ -2,6 +2,7 @@ package estacionamiento.repository.mysql;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.time.LocalDate;
 
 import estacionamiento.domain.Lugar;
 import estacionamiento.repository.LugarRepository;
@@ -9,6 +10,7 @@ import estacionamiento.util.JPAUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.TypedQuery;
+
 
 public class LugarRepositoryMySQL implements LugarRepository {
 
@@ -88,19 +90,24 @@ public class LugarRepositoryMySQL implements LugarRepository {
     @Override
     public void darDeBajaLugar(int codigo) {
         EntityManager em = emf.createEntityManager();
+
         try {
             em.getTransaction().begin();
-            
-            Lugar lugarAEliminar = em.find(Lugar.class, codigo);
-            
-            if (lugarAEliminar != null) {
-                em.remove(lugarAEliminar);
-                em.getTransaction().commit();
-                System.out.println("MySQL: Lugar eliminado correctamente.");
-            } else {
-                em.getTransaction().rollback();
-                System.out.println("MySQL: No se encontró el lugar para eliminar.");
+
+            Lugar lugar = em.find(Lugar.class, codigo);
+
+            if (lugar == null) {
+                throw new IllegalArgumentException(
+                    "No se encontró el lugar para dar de baja."
+                );
             }
+
+            if (lugar.getFechaBaja() == null) {
+                lugar.setFechaBaja(LocalDate.now());
+            }
+
+            em.getTransaction().commit();
+
         } catch (Exception e) {
             if (em.getTransaction().isActive()) {
                 em.getTransaction().rollback();
@@ -120,14 +127,15 @@ public class LugarRepositoryMySQL implements LugarRepository {
         	LocalDateTime inicioConBuffer = fechaDesde.minusMinutes(10);
         	LocalDateTime finConBuffer = fechaHasta.plusMinutes(10);
         	String jpql = "SELECT l FROM Lugar l WHERE l.cochera.codigo = :idCochera " +
-                    "AND LOWER(l.descripcion) != 'inactivo' " +
-                    "AND l.codigo NOT IN (" +
-                    "    SELECT r.lugar.codigo FROM Reserva r " +
-                    "    WHERE r.estado IN (estacionamiento.domain.EstadoReserva.PENDIENTE, " +
-                    "                       estacionamiento.domain.EstadoReserva.EN_CURSO, " +
-                    "                       estacionamiento.domain.EstadoReserva.SALIDA_PARCIAL) " +
-                    "    AND (r.id.fechaDesde < :fechaHasta AND r.fechaHastaTentativa > :fechaDesde)" +
-                    ")";
+        		    "AND l.fechaBaja IS NULL " +
+        		    "AND l.cochera.fechaBaja IS NULL " +
+        		    "AND l.codigo NOT IN (" +
+        		    "    SELECT r.lugar.codigo FROM Reserva r " +
+        		    "    WHERE r.estado IN (estacionamiento.domain.EstadoReserva.PENDIENTE, " +
+        		    "                       estacionamiento.domain.EstadoReserva.EN_CURSO, " +
+        		    "                       estacionamiento.domain.EstadoReserva.SALIDA_PARCIAL) " +
+        		    "    AND (r.id.fechaDesde < :fechaHasta AND r.fechaHastaTentativa > :fechaDesde)" +
+        		    ")";
                           
             TypedQuery<Lugar> query = em.createQuery(jpql, Lugar.class);
             query.setParameter("idCochera", idCochera); // Filtro crucial porque sino podemos filtrar por otras cocheras o todas.
@@ -153,14 +161,15 @@ public class LugarRepositoryMySQL implements LugarRepository {
 	        LocalDateTime finConBuffer = fechaHasta.plusMinutes(10);
 	        
 	        String jpql = "SELECT COUNT(l) FROM Lugar l WHERE l.cochera.codigo = :idCochera " +
-                    "AND LOWER(l.descripcion) != 'inactivo' " +
-                    "AND l.codigo NOT IN (" +
-                    "    SELECT r.lugar.codigo FROM Reserva r " +
-                    "    WHERE r.estado IN (estacionamiento.domain.EstadoReserva.PENDIENTE, " +
-                    "                       estacionamiento.domain.EstadoReserva.EN_CURSO, " +
-                    "                       estacionamiento.domain.EstadoReserva.SALIDA_PARCIAL) " +
-                    "    AND (r.id.fechaDesde < :fechaHasta AND r.fechaHastaTentativa > :fechaDesde)" +
-                    ")";
+	        	    "AND l.fechaBaja IS NULL " +
+	        	    "AND l.cochera.fechaBaja IS NULL " +
+	        	    "AND l.codigo NOT IN (" +
+	        	    "    SELECT r.lugar.codigo FROM Reserva r " +
+	        	    "    WHERE r.estado IN (estacionamiento.domain.EstadoReserva.PENDIENTE, " +
+	        	    "                       estacionamiento.domain.EstadoReserva.EN_CURSO, " +
+	        	    "                       estacionamiento.domain.EstadoReserva.SALIDA_PARCIAL) " +
+	        	    "    AND (r.id.fechaDesde < :fechaHasta AND r.fechaHastaTentativa > :fechaDesde)" +
+	        	    ")";
 	        
 	        TypedQuery<Long> query = em.createQuery(jpql, Long.class);
 	        query.setParameter("idCochera", idCochera);
@@ -184,6 +193,59 @@ public class LugarRepositoryMySQL implements LugarRepository {
 	        return em.createQuery(jpql, Lugar.class)
 	                 .setParameter("codCochera", codigoCochera)
 	                 .getResultList();
+	    } finally {
+	        em.close();
+	    }
+	}
+	
+	@Override
+	public boolean tieneReservasActivasPorLugar(Integer codigoLugar) {
+	    EntityManager em = emf.createEntityManager();
+
+	    try {
+	        String jpql =
+	            "SELECT COUNT(r) FROM Reserva r " +
+	            "WHERE r.lugar.codigo = :codigoLugar " +
+	            "AND r.estado IN (" +
+	            "estacionamiento.domain.EstadoReserva.PENDIENTE, " +
+	            "estacionamiento.domain.EstadoReserva.EN_CURSO, " +
+	            "estacionamiento.domain.EstadoReserva.SALIDA_PARCIAL" +
+	            ")";
+
+	        Long cantidad = em.createQuery(jpql, Long.class)
+	            .setParameter("codigoLugar", codigoLugar)
+	            .getSingleResult();
+
+	        return cantidad > 0;
+
+	    } finally {
+	        em.close();
+	    }
+	}
+	
+	public void reactivar(Integer codigo) {
+	    EntityManager em = emf.createEntityManager();
+
+	    try {
+	        em.getTransaction().begin();
+
+	        Lugar lugar = em.find(Lugar.class, codigo);
+
+	        if (lugar == null) {
+	            throw new IllegalArgumentException(
+	                "No se encontró el lugar para reactivar."
+	            );
+	        }
+
+	        lugar.setFechaBaja(null);
+
+	        em.getTransaction().commit();
+
+	    } catch (Exception e) {
+	        if (em.getTransaction().isActive()) {
+	            em.getTransaction().rollback();
+	        }
+	        throw e;
 	    } finally {
 	        em.close();
 	    }
