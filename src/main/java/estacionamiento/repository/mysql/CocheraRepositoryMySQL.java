@@ -7,6 +7,7 @@ import estacionamiento.util.JPAUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.EntityTransaction;
+import java.time.LocalDate;
 
 public class CocheraRepositoryMySQL implements CocheraRepository {
 	private EntityManagerFactory emf;
@@ -90,15 +91,55 @@ public class CocheraRepositoryMySQL implements CocheraRepository {
     public void eliminar(Integer codigo) {
         EntityManager em = emf.createEntityManager();
         EntityTransaction tx = em.getTransaction();
+
         try {
             tx.begin();
-            Cochera cocheraAEliminar = em.find(Cochera.class, codigo);
-            if (cocheraAEliminar != null) {
-                em.remove(cocheraAEliminar);
+
+            Cochera cochera = em.find(Cochera.class, codigo);
+
+            if (cochera != null) {
+                if (cochera.getFechaBaja() == null) {
+                    cochera.setFechaBaja(LocalDate.now());
+                }
                 tx.commit();
+            } else {
+                throw new IllegalArgumentException(
+                    "No se encontró la cochera para dar de baja."
+                );
             }
+
         } catch (Exception e) {
-            if (tx != null && tx.isActive()) tx.rollback();
+            if (tx != null && tx.isActive()) {
+                tx.rollback();
+            }
+            throw e;
+        } finally {
+            em.close();
+        }
+    }
+    
+    public void reactivar(Integer codigo) {
+        EntityManager em = emf.createEntityManager();
+        EntityTransaction tx = em.getTransaction();
+
+        try {
+            tx.begin();
+
+            Cochera cochera = em.find(Cochera.class, codigo);
+
+            if (cochera != null) {
+                cochera.setFechaBaja(null);
+                tx.commit();
+            } else {
+                throw new IllegalArgumentException(
+                    "No se encontró la cochera para reactivar."
+                );
+            }
+
+        } catch (Exception e) {
+            if (tx != null && tx.isActive()) {
+                tx.rollback();
+            }
             throw e;
         } finally {
             em.close();
