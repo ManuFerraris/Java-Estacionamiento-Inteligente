@@ -68,4 +68,10 @@ public class ReservaRepositoryMemoria implements ReservaRepository {
 		// TODO Auto-generated method stub
 		return null;
 	}
+
+	@Override
+	public boolean tieneReservasActivasPorLugarYTipoEstadia(int codigoLugar, int numeroTipoEstadia) {
+		// TODO Auto-generated method stub
+		return false;
+	}
 }

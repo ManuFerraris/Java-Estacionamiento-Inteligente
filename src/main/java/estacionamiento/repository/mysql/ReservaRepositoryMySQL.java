@@ -213,4 +213,24 @@ public class ReservaRepositoryMySQL implements ReservaRepository {
 	        em.close();
 	    }
 	}
+
+	@Override
+	public boolean tieneReservasActivasPorLugarYTipoEstadia(int codigoLugar, int numeroTipoEstadia) {
+	    EntityManager em = emf.createEntityManager();
+	    try {
+	        String jpql = "SELECT COUNT(r) FROM Reserva r " +
+	                      "WHERE r.lugar.codigo = :codigoLugar " +
+	                      "AND r.tipoEstadia.numero = :numeroTipoEstadia " +
+	                      "AND r.estado IN (estacionamiento.domain.EstadoReserva.PENDIENTE, " +
+	                      "                 estacionamiento.domain.EstadoReserva.EN_CURSO, " +
+	                      "                 estacionamiento.domain.EstadoReserva.SALIDA_PARCIAL)";
+	        Long count = em.createQuery(jpql, Long.class)
+	                       .setParameter("codigoLugar", codigoLugar)
+	                       .setParameter("numeroTipoEstadia", numeroTipoEstadia)
+	                       .getSingleResult();
+	        return count != null && count > 0;
+	    } finally {
+	        em.close();
+	    }
+	}
 }

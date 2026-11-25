@@ -16,4 +16,5 @@ public interface ReservaRepository {
 	List<Reserva> buscarPorUsuario(Integer numeroUsuario);
 	List<Reserva> obtenerActivasPorCochera(int codigoCochera);
     List<Reserva> obtenerTodasLasActivas();
+    boolean tieneReservasActivasPorLugarYTipoEstadia(int codigoLugar, int numeroTipoEstadia);
 }
