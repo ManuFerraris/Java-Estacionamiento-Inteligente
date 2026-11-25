@@ -26,6 +26,7 @@ public class JPAUtil {
                 properties.put("jakarta.persistence.jdbc.user", dbUser);
                 properties.put("jakarta.persistence.jdbc.password", dbPassword);
                 properties.put("hibernate.connection.pool_size", "2");
+                properties.put("hibernate.hbm2ddl.auto", "none"); // para probar desactivar el update en produccion
                 properties.put("hibernate.show_sql", "false");
                 
                 AppLogger.info("JPA inicializado en modo PRODUCCIÓN (Variables de entorno inyectadas).");
