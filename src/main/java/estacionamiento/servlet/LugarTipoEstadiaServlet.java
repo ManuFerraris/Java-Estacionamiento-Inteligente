@@ -1,7 +1,9 @@
+
 package estacionamiento.servlet;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.List;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -9,70 +11,143 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-import estacionamiento.domain.Lugar;
-import estacionamiento.domain.TipoEstadia;
-import estacionamiento.domain.LugarTipoEstadia;
+import estacionamiento.service.LugarTipoEstadiaService;
+
 import estacionamiento.repository.mysql.LugarRepositoryMySQL;
 import estacionamiento.repository.mysql.TipoEstadiaRepositoryMySQL;
-import estacionamiento.util.AppLogger;
 import estacionamiento.repository.mysql.LugarTipoEstadiaRepositoryMySQL;
+import estacionamiento.repository.mysql.ReservaRepositoryMySQL;
 
+import estacionamiento.util.AppLogger;
+import estacionamiento.domain.LugarTipoEstadia;
 @WebServlet("/LugarTipoEstadiaServlet")
 public class LugarTipoEstadiaServlet extends HttpServlet {
-    
+
     private static final long serialVersionUID = 1L;
-    
-    private LugarRepositoryMySQL lugarRepo;
-    private TipoEstadiaRepositoryMySQL tipoEstadiaRepo;
-    private LugarTipoEstadiaRepositoryMySQL lugarTipoEstadiaRepo;
+
+    private LugarTipoEstadiaService service;
 
     @Override
     public void init() throws ServletException {
-        // Instanciamos los repositorios necesarios para buscar los objetos y armar la relación
-        this.lugarRepo = new LugarRepositoryMySQL();
-        this.tipoEstadiaRepo = new TipoEstadiaRepositoryMySQL();
-        this.lugarTipoEstadiaRepo = new LugarTipoEstadiaRepositoryMySQL();
+
+        this.service = new LugarTipoEstadiaService(
+            new LugarTipoEstadiaRepositoryMySQL(),
+            new LugarRepositoryMySQL(),
+            new TipoEstadiaRepositoryMySQL(),
+            new ReservaRepositoryMySQL()
+        );
     }
 
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) 
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
+
         String accion = request.getParameter("accion");
-        
+
         try {
+
             if ("asignar".equals(accion)) {
-                // 1. Capturar los datos del Modal
-                int codigoLugar = Integer.parseInt(request.getParameter("codigoLugar"));
-                int numeroTipoEstadia = Integer.parseInt(request.getParameter("numeroTipoEstadia"));
-                
-                // El input type="datetime-local" envía la fecha en formato ISO (Ej: 2024-05-16T15:30)
+
+                int codigoLugar = Integer.parseInt(
+                    request.getParameter("codigoLugar")
+                );
+
+                int numeroTipoEstadia = Integer.parseInt(
+                    request.getParameter("numeroTipoEstadia")
+                );
+
                 String fechaString = request.getParameter("fechaDesde");
-                LocalDateTime fechaDesde = LocalDateTime.parse(fechaString);
-                
-                // 2. Buscar los objetos completos en la BD para satisfacer las relaciones @ManyToOne
-                Lugar lugar = lugarRepo.buscarPorClave(codigoLugar);
-                TipoEstadia tipoEstadia = tipoEstadiaRepo.buscarPorNumero(numeroTipoEstadia);
-                
-                if (lugar == null || tipoEstadia == null) {
-                    throw new IllegalArgumentException("El Lugar o el Tipo de Estadía seleccionado no existen.");
+
+                if (fechaString == null || fechaString.isBlank()) {
+                    throw new IllegalArgumentException(
+                        "La fecha de inicio es obligatoria."
+                    );
                 }
-                
-                // 3. Crear la entidad intermedia. Su constructor armará automáticamente el LugarTipoEstadiaId
-                LugarTipoEstadia asignacion = new LugarTipoEstadia(lugar, tipoEstadia, fechaDesde);
-                
-                // 4. Guardar en la Base de Datos
-                lugarTipoEstadiaRepo.save(asignacion);
-                
-                // Guardamos el mensaje de éxito en la sesión
-                request.getSession().setAttribute("exito", "El tipo de estadía se asignó al lugar correctamente.");
+
+                LocalDateTime fechaDesde = LocalDateTime.parse(fechaString);
+
+                service.asignarTipoEstadiaALugar(
+                    codigoLugar,
+                    numeroTipoEstadia,
+                    fechaDesde
+                );
+
+                request.getSession().setAttribute(
+                    "exito",
+                    "El tipo de estadía se asignó al lugar correctamente."
+                );
+
+            } else if ("baja".equals(accion)) {
+
+                int codigoLugar = Integer.parseInt(
+                    request.getParameter("codigoLugar")
+                );
+
+                int numeroTipoEstadia = Integer.parseInt(
+                    request.getParameter("numeroTipoEstadia")
+                );
+
+                String fechaString = request.getParameter("fechaDesde");
+
+                LocalDateTime fechaDesde = LocalDateTime.parse(fechaString);
+
+                service.darDeBaja(
+                    codigoLugar,
+                    numeroTipoEstadia,
+                    fechaDesde
+                );
+
+                request.getSession().setAttribute(
+                    "exito",
+                    "La asignación se dio de baja correctamente."
+                );
+
+            } else {
+                throw new IllegalArgumentException("Acción no válida.");
             }
+
         } catch (Exception e) {
-        	AppLogger.error("Error inesperado al intentar asignar tipo de estadía al lugar", e);
-            request.getSession().setAttribute("error", "Error al asignar estadía: " + e.getMessage());
+
+            AppLogger.error(
+                "Error al gestionar la asignación de lugar y tipo de estadía",
+                e
+            );
+
+            request.getSession().setAttribute(
+                "error",
+                "Error al gestionar la asignación: " + e.getMessage()
+            );
         }
-        
-        // Redirigimos de vuelta a la pantalla de Lugares (Patrón PRG)
-        response.sendRedirect(request.getContextPath() + "/LugarServlet");
+
+        response.sendRedirect(
+            request.getContextPath() + "/LugarServlet"
+        );
     }
-}
+    
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
+        try {
+            int codigoLugar = Integer.parseInt(
+                request.getParameter("codigoLugar")
+            );
+
+            List<LugarTipoEstadia> asignaciones =
+                service.obtenerPorLugar(codigoLugar);
+
+            request.setAttribute("asignaciones", asignaciones);
+            request.setAttribute("codigoLugar", codigoLugar);
+
+            request.getRequestDispatcher(
+                "/WEB-INF/views/lugar-tipo-estadia.jsp"
+            ).forward(request, response);
+
+        } catch (Exception e) {
+            AppLogger.error("Error al consultar asignaciones del lugar", e);
+            response.sendError(
+                HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+                "No se pudieron consultar las asignaciones."
+            );
+        }
+    }}
