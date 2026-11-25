@@ -23,13 +23,15 @@ public class MercadoPagoService {
     private final String mpAccessToken;
     private final String appBaseUrl;
     private final String webhookUrl;
+    private final String testPayerEmail;
 
     public MercadoPagoService() {
         this.mpAccessToken = obtenerConfig("MP_ACCESS_TOKEN", "mercadopago.access.token", "");
-        
         // En Clever Cloud: https://tu-app.cleverapps.io (sin barra al final)
         // En Local: http://localhost:8080/backend-estacionamiento
         this.appBaseUrl = obtenerConfig("APP_BASE_URL", "app.base.url", "http://localhost:8080/backend-estacionamiento");
+        this.testPayerEmail = obtenerConfig("MP_TEST_PAYER_EMAIL", "mercadopago.test.payer.email", "");
+        AppLogger.info("[INFORMACION] Sistema de MercadoPagoService iniciando en la ruta :" + appBaseUrl);
         
         // Si estamos en producción (APP_BASE_URL), el webhook usa el dominio real.
         // Si estamos en local, lee la URL de Ngrok desde config.properties.
@@ -68,6 +70,13 @@ public class MercadoPagoService {
                 .failure(this.appBaseUrl + "/api/pago-fallo")
                 .build();
     }
+    
+    private String resolverEmailPagador(String emailReal) {
+    	if(!this.testPayerEmail.isEmpty()) {
+    		return this.testPayerEmail;
+    	}
+    	return emailReal;
+    }
 
     public String crearPreferencia(String titulo, BigDecimal monto, Integer idPagoLocal, String emailCliente) throws MPException, MPApiException {
         BigDecimal montoSeguro = (monto.compareTo(new BigDecimal("15.00")) < 0) ? new BigDecimal("150.00") : monto;
@@ -80,17 +89,19 @@ public class MercadoPagoService {
                 .build();
 
         PreferencePayerRequest payerRequest = PreferencePayerRequest.builder()
-                .email("test_user_3682619193@testuser.com")
+                .email(resolverEmailPagador(emailCliente))
                 .build();
 
-        PreferenceRequest preferenceRequest = PreferenceRequest.builder()
+        PreferenceRequest.PreferenceRequestBuilder requestBuilder = PreferenceRequest.builder()
                 .items(Collections.singletonList(itemRequest))
                 .backUrls(construirBackUrls())
                 .payer(payerRequest)
-                .autoReturn("approved")
                 .externalReference("RES_" + idPagoLocal)
-                .notificationUrl(this.webhookUrl)
-                .build();
+                .notificationUrl(this.webhookUrl);
+		        if (this.appBaseUrl.startsWith("https://")) {
+		            requestBuilder.autoReturn("approved");
+		        }
+        PreferenceRequest preferenceRequest = requestBuilder.build();
 
         MPRequestOptions options = MPRequestOptions.builder()
                 .accessToken(this.mpAccessToken)
@@ -110,19 +121,24 @@ public class MercadoPagoService {
                 .currencyId("ARS")
                 .build();
 
+        String emailUsuario = (pago.getSuscripcion() != null && pago.getSuscripcion().getUsuario() != null) ?
+        		pago.getSuscripcion().getUsuario().getMail() : "";
+        
         PreferencePayerRequest payerRequest = PreferencePayerRequest.builder()
-                .email("test_user_3682619193@testuser.com")
+                .email(resolverEmailPagador(emailUsuario))
                 .build();
 
-        PreferenceRequest preferenceRequest = PreferenceRequest.builder()
+        PreferenceRequest.PreferenceRequestBuilder requestBuilder = PreferenceRequest.builder()
                 .items(Collections.singletonList(itemRequest))
                 .backUrls(construirBackUrls())
-                .autoReturn("approved")
                 .externalReference("SUSC_" + pago.getId())
                 .payer(payerRequest)
-                .notificationUrl(this.webhookUrl)
-                .build();
-
+                .notificationUrl(this.webhookUrl);
+                if (this.appBaseUrl.startsWith("https://")) {
+                    requestBuilder.autoReturn("approved");
+                }
+        PreferenceRequest preferenceRequest = requestBuilder.build();
+                
         MPRequestOptions options = MPRequestOptions.builder()
                 .accessToken(this.mpAccessToken)
                 .build();
@@ -130,6 +146,6 @@ public class MercadoPagoService {
         PreferenceClient client = new PreferenceClient();
         Preference preference = client.create(preferenceRequest, options);
 
-        return preference.getSandboxInitPoint();
+        return preference.getInitPoint();
     }
 }
