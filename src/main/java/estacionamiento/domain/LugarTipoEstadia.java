@@ -10,6 +10,8 @@ public class LugarTipoEstadia {
 	
 	@EmbeddedId
     private LugarTipoEstadiaId id;
+	@Column(name = "fecha_hasta")
+	private LocalDateTime fechaHasta;
     
 	@ManyToOne
     @MapsId("codigoLugar")
@@ -25,17 +27,32 @@ public class LugarTipoEstadia {
     }
 
     public LugarTipoEstadia(Lugar lugar, TipoEstadia tipoEstadia, LocalDateTime fechaDesde) {
+        if (lugar == null || tipoEstadia == null || fechaDesde == null) {
+            throw new IllegalArgumentException("Los datos de la asignación son obligatorios.");
+        }
+
         this.lugar = lugar;
         this.tipoEstadia = tipoEstadia;
-        
-        int codLugar = (lugar != null) ? lugar.getCodigo() : null;
-        int numEstadia = (tipoEstadia != null) ? tipoEstadia.getNumero() : 0;
-        
-        this.id = new LugarTipoEstadiaId(codLugar, numEstadia, fechaDesde);
+
+        this.id = new LugarTipoEstadiaId(
+            lugar.getCodigo(),
+            tipoEstadia.getNumero(),
+            fechaDesde
+        );
+
+        this.fechaHasta = null;
     }
 
     public LugarTipoEstadiaId getId() { return id; }
     public void setId(LugarTipoEstadiaId id) { this.id = id; }
+    
+    public LocalDateTime getFechaHasta() {
+        return fechaHasta;
+    }
+
+    public void setFechaHasta(LocalDateTime fechaHasta) {
+        this.fechaHasta = fechaHasta;
+    }
 
     public Lugar getLugar() { return lugar; }
     public void setLugar(Lugar lugar) {

@@ -25,6 +25,9 @@ public class Lugar {
 	@Column(name="numero_piso", nullable = false)
 	private int numeroPiso;
 	
+	@Column(name = "fecha_baja")
+	private java.time.LocalDate fechaBaja;
+	
 	@ManyToOne
 	@JoinColumn(name="codigo_cochera", nullable = false)
 	private Cochera cochera;
@@ -61,6 +64,14 @@ public class Lugar {
 
 	public void setNumeroPiso(int numeroPiso) {
 		this.numeroPiso = numeroPiso;
+	}
+	
+	public java.time.LocalDate getFechaBaja() {
+	    return fechaBaja;
+	}
+
+	public void setFechaBaja(java.time.LocalDate fechaBaja) {
+	    this.fechaBaja = fechaBaja;
 	}
 
 	public Cochera getCochera() {

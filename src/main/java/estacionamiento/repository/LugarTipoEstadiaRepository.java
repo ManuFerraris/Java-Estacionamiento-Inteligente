@@ -10,5 +10,7 @@ public interface LugarTipoEstadiaRepository {
 	LugarTipoEstadia findById(int codigoLugar, int numeroTipoEstadia, LocalDateTime fechaDesde);
     List<LugarTipoEstadia> findAll();
     void delete(int codigoLugar, int numeroTipoEstadia, LocalDateTime fechaDesde);
-    
+    void darDeBaja(int codigoLugar, int numeroTipoEstadia, LocalDateTime fechaDesde);
+    boolean existeAsignacionVigente(int codigoLugar, int numeroTipoEstadia);
+    List<LugarTipoEstadia> findByLugar(int codigoLugar);
 }
