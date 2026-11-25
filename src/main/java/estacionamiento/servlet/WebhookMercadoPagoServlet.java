@@ -6,8 +6,10 @@ import java.io.InputStream;
 import java.util.Properties;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.mercadopago.client.merchantorder.MerchantOrderClient;
 import com.mercadopago.client.payment.PaymentClient;
 import com.mercadopago.core.MPRequestOptions;
+import com.mercadopago.resources.merchantorder.MerchantOrder;
 import com.mercadopago.resources.payment.Payment;
 
 import estacionamiento.domain.EstadoPago;
@@ -29,6 +31,7 @@ public class WebhookMercadoPagoServlet extends HttpServlet {
     private PagoService pagoService;
     private PagoSuscripcionService pagoSuscripcionService;
     private String mpAccessToken;
+    private final Object webhookLock = new Object(); // Por si llegan dos notificaciones juntas, un hilo espera a que el otro se procese y evitamos dos consultas
     
     @Override
     public void init() throws ServletException {
@@ -40,14 +43,14 @@ public class WebhookMercadoPagoServlet extends HttpServlet {
             try (InputStream input = getClass().getClassLoader().getResourceAsStream("config.properties")) {
                 if (input != null) {
                     props.load(input);
-                    this.mpAccessToken = props.getProperty("mercadopago.access.token");
+                    this.mpAccessToken = props.getProperty("mercadopago.access.token").trim();
                 }
             }
             
             // Para producción: Cuando subamos la app a un servidor real podemos implementar las variables .env:
             String envToken = System.getenv("MP_ACCESS_TOKEN");
             if (envToken != null && !envToken.trim().isEmpty()) {
-                this.mpAccessToken = envToken;
+                this.mpAccessToken = envToken.trim();
             }
 
             if (this.mpAccessToken == null || this.mpAccessToken.trim().isEmpty()) {
@@ -113,16 +116,16 @@ public class WebhookMercadoPagoServlet extends HttpServlet {
             } 
             else if ("merchant_order".equals(eventType) && paymentIdStr != null) {
                 System.out.println("[WEBHOOK] Procesando Orden Comercial para extraer el pago asociado...");
-                com.mercadopago.client.merchantorder.MerchantOrderClient orderClient = new com.mercadopago.client.merchantorder.MerchantOrderClient();
+                MerchantOrderClient orderClient = new MerchantOrderClient();
                 MPRequestOptions options = MPRequestOptions.builder()
                         .accessToken(this.mpAccessToken)
                         .build();
                 
-                com.mercadopago.resources.merchantorder.MerchantOrder order = orderClient.get(Long.parseLong(paymentIdStr), options);
+                MerchantOrder order = orderClient.get(Long.parseLong(paymentIdStr), options);
                 
                 if (order != null && order.getPayments() != null) {
                     for (var pay : order.getPayments()) {
-                        if ("approved".equals(pay.getStatus().toString())) {
+                        if ("approved".equals(String.valueOf(pay.getStatus().toString()))) {
                             paymentId = pay.getId();
                             System.out.println("[WEBHOOK] ¡Pago aprobado encontrado dentro de la orden comercial ID: " + paymentId + "!");
                             break;
@@ -133,36 +136,38 @@ public class WebhookMercadoPagoServlet extends HttpServlet {
 
             // 4. Ejecución del negocio aislada si logramos rescatar el ID del pago
             if (paymentId != null) {
-                System.out.println("[WEBHOOK] Consultando API oficial de MP para ID de pago: " + paymentId);
-                
-                PaymentClient client = new PaymentClient();
-                MPRequestOptions options = MPRequestOptions.builder()
-                        .accessToken(this.mpAccessToken)
-                        .build();
-                
-                Payment payment = client.get(paymentId, options);
-                
-                if (payment != null && payment.getExternalReference() != null) {
-                    String refExterna = payment.getExternalReference();
-                    String estadoMp = payment.getStatus();
-                    
-                    System.out.println("[WEBHOOK] API MP -> Estado: " + estadoMp + " | Ref: " + refExterna);
-                    
-                    if (refExterna.startsWith("SUSC_")) {
-                        Integer idPagoSuscripcion = Integer.parseInt(refExterna.replace("SUSC_", ""));
-                        if ("approved".equals(estadoMp)) {
-                            pagoSuscripcionService.registrarCobroMercadoPago(idPagoSuscripcion, paymentId.toString());
-                            System.out.println("[WEBHOOK] Suscripción " + idPagoSuscripcion + " actualizada a APROBADO.");
-                        }
-                    } else if (refExterna.startsWith("RES_") || refExterna.matches("\\d+")) {
-                        String idReservaLimpiado = refExterna.replace("RES_", "");
-                        Integer idPagoLocal = Integer.parseInt(idReservaLimpiado);
-                        if ("approved".equals(estadoMp)) {
-                            pagoService.actualizarEstado(idPagoLocal, EstadoPago.APROBADO, paymentId.toString());
-                            System.out.println("[WEBHOOK] Reserva " + idPagoLocal + " actualizada a APROBADO.");
-                        }
-                    }
-                }
+            	synchronized (webhookLock) {
+	                System.out.println("[WEBHOOK] Consultando API oficial de MP para ID de pago: " + paymentId);
+	                
+	                PaymentClient client = new PaymentClient();
+	                MPRequestOptions options = MPRequestOptions.builder()
+	                        .accessToken(this.mpAccessToken)
+	                        .build();
+	                
+	                Payment payment = client.get(paymentId, options);
+	                
+	                if (payment != null && payment.getExternalReference() != null) {
+	                    String refExterna = payment.getExternalReference();
+	                    String estadoMp = payment.getStatus();
+	                    
+	                    System.out.println("[WEBHOOK] API MP -> Estado: " + estadoMp + " | Ref: " + refExterna);
+	                    
+	                    if (refExterna.startsWith("SUSC_")) {
+	                        Integer idPagoSuscripcion = Integer.parseInt(refExterna.replace("SUSC_", ""));
+	                        if ("approved".equals(estadoMp)) {
+	                            pagoSuscripcionService.registrarCobroMercadoPago(idPagoSuscripcion, paymentId.toString());
+	                            System.out.println("[WEBHOOK] Suscripción " + idPagoSuscripcion + " actualizada a APROBADO.");
+	                        }
+	                    } else if (refExterna.startsWith("RES_") || refExterna.matches("\\d+")) {
+	                        String idReservaLimpiado = refExterna.replace("RES_", "");
+	                        Integer idPagoLocal = Integer.parseInt(idReservaLimpiado);
+	                        if ("approved".equals(estadoMp)) {
+	                            pagoService.actualizarEstado(idPagoLocal, EstadoPago.APROBADO, paymentId.toString());
+	                            System.out.println("[WEBHOOK] Reserva " + idPagoLocal + " actualizada a APROBADO.");
+	                        }
+	                    }
+	                }
+	            }
             } else {
                 System.out.println("[WEBHOOK] Evento recibido pero sin un ID de pago asociado listo para procesar.");
             }
