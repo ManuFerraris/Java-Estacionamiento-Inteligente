@@ -19,16 +19,16 @@ public class AppInitializationListener implements ServletContextListener {
             UsuarioService usuarioService = new UsuarioService(new UsuarioRepositoryMySQL());
 
             // 1. ADMIN
-            crearUsuarioSiNoExiste(usuarioService, "admin", "Administrador", "Municipal", "3410000000", "Av. Pellegrini 123", "admin@sistema.com", "admin123", RolesUsuario.ADMIN);
+            //crearUsuarioSiNoExiste(usuarioService, "admin", "Administrador", "Municipal", "3410000000", "Av. Pellegrini 123", "admin@sistema.com", "admin123", RolesUsuario.ADMIN);
             
             // 2. TRABAJADOR
-            crearUsuarioSiNoExiste(usuarioService, "trabajador", "Juan", "Pérez", "3411111111", "San Martín 456", "trabajador@sistema.com", "trabajador123", RolesUsuario.TRABAJADOR);
+            //crearUsuarioSiNoExiste(usuarioService, "trabajador", "Juan", "Pérez", "3411111111", "San Martín 456", "trabajador@sistema.com", "trabajador123", RolesUsuario.TRABAJADOR);
             
             // 3. CLIENTE
-            crearUsuarioSiNoExiste(usuarioService, "cliente", "María", "Gómez", "3412222222", "Córdoba 789", "maria@cliente.com", "cliente123", RolesUsuario.CLIENTE);
+            //crearUsuarioSiNoExiste(usuarioService, "cliente", "María", "Gómez", "3412222222", "Córdoba 789", "maria@cliente.com", "cliente123", RolesUsuario.CLIENTE);
             
             // 4. ENCARGADO
-            crearUsuarioSiNoExiste(usuarioService, "encargado", "Carlos", "López", "3413333333", "Mendoza 1011", "carlos@cochera.com", "encargado123", RolesUsuario.ENCARGADO);
+            //crearUsuarioSiNoExiste(usuarioService, "encargado", "Carlos", "López", "3413333333", "Mendoza 1011", "carlos@cochera.com", "encargado123", RolesUsuario.ENCARGADO);
             
         } catch (Exception e) {
             AppLogger.error("Error crítico al ejecutar el seed de usuarios iniciales", e);
