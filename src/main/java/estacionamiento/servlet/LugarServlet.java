@@ -13,12 +13,14 @@ import java.util.List;
 import estacionamiento.domain.Cochera;
 import estacionamiento.domain.Lugar;
 import estacionamiento.domain.TipoEstadia;
+import estacionamiento.domain.LugarTipoEstadia;
 import estacionamiento.service.LugarService;
 import estacionamiento.service.CocheraService;
 import estacionamiento.util.AppLogger;
 import estacionamiento.repository.mysql.LugarRepositoryMySQL;
 import estacionamiento.repository.mysql.CocheraRepositoryMySQL;
 import estacionamiento.repository.mysql.TipoEstadiaRepositoryMySQL;
+import estacionamiento.repository.mysql.LugarTipoEstadiaRepositoryMySQL;
 
 @WebServlet("/LugarServlet")
 public class LugarServlet extends HttpServlet {
@@ -28,12 +30,14 @@ public class LugarServlet extends HttpServlet {
     private LugarService lugarService;
     private CocheraService cocheraService;
     private TipoEstadiaRepositoryMySQL tipoEstadiaRepo;
+    private LugarTipoEstadiaRepositoryMySQL lugarTipoEstadiaRepo;
 
     @Override
     public void init() throws ServletException {
         this.lugarService = new LugarService(new LugarRepositoryMySQL());
         this.cocheraService = new CocheraService(new CocheraRepositoryMySQL());
         this.tipoEstadiaRepo = new TipoEstadiaRepositoryMySQL();
+        this.lugarTipoEstadiaRepo = new LugarTipoEstadiaRepositoryMySQL();
     }
 
     @Override
@@ -63,6 +67,11 @@ public class LugarServlet extends HttpServlet {
 
             List<TipoEstadia> listaTipos =
                 tipoEstadiaRepo.obtenerTodos();
+            
+            List<LugarTipoEstadia> listaAsignaciones =
+            	    lugarTipoEstadiaRepo.findAll();
+
+            	request.setAttribute("listaAsignaciones", listaAsignaciones);
 
             request.setAttribute("listaLugares", listaLugares);
             request.setAttribute("listaCocheras", listaCocheras);
