@@ -174,6 +174,19 @@ public class MisReservasServlet extends HttpServlet {
                 response.sendRedirect(urlCheckout);
                 return;
             }
+            
+            if ("cancelar".equals(accion)) {
+                String patente = request.getParameter("patente");
+                Integer idTipoEstadia = Integer.parseInt(request.getParameter("idTipoEstadia"));
+                LocalDateTime fechaDesde = LocalDateTime.parse(request.getParameter("fechaDesde"));
+
+                System.out.println("[1] Entrando a reservaService para cancelacion...");
+                reservaService.cancelarReservaCliente(patente, cliente.getNumero(), idTipoEstadia, fechaDesde);
+                System.out.println("[] Terminando con reservaService para cancelacion...");
+                request.getSession().setAttribute("exito", "La reserva para el vehículo " + patente + " fue cancelada correctamente.");
+                response.sendRedirect(request.getContextPath() + "/mis-reservas-user");
+                return;
+            }
 
             // Flujo de la nueva reserva
             String patente = request.getParameter("patente");

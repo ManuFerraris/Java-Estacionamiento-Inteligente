@@ -23,9 +23,12 @@
             
             <!-- Logo y Marca -->
             <% 
-                String linkInicio = (usuarioSesion.getRol() == RolesUsuario.ADMIN || usuarioSesion.getRol() == RolesUsuario.TRABAJADOR) 
-                                    ? request.getContextPath() + "/dashboard-oficina" 
-                                    : request.getContextPath() + "/inicio-user";
+                String linkInicio = request.getContextPath() + "/inicio-user";
+                if (usuarioSesion.getRol() == RolesUsuario.ADMIN || usuarioSesion.getRol() == RolesUsuario.TRABAJADOR) {
+                    linkInicio = request.getContextPath() + "/dashboard-oficina";
+                } else if (usuarioSesion.getRol() == RolesUsuario.ENCARGADO) {
+                    linkInicio = request.getContextPath() + "/panel-encargado";
+                }
             %>
             <a class="navbar-brand fw-bold mb-0" href="<%= linkInicio %>">
                 <i class="bi bi-buildings-fill me-2 text-primary"></i>MR - Estacionamiento
@@ -52,7 +55,7 @@
     
     <div class="offcanvas-header border-bottom border-secondary pb-3 mt-2 px-4">
         <h5 class="offcanvas-title fw-bold" id="menuLateralLabel">
-            <i class="bi bi-grid-1x2-fill me-2 text-primary"></i>Menú de Gestión
+            <i class="bi bi-grid-1x2-fill me-2 text-primary"></i><%= (usuarioSesion.getRol() == RolesUsuario.CLIENTE) ? "Portal Ciudadano" : "Menú de Gestión" %>
         </h5>
         <button type="button" class="btn-close btn-close-white shadow-none" data-bs-dismiss="offcanvas" aria-label="Cerrar"></button>
     </div>
@@ -164,7 +167,39 @@
                 <li class="nav-item px-3 mb-1">
                     <a class="nav-link px-3 py-2 rounded-3 <%= uriActual.endsWith("/inicio-user") ? "active bg-primary text-white fw-bold" : "text-light" %>" 
                        href="<%= request.getContextPath() %>/inicio-user">
-                        <i class="bi bi-house me-2"></i>Mi Portal
+                        <i class="bi bi-house-door me-2"></i>Mi Portal
+                    </a>
+                </li>
+
+                <li class="nav-item px-3 mt-3">
+                    <h6 class="text-secondary text-uppercase small fw-bold px-3 mb-2">Mis Servicios</h6>
+                </li>
+                <li class="nav-item px-3 mb-1">
+                    <a class="nav-link px-3 py-2 rounded-3 <%= uriActual.endsWith("/mis-reservas-user") ? "active bg-primary text-white fw-bold" : "text-light" %>" 
+                       href="<%= request.getContextPath() %>/mis-reservas-user">
+                        <i class="bi bi-calendar-check me-2"></i>Mis Reservas
+                    </a>
+                </li>
+                <li class="nav-item px-3 mb-1">
+                    <a class="nav-link px-3 py-2 rounded-3 <%= uriActual.endsWith("/mis-suscripciones-user") ? "active bg-primary text-white fw-bold" : "text-light" %>" 
+                       href="<%= request.getContextPath() %>/mis-suscripciones-user">
+                        <i class="bi bi-card-checklist me-2"></i>Mis Suscripciones
+                    </a>
+                </li>
+                <li class="nav-item px-3 mb-1">
+                    <a class="nav-link px-3 py-2 rounded-3 <%= uriActual.endsWith("/mis-vehiculos-user") ? "active bg-primary text-white fw-bold" : "text-light" %>" 
+                       href="<%= request.getContextPath() %>/mis-vehiculos-user">
+                        <i class="bi bi-car-front-fill me-2"></i>Mis Vehículos
+                    </a>
+                </li>
+
+                <li class="nav-item px-3 mt-3">
+                    <h6 class="text-secondary text-uppercase small fw-bold px-3 mb-2">Mi Cuenta</h6>
+                </li>
+                <li class="nav-item px-3 mb-1">
+                    <a class="nav-link px-3 py-2 rounded-3 <%= uriActual.endsWith("/perfil-user") ? "active bg-primary text-white fw-bold" : "text-light" %>" 
+                       href="<%= request.getContextPath() %>/perfil-user">
+                        <i class="bi bi-person-vcard me-2"></i>Mi Perfil
                     </a>
                 </li>
             <% } %>
