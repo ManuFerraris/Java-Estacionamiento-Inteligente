@@ -321,7 +321,12 @@
 
                                             <!-- BOTÓN CANCELAR: Solo visible si aún no ingresó -->
                                             <% if (r.getEstado() == EstadoReserva.PENDIENTE) { %>
-                                                <button class="btn btn-outline-danger btn-sm mb-1" onclick="cancelarReserva('<%= r.getVehiculo().getPatente() %>')"><i class="bi bi-x-circle"></i></button>
+											    <button type="button"
+											            class="btn btn-outline-danger btn-sm mb-1"
+											            title="Cancelar reserva"
+											            onclick="cancelarReserva('<%= r.getId().getPatenteVehiculo() %>', '<%= r.getId().getNumeroTipoEstadia() %>', '<%= r.getId().getFechaDesde() %>')">
+											        <i class="bi bi-x-circle"></i>Cancelar
+											    </button>
                                             <% } else if (r.getEstado() == EstadoReserva.EN_CURSO) { %>
                                                 <span class="small text-muted fst-italic d-block">Vehículo en cochera</span>
                                             <% } else if (r.getEstado() == EstadoReserva.SALIDA_PARCIAL) { %>
@@ -351,6 +356,14 @@
             
         </div>
     </div>
+    
+    <!-- Formulario oculto para enviar la cancelación por POST -->
+	<form action="<%= request.getContextPath() %>/mis-reservas-user" method="POST" id="formCancelarReserva" class="d-none">
+	    <input type="hidden" name="accion" value="cancelar">
+	    <input type="hidden" name="patente" id="cancelPatente">
+	    <input type="hidden" name="idTipoEstadia" id="cancelTipoEstadia">
+	    <input type="hidden" name="fechaDesde" id="cancelFechaDesde">
+	</form>
 
     <!-- Script de validaciones -->
 	<script>
@@ -530,8 +543,28 @@
 	            const modal = new bootstrap.Modal(document.getElementById('modalQR'));
 	            modal.show();
 	        }
+	        
+	        function cancelarReserva(patente, idTipoEstadia, fechaDesde) {
+	            Swal.fire({
+	                title: '¿Cancelar esta reserva?',
+	                html: 'Vas a cancelar la reserva del vehículo <strong>' + patente + '</strong>.<br>' +
+	                      '<small class="text-muted">Recordá que, por políticas municipales, la seña abonada no es reembolsable y el lugar volverá a quedar disponible.</small>',
+	                icon: 'warning',
+	                showCancelButton: true,
+	                confirmButtonColor: '#dc3545',
+	                cancelButtonColor: '#6c757d',
+	                confirmButtonText: 'Sí, cancelar reserva',
+	                cancelButtonText: 'Volver'
+	            }).then((result) => {
+	                if (result.isConfirmed) {
+	                    document.getElementById('cancelPatente').value = patente;
+	                    document.getElementById('cancelTipoEstadia').value = idTipoEstadia;
+	                    document.getElementById('cancelFechaDesde').value = fechaDesde;
+	                    document.getElementById('formCancelarReserva').submit();
+	                }
+	            });
+	        }
 	    </script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 	<!-- Modal para el QR De entrada/salida/entradaParcial-->
 	<div class="modal fade" id="modalQR" tabindex="-1" aria-hidden="true">
@@ -549,5 +582,7 @@
 	        </div>
 	    </div>
 	</div>
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
+
 </html>

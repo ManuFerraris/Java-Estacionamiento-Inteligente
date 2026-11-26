@@ -354,8 +354,6 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
     <script>
         <% if (request.getAttribute("error") != null) { %>
             Swal.fire({
@@ -456,6 +454,6 @@
             document.getElementById('btnCancelar').classList.add('d-none');
         }
     </script>
-
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

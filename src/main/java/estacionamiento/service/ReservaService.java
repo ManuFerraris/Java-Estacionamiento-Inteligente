@@ -4,7 +4,6 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.Duration;
 import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 import estacionamiento.domain.EstadoPago;
@@ -311,9 +310,9 @@ public class ReservaService {
             reserva.setEstado(EstadoReserva.CANCELADA);
             try {
                 reservaRepository.actualizar(reserva);
-                notificarCancelacion(reserva.getUsuario(), reserva);
+                notificacionService.notificarCancelacionPorFaltaDePago(reserva);
             } catch (Exception e) {
-                System.err.println("Error al cancelar la reserva de patente: " + reserva.getVehiculo().getPatente());
+                System.err.println("Error al cancelar la reserva de patente: " + reserva.getId().getPatenteVehiculo());
                 e.printStackTrace();
             }
         }
@@ -358,32 +357,6 @@ public class ReservaService {
                 }
             }
         }
-    }
-    
-    // Módulo de envío de correos (Es un mock para futura integración con Jakarta Mail)
-    // Ahora esta hardcodeado
-    private void notificarCancelacion(Usuario usuario, Reserva reserva) {
-        String correoDestino = usuario.getMail();
-        String patente = reserva.getVehiculo().getPatente();
-        
-        // Aca iria la configuración de JavaMailSender
-        String asunto = "Aviso Importante: Reserva Cancelada por Falta de Pago";
-        String cuerpo = "Hola " + usuario.getNombre() + ",\n\n" +
-                "Te informamos que tu reserva para el vehículo " + patente + " " +
-                "programada para el " + 
-                reserva.getId().getFechaDesde().format(DateTimeFormatter.ofPattern("dd/MM/yyyy 'a las' HH:mm")) + " hs" + 
-                " ha sido CANCELADA.\n\n" +
-                "Motivo: El saldo total no fue abonado dentro de la ventana de tiempo permitida " +
-                "(hasta 60 minutos antes del ingreso).\n\n" +
-                "Por políticas de la Municipalidad, la seña abonada no es reembolsable. " +
-                "El lugar ha sido liberado para otro ciudadano.";
-                
-        // Simulación de salida del correo
-        System.out.println("=========================================");
-        System.out.println("ENVIANDO CORREO A: " + correoDestino);
-        System.out.println("ASUNTO: " + asunto);
-        System.out.println("MENSAJE:\n" + cuerpo);
-        System.out.println("=========================================");
     }
 
     public SalidaDTO procesarIntentoSalida(ReservaId idReserva, boolean esSalidaDefinitiva) {
@@ -504,5 +477,23 @@ public class ReservaService {
     
     public List<Reserva> obtenerActivasPorCochera(int codigoCochera) {
     	return reservaRepository.obtenerActivasPorCochera(codigoCochera);
+    }
+    
+    public void cancelarReservaCliente(String patente, int idUsuario, int idTipoEstadia, LocalDateTime fechaDesde) {
+    	ReservaId id = new ReservaId(patente, idUsuario, idTipoEstadia, fechaDesde);
+    	Reserva reserva = reservaRepository.buscarPorClave(id);
+    	
+    	if (reserva == null) {
+            throw new IllegalArgumentException("No se encontró la reserva solicitada.");
+        }
+    	
+        if (reserva.getEstado() != EstadoReserva.PENDIENTE) {
+            throw new IllegalArgumentException("Solo se pueden cancelar reservas que todavía estén en estado PENDIENTE.");
+        }
+        
+        reserva.setEstado(EstadoReserva.CANCELADA);
+        reservaRepository.actualizar(reserva);
+        
+        notificacionService.enviarNotificacionCancelacion(reserva);
     }
 }
