@@ -30,7 +30,7 @@ public class UsuarioRepositoryMySQL implements UsuarioRepository{
 				em.merge(usuario);
 			}
 			tx.commit();
-	        System.out.println("MySQL: Usuario insertado correctamente en la base de datos.");
+			System.out.println("MySQL: Usuario guardado correctamente en la base de datos.");
 		}catch(Exception e){
 			if(tx != null && tx.isActive()) {
 				tx.rollback();
@@ -78,7 +78,7 @@ public class UsuarioRepositoryMySQL implements UsuarioRepository{
     			usuarioExistente.setFechaBaja(usuarioNuevosDatos.getFechaBaja());
     			usuarioExistente.setNombreUsuario(usuarioNuevosDatos.getNombreUsuario());
     			usuarioExistente.setContrasenia(usuarioNuevosDatos.getContrasenia());
-    			em.merge(usuarioExistente);
+    			usuarioExistente.setRol(usuarioNuevosDatos.getRol());
     			tx.commit();
         	}else {
         		throw new IllegalArgumentException("MySQL: No se encontro el usuario.");
@@ -117,7 +117,7 @@ public class UsuarioRepositoryMySQL implements UsuarioRepository{
 		EntityManager em = emf.createEntityManager();
         try {
             // Buscamos al usuario por su nombre de usuario y verificamos de que no esté dado de baja
-            return em.createQuery("SELECT u FROM Usuario u WHERE u.nombreUsuario = :nombre AND u.fechaBaja IS NULL", Usuario.class)
+            return em.createQuery("SELECT u FROM Usuario u WHERE u.nombreUsuario = :nombre", Usuario.class)
                      .setParameter("nombre", nombreUsuario)
                      .getSingleResult();
         } catch (jakarta.persistence.NoResultException e) {
@@ -129,15 +129,17 @@ public class UsuarioRepositoryMySQL implements UsuarioRepository{
 	
 	@Override
 	public Usuario buscarUsuarioConReservas(Integer idUsuario) {
-		EntityManager em = emf.createEntityManager();
-		try {
-			String jpql = "SELECT u FROM Usuario u LEFT JOIN FETCH u.reservas WHERE u.numero = :id";
-			return em.createQuery(jpql, Usuario.class)
-					.setParameter("id", idUsuario)
-					.getSingleResult();
-		}finally {
-			em.close();
-		}
+	    EntityManager em = emf.createEntityManager();
+	    try {
+	        String jpql = "SELECT u FROM Usuario u LEFT JOIN FETCH u.reservas WHERE u.numero = :id";
+	        return em.createQuery(jpql, Usuario.class)
+	                .setParameter("id", idUsuario)
+	                .getSingleResult();
+	    } catch (jakarta.persistence.NoResultException e) {
+	        return null;
+	    } finally {
+	        em.close();
+	    }
 	}
 	
 	@Override
@@ -145,7 +147,7 @@ public class UsuarioRepositoryMySQL implements UsuarioRepository{
 		EntityManager em = emf.createEntityManager();
         try {
             // Buscamos al usuario por su mail y verificamos que no esté dado de baja
-            return em.createQuery("SELECT u FROM Usuario u WHERE u.mail = :mail AND u.fechaBaja IS NULL", Usuario.class)
+            return em.createQuery("SELECT u FROM Usuario u WHERE u.mail = :mail", Usuario.class)
                      .setParameter("mail", mail)
                      .getSingleResult();
         } catch (jakarta.persistence.NoResultException e) {

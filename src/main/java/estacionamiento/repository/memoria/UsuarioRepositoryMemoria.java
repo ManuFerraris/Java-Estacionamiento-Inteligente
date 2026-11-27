@@ -21,7 +21,7 @@ public class UsuarioRepositoryMemoria implements UsuarioRepository {
 	 @Override
 	 public Usuario buscarPorNumero(Integer numero) {
 		 for (Usuario u : this.baseDeDatosMemoria) {
-			 if (u.getNumero() == numero) {
+			 if (u.getNumero() != null && u.getNumero().equals(numero)) {
 	         	return u;
 	         }
 	     }
@@ -52,6 +52,7 @@ public class UsuarioRepositoryMemoria implements UsuarioRepository {
 			 usuarioExistente.setFechaBaja(usuarioNuevosDatos.getFechaBaja());
 			 usuarioExistente.setNombreUsuario(usuarioNuevosDatos.getNombreUsuario());
 			 usuarioExistente.setContrasenia(usuarioNuevosDatos.getContrasenia());
+			 usuarioExistente.setRol(usuarioNuevosDatos.getRol());
 			 System.out.println("Usuario actualizado: " + numeroBuscado + " " + usuarioExistente.getNombre() + " " + usuarioExistente.getApellido());
 		 } else {
 			 throw new IllegalArgumentException("No se puede actualizar. No se encontró el numero de usuario: " + numeroBuscado);
@@ -70,21 +71,32 @@ public class UsuarioRepositoryMemoria implements UsuarioRepository {
 		 }
 	 }
 
-	 @Override
-	 public Usuario buscarPorNombreUsuario(String nombreUsuario) {
-		// TODO Auto-generated method stub
-		return null;
-	 }
 
-	 @Override
-	 public Usuario buscarUsuarioConReservas(Integer idUsuario) {
-		// TODO Auto-generated method stub
-		return null;
-	 }
+		@Override
+		public Usuario buscarPorNombreUsuario(String nombreUsuario) {
+		    for (Usuario u : baseDeDatosMemoria) {
+		        if (u.getFechaBaja() == null
+		                && nombreUsuario != null && nombreUsuario.equals(u.getNombreUsuario())) {
+		            return u;
+		        }
+		    }
+		    return null;
+		}
+		
+		@Override
+		public Usuario buscarUsuarioConReservas(Integer idUsuario) {
+		    return buscarPorNumero(idUsuario);
+		}
+		
+		@Override
+		public Usuario buscarPorMail(String mail) {
+		    for (Usuario u : baseDeDatosMemoria) {
+		        if (u.getFechaBaja() == null
+		                && mail != null && mail.equals(u.getMail())) {
+		            return u;
+		        }
+		    }
+		    return null;
+		}
 
-	 @Override
-	 public Usuario buscarPorMail(String mail) {
-		// TODO Auto-generated method stub
-		return null;
-	 }
 }
