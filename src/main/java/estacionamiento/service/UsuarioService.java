@@ -24,9 +24,18 @@ public class UsuarioService {
         }
 
         // Validar datos personales obligatorios
-        if (esNuloOBlanco(nuevoUsuario.getNombre()) || esNuloOBlanco(nuevoUsuario.getApellido())) {
-            throw new IllegalArgumentException("El nombre y el apellido son obligatorios.");
-        }
+		if (esNuloOBlanco(nuevoUsuario.getNombre()) || esNuloOBlanco(nuevoUsuario.getApellido())) {
+		    throw new IllegalArgumentException("El nombre y el apellido son obligatorios.");
+		}
+
+		// Validar credenciales de acceso
+		if (esNuloOBlanco(nuevoUsuario.getNombreUsuario())) {
+		    throw new IllegalArgumentException("El nombre de usuario es obligatorio.");
+		}
+
+		if (usuarioRepository.buscarPorNombreUsuario(nuevoUsuario.getNombreUsuario()) != null) {
+		    throw new IllegalArgumentException("El nombre de usuario ya se encuentra registrado.");
+		}
         
         if (esNuloOBlanco(nuevoUsuario.getDireccion())) {
             throw new IllegalArgumentException("La dirección es obligatoria.");
@@ -51,11 +60,6 @@ public class UsuarioService {
         	if (!nuevoUsuario.getMailRecuperacion().contains("@")) {
         		throw new IllegalArgumentException("El correo de recuperación proporcionado no es válido.");
         	}
-        }
-
-        // Validar credenciales de acceso
-        if (esNuloOBlanco(nuevoUsuario.getNombreUsuario())) {
-            throw new IllegalArgumentException("El nombre de usuario es obligatorio.");
         }
         
         if (esNuloOBlanco(nuevoUsuario.getContrasenia()) || nuevoUsuario.getContrasenia().length() < 6) {
@@ -92,9 +96,9 @@ public class UsuarioService {
 	}
 	
 	public Usuario buscarPorNumero(Integer numero) {
-		if (numero <= 0) {
-            throw new IllegalArgumentException("El numero de búsqueda debe ser válido.");
-        }
+		if (numero == null || numero <= 0) {
+		    throw new IllegalArgumentException("El numero de búsqueda debe ser válido.");
+		}
 		Usuario usuario = usuarioRepository.buscarPorNumero(numero);
 		if(usuario == null) {
 			throw new IllegalArgumentException("No se encontró ningun usuario con el numero " + numero + ".");
@@ -103,23 +107,15 @@ public class UsuarioService {
 	}
 	
 	public void darDeBaja(Integer numero) throws Exception {
-		Usuario usuario = buscarPorNumero(numero);
-		if(usuario != null) {
-			usuario.setFechaBaja(LocalDate.now());
-			usuarioRepository.actualizar(numero, usuario);
-		}else {
-			throw new Exception("El usuario a dar de baja no existe.");
-		}
+	    Usuario usuario = buscarPorNumero(numero);
+	    usuario.setFechaBaja(LocalDate.now());
+	    usuarioRepository.actualizar(numero, usuario);
 	}
 	
 	public void darDeAltaPostBaja(Integer numero) throws Exception {
-		Usuario usuario = buscarPorNumero(numero);
-		if(usuario != null) {
-			usuario.setFechaBaja(null);
-			usuarioRepository.actualizar(numero, usuario);
-		}else {
-			throw new Exception("El usuario a volver a dar de alta no existe.");
-		}
+	    Usuario usuario = buscarPorNumero(numero);
+	    usuario.setFechaBaja(null);
+	    usuarioRepository.actualizar(numero, usuario);
 	}
 	
 	public void actualizar(Integer numero, Usuario usuarioAActualizar) {
@@ -175,6 +171,11 @@ public class UsuarioService {
 	    if (esNuloOBlanco(usuarioAActualizar.getNombreUsuario())) {
 	        throw new IllegalArgumentException("El nombre de usuario es obligatorio.");
 	    }
+	    Usuario usuarioExistenteConNombre = usuarioRepository.buscarPorNombreUsuario(usuarioAActualizar.getNombreUsuario());
+
+	    if (usuarioExistenteConNombre != null && !usuarioExistenteConNombre.getNumero().equals(numero)) {
+	        throw new IllegalArgumentException("El nombre de usuario ya se encuentra registrado.");
+	    }
 	    
 	    usuarioRepository.actualizar(numero, usuarioAActualizar);
 	    System.out.println("Servicio: Usuario " + usuarioAActualizar.getNumero() + " validado y actualizado con éxito.");
@@ -189,9 +190,10 @@ public class UsuarioService {
         Usuario usuario = usuarioRepository.buscarPorNombreUsuario(nombreUsuario);
         
         // Si el usuario no existe o la contraseña encriptada no coincide con la plana
-        if (usuario == null || !BCrypt.checkpw(contraseniaPlana, usuario.getContrasenia())) {
-            throw new IllegalArgumentException("Credenciales incorrectas o usuario inactivo.");
-        }
+        if (usuario == null || usuario.getFechaBaja() != null ||
+        	    !BCrypt.checkpw(contraseniaPlana, usuario.getContrasenia())) {
+        	    throw new IllegalArgumentException("Credenciales incorrectas o usuario inactivo.");
+        	}
 
         System.out.println("Servicio: Login exitoso para el usuario " + usuario.getNombreUsuario());
         return usuario;
@@ -214,11 +216,22 @@ public class UsuarioService {
 
 	// Metodo secundario o de ayuda para obtener las reservas pero desde el usuario (no lo usaos por ahora).
 	public List<Reserva> obtenerMisReservas(Integer idUsuario) throws Exception {
-		Usuario usuarioRefrescado = usuarioRepository.buscarUsuarioConReservas(idUsuario);
-		return usuarioRefrescado.getReservas();
+	    Usuario usuarioRefrescado = usuarioRepository.buscarUsuarioConReservas(idUsuario);
+
+	    if (usuarioRefrescado == null) {
+	        throw new IllegalArgumentException("No se encontró el usuario.");
+	    }
+
+	    return usuarioRefrescado.getReservas();
 	}
 	
 	public boolean existeUsuario(String nombreUsuario) throws Exception {
+	    if (esNuloOBlanco(nombreUsuario)) {
+	        return false;
+	    }
+
 	    Usuario u = usuarioRepository.buscarPorNombreUsuario(nombreUsuario);
 	    return u != null;
-	}}
+	}
+	
+}
