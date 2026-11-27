@@ -31,7 +31,7 @@ public class UsuarioServlet extends HttpServlet {
 	@Override
 	public void init() throws ServletException {
 		UsuarioRepository usuarioRepo = new UsuarioRepositoryMySQL();
-		this.usuarioService = new UsuarioService(new UsuarioRepositoryMySQL());
+		this.usuarioService = new UsuarioService(usuarioRepo);
 		this.cocheraRepo = new CocheraRepositoryMySQL();
 		AsignacionCocheraRepository asignacionRepo = new AsignacionCocheraRepositoryMySQL();
 		this.asignacionService = new AsignacionCocheraService(asignacionRepo, usuarioRepo, this.cocheraRepo);
